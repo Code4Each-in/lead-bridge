@@ -94,13 +94,13 @@
                 <li class="nav-item"> <a class="nav-link" href="pages/samples/error-500.html"> 500 </a></li>
               </ul>
             </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="pages/documentation/documentation.html">
-              <i class="icon-paper menu-icon"></i>
-              <span class="menu-title">Documentation</span>
-            </a>
           </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="/roles">
+              <i class="ti-user menu-icon"></i>
+              <span class="menu-title">Roles</span>
+            </a>
+          </li>
         </ul>
       </nav>
       <!-- partial -->
