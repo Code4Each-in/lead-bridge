@@ -46,7 +46,7 @@ class UserController extends Controller
             'profile' => $profilePath
         ]);
 
-        return back()->with('success', 'User created');
+        return back()->with('success', 'User has been created successfully.');
     }
     public function update(Request $request, $id)
     {
@@ -75,7 +75,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'User updated');
+        return back()->with('success', 'User has been updated successfully.');
     }
 
     public function destroy($id)
