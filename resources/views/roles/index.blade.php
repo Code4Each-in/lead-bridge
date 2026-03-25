@@ -28,7 +28,6 @@
                         <table id="rolesTable" class="table table-striped">
                             <thead>
                                 <tr>
-
                                     <th>Role Name</th>
                                     <th>Created At</th>
                                     <th width="200">Action</th>
@@ -38,23 +37,23 @@
                                 @foreach($roles as $role)
                                 <tr>
                                     <td>{{ $role->name }}</td>
-                                    <td>{{ $role->created_at }}</td>
+                                    <td>{{ $role->created_at->format('d-m-Y h:i A') }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $role->id }}">
-                                            Edit
+                                           <i class="mdi mdi-pencil-box" ></i>  Edit
                                         </button>
 
                                         <a href="{{ route('roles.delete', $role->id) }}"
                                            class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Delete this role?')">
-                                            Delete
+                                           onclick="return confirm('Are you sure you want to delete this role?')">
+                                           <i class="mdi mdi-delete" ></i> Delete
                                         </a>
                                     </td>
                                 </tr>
 
-                                <!-- 🔹 Edit Modal -->
+                                <!-- Edit Modal -->
                                 <div class="modal fade" id="editModal{{ $role->id }}" tabindex="-1">
                                     <div class="modal-dialog">
                                         <form method="POST" action="{{ route('roles.update', $role->id) }}">
@@ -96,7 +95,7 @@
 </div>
 
 
-<!-- Create Modal -->
+<!--  Create Modal -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
         <form method="POST" action="{{ route('roles.store') }}">
