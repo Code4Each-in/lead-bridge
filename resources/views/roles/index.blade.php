@@ -53,6 +53,7 @@
                                     </td>
                                 </tr>
 
+                                
                                 <!-- Edit Modal -->
                                 <div class="modal fade" id="editModal{{ $role->id }}" tabindex="-1">
                                     <div class="modal-dialog">
