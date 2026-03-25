@@ -17,3 +17,4 @@
 <link rel="stylesheet" href="{{ asset('assets/css/vertical-layout-light/style.css') }}">
 <!-- endinject -->
 <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
+<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
