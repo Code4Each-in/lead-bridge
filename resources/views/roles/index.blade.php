@@ -2,26 +2,19 @@
 @section('title', 'Dashboard')
 @section('subtitle', 'Dashboard')
 @section('content')
-<div class="content-wrapper">
 
+<div class="content-wrapper">
     <div class="row">
         <div class="col-md-12 grid-margin">
             <div class="card">
-
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between mb-3">
                         <h4 class="card-title">Roles</h4>
-
                         <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">
                             Add Role
                         </button>
                     </div>
-
-                    <!-- Success Message -->
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
 
                     <!-- Table -->
                     <div class="table-responsive">
@@ -42,47 +35,14 @@
                                         <button class="btn btn-sm btn-info"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $role->id }}">
-                                           <i class="mdi mdi-pencil-box" ></i>  Edit
+                                            <i class="mdi mdi-pencil-box"></i> Edit
                                         </button>
-
                                         <a href="{{ route('roles.delete', $role->id) }}"
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Are you sure you want to delete this role?')">
-                                           <i class="mdi mdi-delete" ></i> Delete
+                                           class="btn btn-sm btn-danger btn-delete">
+                                           <i class="mdi mdi-delete"></i> Delete
                                         </a>
                                     </td>
                                 </tr>
-
-                                
-                                <!-- Edit Modal -->
-                                <div class="modal fade" id="editModal{{ $role->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <form method="POST" action="{{ route('roles.update', $role->id) }}">
-                                            @csrf
-
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5>Edit Role</h5>
-                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                                </div>
-
-                                                <div class="modal-body">
-                                                    <div class="form-group">
-                                                        <label>Role Name</label>
-                                                        <input type="text" name="name" class="form-control"
-                                                            value="{{ $role->name }}" required>
-                                                    </div>
-                                                </div>
-
-                                                <div class="modal-footer">
-                                                    <button class="btn btn-success">Update</button>
-                                                </div>
-                                            </div>
-
-                                        </form>
-                                    </div>
-                                </div>
-
                                 @endforeach
                             </tbody>
                         </table>
@@ -92,36 +52,219 @@
             </div>
         </div>
     </div>
-
 </div>
 
-
-<!--  Create Modal -->
+<!-- Create Modal -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('roles.store') }}">
+        <form id="createRoleForm" method="POST" action="{{ route('roles.store') }}">
             @csrf
-
             <div class="modal-content">
                 <div class="modal-header">
                     <h5>Add Role</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
-
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Role Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Enter role name" required>
+                        <input type="text" name="name" class="form-control" placeholder="Enter role name">
                     </div>
                 </div>
-
                 <div class="modal-footer">
-                    <button class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
-
         </form>
     </div>
 </div>
+
+<!-- Edit Modals -->
+@foreach($roles as $role)
+<div class="modal fade" id="editModal{{ $role->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="editRoleForm" method="POST" action="{{ route('roles.update', $role->id) }}">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Edit Role</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Role Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ $role->name }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endforeach
+
+<script>
+function waitForJQuery(callback) {
+    if (typeof $ !== 'undefined') {
+        callback();
+    } else {
+        setTimeout(function () { waitForJQuery(callback); }, 50);
+    }
+}
+
+waitForJQuery(function () {
+
+    // Clear errors helper
+    function clearErrors(modal) {
+        $(modal).find('.is-invalid').removeClass('is-invalid');
+        $(modal).find('.invalid-feedback').remove();
+    }
+
+    // Show Laravel errors
+    function showErrors(modal, errors) {
+        $.each(errors, function (field, messages) {
+            const el = $(modal).find('[name="' + field + '"]');
+            el.addClass('is-invalid');
+            el.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+        });
+    }
+
+    // CREATE modal — clear on open
+    $('#createModal').on('show.bs.modal', function () {
+        clearErrors(this);
+        $(this).find('input:not([type="hidden"])').val('');
+    });
+
+    // EDIT modals — clear errors + store originals on open
+    $('[id^="editModal"]').on('show.bs.modal', function () {
+        clearErrors(this);
+        $(this).find('input').each(function () {
+            $(this).data('orig', $(this).val());
+        });
+    });
+
+    // EDIT modals — restore if not submitted
+    $('[id^="editModal"]').on('hide.bs.modal', function () {
+        if (!$(this).data('submitted')) {
+            $(this).find('input').each(function () {
+                $(this).val($(this).data('orig') || '');
+            });
+            clearErrors(this);
+        }
+        $(this).data('submitted', false);
+    });
+
+    // CREATE FORM SUBMIT
+    $('#createRoleForm').on('submit', function (e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                $('#createModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Created!',
+                    text: res.success,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(function () {
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors(form, xhr.responseJSON.errors);
+                }
+            }
+        });
+    });
+
+    // EDIT FORM SUBMIT
+    $(document).on('submit', '.editRoleForm', function (e) {
+        e.preventDefault();
+        const modal = $(this).closest('.modal');
+        const form = this;
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                modal.data('submitted', true);
+                modal.modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: res.success,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(function () {
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors(form, xhr.responseJSON.errors);
+                }
+            }
+        });
+    });
+
+    // DELETE WITH SWAL CONFIRMATION
+    $(document).on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This role will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: res.success,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(function () {
+                            location.reload();
+                        });
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+});
+</script>
 
 @endsection

@@ -97,13 +97,13 @@
           </li> -->
           <li class="nav-item">
             <a class="nav-link" href="/roles">
-              <i class="ti-user menu-icon"></i>
+              <i class="mdi mdi-shield-account menu-icon"></i>
               <span class="menu-title">Roles</span>
             </a>
           </li>
             <li class="nav-item">
                 <a class="nav-link" href="/users">
-                    <i class="mdi mdi-account-circle menu-icon"></i>
+                    <i class="mdi mdi-account menu-icon icon-head"></i>
                     <span class="menu-title">Users</span>
                 </a>
             </li>

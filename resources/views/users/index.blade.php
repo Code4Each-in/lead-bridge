@@ -2,7 +2,13 @@
 @section('title', 'Dashboard')
 @section('subtitle', 'Dashboard')
 @section('content')
+<style>
+    .required-label::after {
+        content: ' *';
+        color: red;
+    }
 
+</style>
 <div class="content-wrapper">
     <div class="row">
         <div class="col-md-12 grid-margin">
@@ -70,8 +76,8 @@
                                             <i class="mdi mdi-pencil-box"></i> Edit
                                         </button>
                                         <a href="{{ route('users.delete', $user->id) }}"
-                                            class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure you want to delete this user?')">
+                                            class="btn btn-sm btn-danger btn-delete"
+                                            data-id="{{ $user->id }}">
                                             <i class="mdi mdi-delete"></i> Delete
                                         </a>
                                     </td>
@@ -87,7 +93,7 @@
     </div>
 </div>
 
-<!-- ==================== Create User Modal ==================== -->
+<!--=============== Create User Modal -->
 <div class="modal fade" id="createModal">
     <div class="modal-dialog modal-lg">
         <form  id="createUserForm" method="POST" class="forms-sample" action="{{ route('users.store') }}" enctype="multipart/form-data">
@@ -100,22 +106,22 @@
 
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Name</label>
+                        <label class="required-label">Name</label>
                         <input type="text" name="name" class="form-control" placeholder="Name" >
                     </div>
 
                     <div class="form-group">
-                        <label>Email address</label>
+                        <label class="required-label">Email address</label>
                         <input type="email" name="email" class="form-control" placeholder="Email" >
                     </div>
 
                     <div class="form-group">
-                        <label>Password</label>
+                        <label class="required-label">Password</label>
                         <input type="password" name="password" class="form-control" placeholder="Password" >
                     </div>
 
                     <div class="form-group">
-                        <label>Role</label>
+                        <label class="required-label">Role</label>
                         <select name="role_id" class="form-control">
                             <option value="">Select Role</option>
                             @foreach($roles as $role)
@@ -125,7 +131,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Status</label>
+                        <label class="required-label">Status</label>
                         <select name="status" class="form-control">
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
@@ -133,27 +139,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Date of Birth</label>
+                        <label class="required-label">Date of Birth</label>
                         <input type="date" name="date_of_birth" class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>City</label>
+                        <label class="required-label">City</label>
                         <input type="text" name="city" class="form-control" placeholder="Location">
                     </div>
 
                     <div class="form-group">
-                        <label>State</label>
+                        <label class="required-label">State</label>
                         <input type="text" name="state" class="form-control" placeholder="State">
                     </div>
 
                     <div class="form-group">
-                        <label>Zip</label>
+                        <label class="required-label">Zip</label>
                         <input type="text" name="zip" class="form-control" placeholder="Zip">
                     </div>
 
                     <div class="form-group">
-                        <label>File upload</label>
+                        <label>Profile</label>
                         <div class="input-group">
                             <input type="file" id="profileInput" name="profile" style="display: none;">
                             <input type="text" class="form-control file-upload-info" id="fileName" placeholder="Upload Image" readonly>
@@ -167,7 +173,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Address</label>
+                        <label class="required-label">Address</label>
                         <textarea name="address" class="form-control" rows="4"></textarea>
                     </div>
                 </div>
@@ -195,12 +201,12 @@
 
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Name</label>
+                        <label class="required-label">Name</label>
                         <input type="text" name="name" value="{{ $user->name }}" class="form-control" placeholder="Name" >
                     </div>
 
                     <div class="form-group">
-                        <label>Email address</label>
+                        <label class="required-label">Email address</label>
                         <input type="email" name="email" value="{{ $user->email }}" class="form-control" placeholder="Email" >
                     </div>
 
@@ -210,7 +216,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Role</label>
+                        <label class="required-label">Role</label>
                         <select name="role_id" class="form-control">
                             @foreach($roles as $role)
                                 <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
@@ -221,7 +227,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Status</label>
+                        <label class="required-label">Status</label>
                         <select name="status" class="form-control">
                             <option value="1" {{ $user->status == 1 ? 'selected' : '' }}>Active</option>
                             <option value="0" {{ $user->status == 0 ? 'selected' : '' }}>Inactive</option>
@@ -229,27 +235,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Date of Birth</label>
+                        <label class="required-label">Date of Birth</label>
                         <input type="date" name="date_of_birth" value="{{ $user->date_of_birth }}" class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>City</label>
+                        <label class="required-label">City</label>
                         <input type="text" name="city" value="{{ $user->city }}" class="form-control" placeholder="Location">
                     </div>
 
                     <div class="form-group">
-                        <label>State</label>
+                        <label class="required-label">State</label>
                         <input type="text" name="state" value="{{ $user->state }}" class="form-control" placeholder="State">
                     </div>
 
                     <div class="form-group">
-                        <label>Zip</label>
+                        <label class="required-label">Zip</label>
                         <input type="text" name="zip" value="{{ $user->zip }}" class="form-control" placeholder="Zip">
                     </div>
 
                     <div class="form-group">
-                        <label>File upload</label>
+                        <label>Profile</label>
                         <div class="input-group">
                             <input type="file" id="profileInput_{{ $user->id }}" name="profile" style="display: none;">
                             <input type="text" class="form-control file-upload-info"
@@ -265,7 +271,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Textarea</label>
+                        <label class="required-label">Address</label>
                         <textarea name="address" class="form-control" rows="4">{{ $user->address }}</textarea>
                     </div>
                 </div>
@@ -281,105 +287,188 @@
 @endforeach
 
 <script>
-// File input display
-document.addEventListener('change', function(e) {
-    if (e.target.type === 'file') {
-        let id = e.target.id.replace('profileInput', 'fileName');
-        let fileInput = document.getElementById(id);
-        if (fileInput && e.target.files.length > 0) {
-            fileInput.value = e.target.files[0].name;
-        }
+function waitForJQuery(callback) {
+    if (typeof $ !== 'undefined') {
+        callback();
+    } else {
+        setTimeout(function () { waitForJQuery(callback); }, 50);
     }
-});
+}
 
-//  CREATE MODAL VALIDATION
-document.getElementById('createUserForm').addEventListener('submit', function(e) {
-    const requiredFields = [
-        { name: 'name',     label: 'Name' },
-        { name: 'email',    label: 'Email' },
-        { name: 'password', label: 'Password' },
-        { name: 'role_id',  label: 'Role' },
-        { name: 'status',   label: 'Status' },
-        { name: 'date_of_birth', label: 'Date of Birth' },
-        { name: 'city',     label: 'City' },
-        { name: 'state',    label: 'State' },
-        { name: 'zip',      label: 'Zip' },
-        { name: 'address',  label: 'Address' },
-    ];
+waitForJQuery(function () {
 
-    let valid = true;
-
-    // Clear previous errors
-    this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-    this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-
-    requiredFields.forEach(field => {
-        const el = this.querySelector(`[name="${field.name}"]`);
-        if (el && !el.value.trim()) {
-            el.classList.add('is-invalid');
-            const msg = document.createElement('div');
-            msg.className = 'invalid-feedback';
-            msg.textContent = `${field.label} is required.`;
-            el.parentNode.appendChild(msg);
-            valid = false;
+    // File input display
+    $(document).on('change', 'input[type="file"]', function () {
+        let id = this.id.replace('profileInput', 'fileName');
+        let fileInput = document.getElementById(id);
+        if (fileInput && this.files.length > 0) {
+            fileInput.value = this.files[0].name;
         }
     });
 
-    if (!valid) {
-        e.preventDefault();
-        e.stopPropagation();
+    // Clear errors
+    function clearErrors(modal) {
+        $(modal).find('.is-invalid').removeClass('is-invalid');
+        $(modal).find('.invalid-feedback').remove();
     }
-});
 
-//  EDIT MODAL VALIDATION
-document.querySelectorAll('.editUserForm').forEach(function(form) {
-    form.addEventListener('submit', function(e) {
-        const requiredFields = [
-            { name: 'name',     label: 'Name' },
-            { name: 'email',    label: 'Email' },
-            { name: 'role_id',  label: 'Role' },
-            { name: 'status',   label: 'Status' },
-            { name: 'date_of_birth', label: 'Date of Birth' },
-            { name: 'city',     label: 'City' },
-            { name: 'state',    label: 'State' },
-            { name: 'zip',      label: 'Zip' },
-            { name: 'address',  label: 'Address' },
-        ];
+    // Show Laravel errors in modal
+    function showErrors(modal, errors) {
+        $.each(errors, function (field, messages) {
+            const el = $(modal).find('[name="' + field + '"]');
+            el.addClass('is-invalid');
+            el.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+        });
+    }
 
+    // CREATE modal — clear on open
+    $('#createModal').on('show.bs.modal', function () {
+        clearErrors(this);
+        $(this).find('input:not([type="hidden"])').val('');
+        $(this).find('textarea').val('');
+        $(this).find('select').prop('selectedIndex', 0);
+        $(this).find('.file-upload-info').val('');
+    });
 
-        let valid = true;
+    // EDIT modals — clear errors + store originals on open
+    $('[id^="editModal"]').on('show.bs.modal', function () {
+        clearErrors(this);
+        $(this).find('input:not([type="hidden"]), textarea, select').each(function () {
+            $(this).data('orig', $(this).val());
+        });
+    });
 
-        // Clear previous errors
-        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    // EDIT modals — restore if not submitted
+    $('[id^="editModal"]').on('hide.bs.modal', function () {
+        if (!$(this).data('submitted')) {
+            $(this).find('input:not([type="hidden"]), textarea, select').each(function () {
+                $(this).val($(this).data('orig') || '');
+            });
+            $(this).find('.file-upload-info').val('');
+            clearErrors(this);
+        }
+        $(this).data('submitted', false);
+    });
 
-        requiredFields.forEach(field => {
-            const el = this.querySelector(`[name="${field.name}"]`);
-            if (el && !el.value.trim()) {
-                el.classList.add('is-invalid');
-                const msg = document.createElement('div');
-                msg.className = 'invalid-feedback';
-                msg.textContent = `${field.label} is required.`;
-                el.parentNode.appendChild(msg);
-                valid = false;
+    // CREATE FORM AJAX SUBMIT
+    $('#createUserForm').on('submit', function (e) {
+        e.preventDefault();
+        clearErrors(this);
+
+        const form = this;
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    $('#createModal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Created!',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(function () {
+                        location.reload();
+                    });
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors(form, xhr.responseJSON.errors);
+                }
             }
         });
-
-        if (!valid) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
     });
-});
 
-// Clear errors when modal is closed/reopened
-document.querySelectorAll('.modal').forEach(function(modal) {
-    modal.addEventListener('hidden.bs.modal', function() {
-        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    // EDIT FORM AJAX SUBMIT
+    $(document).on('submit', '.editUserForm', function (e) {
+        e.preventDefault();
+        const modal = $(this).closest('.modal');
+        clearErrors(modal);
+
+        const form = this;
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    modal.data('submitted', true);
+                    modal.modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(function () {
+                        location.reload();
+                    });
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors(form, xhr.responseJSON.errors);
+                }
+            }
+        });
     });
-});
 
+    // DELETE WITH SWAL CONFIRMATION
+    $(document).on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This user will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: res.success,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(function () {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+});
 </script>
 
 @endsection

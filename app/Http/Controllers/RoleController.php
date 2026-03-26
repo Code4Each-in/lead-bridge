@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
@@ -15,35 +16,37 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required'
         ]);
 
-        Role::create([
-            'name' => $request->name
-        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-        return redirect()->back()->with('success', 'Role created');
+        Role::create(['name' => $request->name]);
+
+        return response()->json(['success' => 'Role created successfully.']);
     }
 
     public function update(Request $request, $id)
     {
-        $role = Role::findOrFail($id);
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required'
         ]);
 
-        $role->update([
-            'name' => $request->name
-        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-        return redirect()->back()->with('success', 'Role updated');
+        Role::findOrFail($id)->update(['name' => $request->name]);
+
+        return response()->json(['success' => 'Role updated successfully.']);
     }
 
     public function destroy($id)
     {
         Role::findOrFail($id)->delete();
-        return redirect()->back()->with('success', 'Role deleted');
+        return response()->json(['success' => 'Role deleted successfully.']);
     }
 }
