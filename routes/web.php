@@ -18,12 +18,15 @@ Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth')->na
 Route::middleware(['auth'])->group(function () {
     Route::resource('/dashboard', DashboardController::class);
 });
+Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
 Route::post('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
 Route::get('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
-
+});
+Route::middleware(['auth'])->group(function () {
 Route::get('/roles', [RoleController::class, 'index']);
 Route::post('/roles/store', [RoleController::class, 'store'])->name('roles.store');
 Route::post('/roles/update/{id}', [RoleController::class, 'update'])->name('roles.update');
 Route::get('/roles/delete/{id}', [RoleController::class, 'destroy'])->name('roles.delete');
+});
