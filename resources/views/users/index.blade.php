@@ -101,17 +101,17 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Name" required>
+                        <input type="text" name="name" class="form-control" placeholder="Name" >
                     </div>
 
                     <div class="form-group">
                         <label>Email address</label>
-                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                        <input type="email" name="email" class="form-control" placeholder="Email" >
                     </div>
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                        <input type="password" name="password" class="form-control" placeholder="Password" >
                     </div>
 
                     <div class="form-group">
@@ -167,7 +167,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Textarea</label>
+                        <label>Address</label>
                         <textarea name="address" class="form-control" rows="4"></textarea>
                     </div>
                 </div>
@@ -196,12 +196,12 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Name</label>
-                        <input type="text" name="name" value="{{ $user->name }}" class="form-control" placeholder="Name" required>
+                        <input type="text" name="name" value="{{ $user->name }}" class="form-control" placeholder="Name" >
                     </div>
 
                     <div class="form-group">
                         <label>Email address</label>
-                        <input type="email" name="email" value="{{ $user->email }}" class="form-control" placeholder="Email" required>
+                        <input type="email" name="email" value="{{ $user->email }}" class="form-control" placeholder="Email" >
                     </div>
 
                     <div class="form-group">
@@ -281,6 +281,7 @@
 @endforeach
 
 <script>
+// File input display
 document.addEventListener('change', function(e) {
     if (e.target.type === 'file') {
         let id = e.target.id.replace('profileInput', 'fileName');
@@ -290,6 +291,95 @@ document.addEventListener('change', function(e) {
         }
     }
 });
+
+//  CREATE MODAL VALIDATION
+document.getElementById('createUserForm').addEventListener('submit', function(e) {
+    const requiredFields = [
+        { name: 'name',     label: 'Name' },
+        { name: 'email',    label: 'Email' },
+        { name: 'password', label: 'Password' },
+        { name: 'role_id',  label: 'Role' },
+        { name: 'status',   label: 'Status' },
+        { name: 'date_of_birth', label: 'Date of Birth' },
+        { name: 'city',     label: 'City' },
+        { name: 'state',    label: 'State' },
+        { name: 'zip',      label: 'Zip' },
+        { name: 'address',  label: 'Address' },
+    ];
+
+    let valid = true;
+
+    // Clear previous errors
+    this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+    requiredFields.forEach(field => {
+        const el = this.querySelector(`[name="${field.name}"]`);
+        if (el && !el.value.trim()) {
+            el.classList.add('is-invalid');
+            const msg = document.createElement('div');
+            msg.className = 'invalid-feedback';
+            msg.textContent = `${field.label} is required.`;
+            el.parentNode.appendChild(msg);
+            valid = false;
+        }
+    });
+
+    if (!valid) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+});
+
+//  EDIT MODAL VALIDATION
+document.querySelectorAll('.editUserForm').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        const requiredFields = [
+            { name: 'name',     label: 'Name' },
+            { name: 'email',    label: 'Email' },
+            { name: 'role_id',  label: 'Role' },
+            { name: 'status',   label: 'Status' },
+            { name: 'date_of_birth', label: 'Date of Birth' },
+            { name: 'city',     label: 'City' },
+            { name: 'state',    label: 'State' },
+            { name: 'zip',      label: 'Zip' },
+            { name: 'address',  label: 'Address' },
+        ];
+
+
+        let valid = true;
+
+        // Clear previous errors
+        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+        requiredFields.forEach(field => {
+            const el = this.querySelector(`[name="${field.name}"]`);
+            if (el && !el.value.trim()) {
+                el.classList.add('is-invalid');
+                const msg = document.createElement('div');
+                msg.className = 'invalid-feedback';
+                msg.textContent = `${field.label} is required.`;
+                el.parentNode.appendChild(msg);
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+});
+
+// Clear errors when modal is closed/reopened
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('hidden.bs.modal', function() {
+        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    });
+});
+
 </script>
 
 @endsection

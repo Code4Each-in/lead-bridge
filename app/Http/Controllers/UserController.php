@@ -20,10 +20,17 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required',
-            'profile' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'name'          => 'required',
+            'email'         => 'required|email|unique:users',
+            'password'      => 'required',
+            'role_id'       => 'required',
+            'status'        => 'required',
+            'date_of_birth' => 'required|date',
+            'city'          => 'required',
+            'state'         => 'required',
+            'zip'           => 'required',
+            'address'       => 'required',
+            'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         $profilePath = null;
@@ -53,9 +60,16 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => 'required',
-            'email' => "required|email|unique:users,email,$id",
-            'profile' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'name'          => 'required',
+            'email'         => "required|email|unique:users,email,$id",
+            'role_id'       => 'required',
+            'status'        => 'required',
+            'date_of_birth' => 'required|date',
+            'city'          => 'required',
+            'state'         => 'required',
+            'zip'           => 'required',
+            'address'       => 'required',
+            'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         $data = $request->all();
