@@ -4,21 +4,18 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class UserMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
 
-        if (
-            $user &&
-            $user->role &&
-            strtolower(trim($user->role->name)) === 'super admin'
-        ) {
+        if ($user && strtolower($user->role->name) === 'user') {
             return $next($request);
         }
 
-    return response()->view('unauthorized', [], 403);
+        return response()->view('unauthorized', [], 403);
     }
 }

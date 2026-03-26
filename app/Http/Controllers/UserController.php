@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    
     public function index()
     {
         $users = User::with('role')->latest()->get();
@@ -99,5 +100,17 @@ public function destroy($id)
 {
     User::findOrFail($id)->delete();
     return response()->json(['success' => 'User deleted successfully.']);
+}
+public function toggleStatus($id)
+{
+    $user = User::findOrFail($id);
+    $user->status = !$user->status;
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'status' => $user->status,
+        'message' => $user->status ? 'User activated.' : 'User deactivated.'
+    ]);
 }
 }

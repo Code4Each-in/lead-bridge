@@ -95,6 +95,7 @@
               </ul>
             </div>
           </li> -->
+
           <li class="nav-item">
             <a class="nav-link" href="/roles">
               <i class="mdi mdi-shield-account menu-icon"></i>
@@ -107,6 +108,7 @@
                     <span class="menu-title">Users</span>
                 </a>
             </li>
+   
         </ul>
       </nav>
       <!-- partial -->

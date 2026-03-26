@@ -35,9 +35,8 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Role</th>
-                                    <th>Status</th>
                                     <th>Address</th>
-                                    <th>Profile</th>
+                                    <th>Status</th>
                                     <th width="180">Action</th>
                                 </tr>
                             </thead>
@@ -48,13 +47,6 @@
                                     <td>{{ $user->email }}</td>
                                     <td>{{ $user->role->name ?? 'N/A' }}</td>
                                     <td>
-                                        @if($user->status)
-                                            <span class="badge badge-success">Active</span>
-                                        @else
-                                            <span class="badge badge-danger">Inactive</span>
-                                        @endif
-                                    </td>
-                                    <td>
                                         {{ collect([
                                             $user->address,
                                             $user->city,
@@ -63,11 +55,17 @@
                                         ])->filter()->implode(', ') }}
                                     </td>
                                     <td>
-                                        @if($user->profile)
-                                            <img src="{{ asset('storage/' . $user->profile) }}" width="40" height="40" style="border-radius:50%;">
-                                        @else
-                                            N/A
-                                        @endif
+                                        <div class="custom-control custom-switch">
+                                            <input
+                                                type="checkbox"
+                                                class="custom-control-input toggle-status"
+                                                id="status_{{ $user->id }}"
+                                                data-id="{{ $user->id }}"
+                                                data-url="{{ route('users.toggleStatus', $user->id) }}"
+                                                {{ $user->status ? 'checked' : '' }}
+                                            >
+                                            <label class="custom-control-label" for="status_{{ $user->id }}"></label>
+                                        </div>
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-info"
@@ -93,7 +91,7 @@
     </div>
 </div>
 
-<!--=============== Create User Modal -->
+<!-- Create User Modal -->
 <div class="modal fade" id="createModal">
     <div class="modal-dialog modal-lg">
         <form  id="createUserForm" method="POST" class="forms-sample" action="{{ route('users.store') }}" enctype="multipart/form-data">
@@ -467,8 +465,38 @@ waitForJQuery(function () {
             }
         });
     });
+    // TOGGLE STATUS
+    $(document).on('change', '.toggle-status', function () {
+        const checkbox = $(this);
+        const url = checkbox.data('url');
 
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (res) {
+                Swal.fire({
+                    icon: 'success',
+                    title: res.status ? 'Activated!' : 'Deactivated!',
+                    text: res.message,
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+            },
+            error: function () {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Could not update status.'
+                });
+            }
+        });
+    });
 });
+
 </script>
 
 @endsection
