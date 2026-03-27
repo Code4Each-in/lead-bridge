@@ -2,7 +2,13 @@
 @section('title', 'Agencies')
 @section('subtitle', 'Agencies')
 @section('content')
+<style>
+    .required-label::after {
+        content: ' *';
+        color: red;
+    }
 
+</style>
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
