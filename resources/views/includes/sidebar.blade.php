@@ -95,6 +95,7 @@
               </ul>
             </div>
           </li> -->
+@if(auth()->user()->role_id == 1)
 
           <li class="nav-item">
             <a class="nav-link" href="/roles">
@@ -102,13 +103,14 @@
               <span class="menu-title">Roles</span>
             </a>
           </li>
+          @endif
             <li class="nav-item">
                 <a class="nav-link" href="/users">
                     <i class="mdi mdi-account menu-icon icon-head"></i>
                     <span class="menu-title">Users</span>
                 </a>
             </li>
-   
+
         </ul>
       </nav>
       <!-- partial -->
