@@ -79,6 +79,7 @@
     </div>
 </div>
 
+
 <!-- Edit Modals -->
 @foreach($roles as $role)
 <div class="modal fade" id="editModal{{ $role->id }}" tabindex="-1">
