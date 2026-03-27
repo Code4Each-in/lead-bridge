@@ -95,12 +95,18 @@
               </ul>
             </div>
           </li> -->
-@if(auth()->user()->role_id == 1)
+         @if(auth()->user()->role_id == 1)
 
           <li class="nav-item">
             <a class="nav-link" href="/roles">
               <i class="mdi mdi-shield-account menu-icon"></i>
               <span class="menu-title">Roles</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/agencies">
+              <i class="mdi  mdi-account-multiple menu-icon "></i>
+              <span class="menu-title">Agencies </span>
             </a>
           </li>
           @endif

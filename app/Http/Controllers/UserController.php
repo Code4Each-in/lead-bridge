@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agency;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
@@ -10,13 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    
+
     public function index()
     {
         $users = User::with('role')->latest()->get();
         $roles = Role::all();
+        $agencies = Agency::all();
 
-        return view('users.index', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles', 'agencies'));
     }
 
 public function store(Request $request)
@@ -32,6 +34,7 @@ public function store(Request $request)
         'state'         => 'required',
         'zip'           => 'required',
         'address'       => 'required',
+        'agency_id'    => 'required|exists:agencies,id',
         'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 
@@ -54,6 +57,7 @@ public function store(Request $request)
         'state'         => $request->state,
         'zip'           => $request->zip,
         'address'       => $request->address,
+        'agency_id' => $request->agency_id,
         'date_of_birth' => $request->date_of_birth,
         'profile'       => $profilePath
     ]);
@@ -73,6 +77,7 @@ public function update(Request $request, $id)
         'state'         => 'required',
         'zip'           => 'required',
         'address'       => 'required',
+        'agency_id'     => 'nullable|exists:agencies,id',
         'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 
@@ -81,7 +86,11 @@ public function update(Request $request, $id)
     }
 
     $user = User::findOrFail($id);
+
     $data = $request->except('_token', 'password', 'profile');
+
+    
+    $data['agency_id'] = $request->agency_id;
 
     if ($request->password) {
         $data['password'] = Hash::make($request->password);

@@ -35,6 +35,7 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Address</th>
+                                    <th>Agency</th>
                                     <th>Status</th>
                                     <th width="180">Action</th>
                                 </tr>
@@ -53,6 +54,8 @@
                                             $user->zip
                                         ])->filter()->implode(', ') }}
                                     </td>
+                                    <td>{{ $user->agency->agency_name ?? 'N/A' }}</td>
+
                                     <td>
                                         <div class="custom-control custom-switch">
                                             <input
@@ -153,7 +156,18 @@
                         <label class="required-label">Zip</label>
                         <input type="text" name="zip" class="form-control" placeholder="Zip">
                     </div>
-
+                    <div class="form-group">
+                        <label>Agency</label>
+                        <select name="agency_id" class="form-control">
+                            <option value="">Select Agency</option>
+                            @foreach($agencies as $agency)
+                                <option value="{{ $agency->id }}"
+                                    {{ isset($user) && $user->agency_id == $agency->id ? 'selected' : '' }}>
+                                    {{ $agency->agency_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">
@@ -249,7 +263,18 @@
                         <label class="required-label">Zip</label>
                         <input type="text" name="zip" value="{{ $user->zip }}" class="form-control" placeholder="Zip">
                     </div>
-
+                    <div class="form-group">
+                        <label>Agency</label>
+                        <select name="agency_id" class="form-control">
+                            <option value="">Select Agency</option>
+                            @foreach($agencies as $agency)
+                                <option value="{{ $agency->id }}"
+                                    {{ $user->agency_id == $agency->id ? 'selected' : '' }}>
+                                    {{ $agency->agency_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">

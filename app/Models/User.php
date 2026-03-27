@@ -29,6 +29,7 @@ class User extends Authenticatable
         'city',
         'state',
         'zip',
+        'agency_id',
         'date_of_birth'
     ];
 
@@ -59,5 +60,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
-
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class);
+    }
 }

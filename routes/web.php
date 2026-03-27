@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgencyController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
@@ -35,4 +36,10 @@ Route::post('users/toggle-status/{id}', [UserController::class, 'toggleStatus'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+Route::middleware('auth')->group(function () {
+    Route::get('/agencies', [AgencyController::class, 'index'])->name('agencies.index');
+    Route::post('/agencies/store', [AgencyController::class, 'store'])->name('agencies.store');
+    Route::post('/agencies/update/{id}', [AgencyController::class, 'update'])->name('agencies.update');
+    Route::get('/agencies/delete/{id}', [AgencyController::class, 'destroy'])->name('agencies.delete');
 });
