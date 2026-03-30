@@ -18,3 +18,7 @@
 <!-- endinject -->
 <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
 <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
+<link href="//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
+

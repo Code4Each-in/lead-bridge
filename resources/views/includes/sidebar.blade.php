@@ -116,6 +116,12 @@
                     <span class="menu-title">Users</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/leads">
+                    <i class="mdi mdi-chart-bar menu-icon icon-head"></i>
+                    <span class="menu-title">Leads</span>
+                </a>
+            </li>
 
         </ul>
       </nav>

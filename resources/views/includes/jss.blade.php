@@ -1,3 +1,6 @@
+<!--  -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 <!-- plugins:js -->
 <script src="{{ asset('assets/js/vendor.bundle.base.js') }}"></script>
@@ -20,3 +23,4 @@
 <script src="{{ asset('assets/js/dashboard.js') }}"></script>
 <script src="{{ asset('assets/js/Chart.roundedBarCharts.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

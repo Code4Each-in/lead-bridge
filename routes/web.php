@@ -4,6 +4,7 @@ use App\Http\Controllers\AgencyController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -42,4 +43,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/agencies/store', [AgencyController::class, 'store'])->name('agencies.store');
     Route::post('/agencies/update/{id}', [AgencyController::class, 'update'])->name('agencies.update');
     Route::get('/agencies/delete/{id}', [AgencyController::class, 'destroy'])->name('agencies.delete');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/leads',[LeadController::class, 'index'])->name('leads.index');
+    Route::post('/leads',[LeadController::class, 'store'])->name('leads.store');
+    Route::post('/leads/{id}/update',[LeadController::class, 'update'])->name('leads.update');
+    Route::get('/leads/{id}/delete',[LeadController::class, 'destroy'])->name('leads.delete');
+
 });

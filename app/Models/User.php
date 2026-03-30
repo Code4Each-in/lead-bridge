@@ -63,5 +63,10 @@ class User extends Authenticatable
     public function agency()
     {
         return $this->belongsTo(Agency::class);
+
     }
+    public function leads()
+{
+    return $this->belongsToMany(Lead::class);
+}
 }
