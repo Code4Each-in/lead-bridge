@@ -95,7 +95,7 @@
               </ul>
             </div>
           </li> -->
-         @if(auth()->user()->role_id == 1)
+        @if(strtolower(auth()->user()->role->name) == 'super admin')
 
           <li class="nav-item">
             <a class="nav-link" href="/roles">
@@ -109,13 +109,14 @@
               <span class="menu-title">Agencies </span>
             </a>
           </li>
-          @endif
+
             <li class="nav-item">
                 <a class="nav-link" href="/users">
                     <i class="mdi mdi-account menu-icon icon-head"></i>
                     <span class="menu-title">Users</span>
                 </a>
             </li>
+        @endif
             <li class="nav-item">
                 <a class="nav-link" href="/leads">
                     <i class="mdi mdi-chart-bar menu-icon icon-head"></i>

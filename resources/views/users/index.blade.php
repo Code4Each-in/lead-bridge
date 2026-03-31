@@ -70,7 +70,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-info"
+                                        <button class="btn btn-sm btn-primary"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $user->id }}">
                                             <i class="mdi mdi-pencil-box"></i> Edit

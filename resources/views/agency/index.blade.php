@@ -42,7 +42,7 @@
                                     {{ $agency->address }}, {{ $agency->city }}, {{ $agency->state }} - {{ $agency->zip }}
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal{{ $agency->id }}">
+                                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal{{ $agency->id }}">
                                        <i class="mdi mdi-pencil-box"></i> Edit
                                     </button>
                                     <a href="{{ route('agencies.delete', $agency->id) }}" class="btn btn-sm btn-danger btn-delete">
@@ -108,7 +108,7 @@
                 </div>
 
                     <div class="modal-footer">
-                        <button class="btn btn-primary">Save User</button>
+                        <button class="btn btn-primary">Save Agency</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
 

@@ -7,7 +7,36 @@
         content: ' *';
         color: red;
     }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    font-size: 13px !important;
+    padding: 4px 4px !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    padding: 5px !important;
+    padding-left: 20px !important;
+
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+        font-size: 12px !important;
+    }
+    .select2-container--default.select2-container--disabled .select2-selection--multiple {
+        background-color: #ffffff !important;
+        padding: 11px !important;
+        border: 1px solid #ced4da   !important;
+    }
+    .select2-container--default .select2-search--inline .select2-search__field {
+        font-size: 14px !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__clear{
+        margin-top: 1px !important;
+        color: #ced4da;
+    }
+
 </style>
+
+@php
+    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin', 'admin']);
+@endphp
 
 <div class="row">
     <div class="col-md-12 grid-margin">
@@ -62,7 +91,7 @@
                                 </td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-info edit-lead-btn"
+                                    <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $lead->id }}">
                                         <i class="mdi mdi-pencil-box"></i> Edit
@@ -83,7 +112,7 @@
     </div>
 </div>
 
-<!-- create modal -->
+<!--  CREATE MODAL = -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form id="createLeadForm" enctype="multipart/form-data">
@@ -141,7 +170,8 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4">
+                        {{-- Status: full-width for user role, 4-col for admin --}}
+                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
                                 <select name="status" class="form-control">
@@ -152,33 +182,53 @@
                             </div>
                         </div>
 
-                        {{-- Agency (drives user dropdown) --}}
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-label">Agency</label>
-                                <select name="agency_id"
-                                        id="create_agency_select"
-                                        class="form-control agency-select">
-                                    <option value="">-- Select Agency --</option>
-                                    @foreach($agencies as $agency)
-                                        <option value="{{ $agency->id }}">{{ $agency->agency_name }}</option>
-                                    @endforeach
-                                </select>
+                        @if($isAdminOrSuper)
+                            {{-- Agency (admin/super admin only) --}}
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-label">Agency</label>
+                                    <select name="agency_id"
+                                            id="create_agency_select"
+                                            class="form-control agency-select">
+                                        <option value="">--Select Agency--</option>
+                                        @foreach($agencies as $agency)
+                                            <option value="{{ $agency->id }}">{{ $agency->agency_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        {{-- Assigned user (single, populated by agency) --}}
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-label">Assign User</label>
-                                <select name="assigned_user_id[]"
-                                        id="create_user_select"
-                                        class="form-control user-select"
-                                        multiple>
-                                    <option value="">-- Select Agency First --</option>
-                                </select>
+                            {{-- Assign User (populated by agency change) --}}
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-label">Assign User</label>
+                                    <select name="assigned_user_id[]"
+                                            id="create_user_select"
+                                            class="form-control user-select"
+                                            multiple>
+                                        <option value="">-- Select Agency First --</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            {{-- Hidden agency for user role (auto-filled server-side) --}}
+                            {{-- No agency input shown; agency_id injected in controller --}}
+
+                            {{-- Assign User: pre-loaded with same-agency users --}}
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="required-label">Assign User</label>
+                                    <select name="assigned_user_id[]"
+                                            id="create_user_select"
+                                            class="form-control user-select"
+                                            multiple>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="form-group">
@@ -188,7 +238,17 @@
 
                     <div class="form-group">
                         <label>Document</label>
-                        <input type="file" name="documents" class="form-control-file">
+                        <div class="input-group">
+                            <input type="file" id="documentInput_create" name="documents" style="display: none;">
+                            <input type="text" class="form-control file-upload-info" id="documentName_create"
+                                placeholder="Upload Document" readonly>
+                            <span class="input-group-append">
+                                <button class="file-upload-browse btn btn-primary" type="button"
+                                    onclick="document.getElementById('documentInput_create').click();">
+                                    Upload
+                                </button>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -201,7 +261,7 @@
     </div>
 </div>
 
-<!-- edit modal -->
+<!--  EDIT MODALS = -->
 @foreach($leads as $lead)
 <div class="modal fade" id="editModal{{ $lead->id }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -263,7 +323,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
                                 <select name="status" class="form-control">
@@ -274,43 +334,64 @@
                             </div>
                         </div>
 
-                        {{-- Agency (drives user dropdown) --}}
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-label">Agency</label>
-                                <select name="agency_id"
-                                        class="form-control agency-select"
-                                        data-user-target="edit_user_{{ $lead->id }}"
-                                        data-selected-users="{{ json_encode($lead->users->pluck('id')->toArray()) }}">
-                                    <option value="">-- Select Agency --</option>
-                                    @foreach($agencies as $agency)
-                                        <option value="{{ $agency->id }}"
-                                                {{ $lead->agency_id == $agency->id ? 'selected' : '' }}>
-                                            {{ $agency->agency_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        @if($isAdminOrSuper)
+                            {{-- Agency (admin/super admin only) --}}
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-label">Agency</label>
+                                    <select name="agency_id"
+                                            class="form-control agency-select"
+                                            data-user-target="edit_user_{{ $lead->id }}"
+                                            data-selected-users="{{ json_encode($lead->users->pluck('id')->toArray()) }}">
+                                        <option value="">-- Select Agency --</option>
+                                        @foreach($agencies as $agency)
+                                            <option value="{{ $agency->id }}"
+                                                    {{ $lead->agency_id == $agency->id ? 'selected' : '' }}>
+                                                {{ $agency->agency_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        {{-- Assigned users (multiple, pre-filled from pivot) --}}
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="required-label">Assign User</label>
-                                @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
-                                <select name="assigned_user_id[]"
-                                        id="edit_user_{{ $lead->id }}"
-                                        class="form-control user-select"
-                                        multiple>
-                                    @foreach($users->where('agency_id', $lead->agency_id) as $user)
-                                        <option value="{{ $user->id }}"
-                                                {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            {{-- Assigned users (admin/super admin) --}}
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="required-label">Assign User</label>
+                                    @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
+                                    <select name="assigned_user_id[]"
+                                            id="edit_user_{{ $lead->id }}"
+                                            class="form-control user-select"
+                                            multiple>
+                                        @foreach($users->where('agency_id', $lead->agency_id) as $user)
+                                            <option value="{{ $user->id }}"
+                                                    {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            {{-- User role: show same-agency users, pre-select existing --}}
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="required-label">Assign User</label>
+                                    @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
+                                    <select name="assigned_user_id[]"
+                                            id="edit_user_{{ $lead->id }}"
+                                            class="form-control user-select"
+                                            multiple>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}"
+                                                    {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="form-group">
@@ -327,7 +408,18 @@
                                 </small>
                             </div>
                         @endif
-                        <input type="file" name="documents" class="form-control-file">
+                        <div class="input-group">
+                            <input type="file" id="documentInput_{{ $lead->id }}" name="documents" style="display: none;">
+                            <input type="text" class="form-control file-upload-info"
+                                id="documentName_{{ $lead->id }}"
+                                placeholder="Upload Document" readonly>
+                            <span class="input-group-append">
+                                <button class="file-upload-browse btn btn-primary" type="button"
+                                    onclick="document.getElementById('documentInput_{{ $lead->id }}').click();">
+                                    Upload
+                                </button>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -342,58 +434,89 @@
 @endforeach
 
 <script>
+
 const ALL_USERS = {!! json_encode($users->map(function($u) {
     return ['id' => $u->id, 'name' => $u->name, 'agency_id' => $u->agency_id];
 })) !!};
+
+const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
 </script>
 
 <script>
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
-
-    function initSelect2($el, parentModal = null) {
-        if ($el.hasClass('select2-hidden-accessible')) {
-            $el.select2('destroy');
-        }
-
-        $el.select2({
+    // Initialize Select2 on all user selects for user-role (no agency dependency)
+    if (!IS_ADMIN_OR_SUPER) {
+        $('#create_user_select').select2({
             width: '100%',
-            dropdownParent: parentModal ? parentModal : $(document.body),
+            dropdownParent: $('#createModal'),
             placeholder: 'Select users...',
             allowClear: true
         });
+
+        $('.user-select').each(function () {
+            const $sel    = $(this);
+            const $modal  = $sel.closest('.modal');
+            $sel.select2({
+                width: '100%',
+                dropdownParent: $modal.length ? $modal : $(document.body),
+                placeholder: 'Select users...',
+                allowClear: true
+            });
+        });
     }
 
-
     function populateUsers(targetId, agencyId, selectedIds) {
-        const $sel = $('#' + targetId);
-        // Normalise to array of strings for easy comparison
+        const $sel    = $('#' + targetId);
         const selected = (selectedIds || []).map(String);
+
+        if ($sel.hasClass('select2-hidden-accessible')) {
+            $sel.select2('destroy');
+        }
 
         $sel.empty();
 
         if (!agencyId) {
+            $sel.append('<option value="">-- Please select an Agency first --</option>');
             $sel.prop('disabled', true);
-        } else {
-            const filtered = ALL_USERS.filter(u => String(u.agency_id) === String(agencyId));
-
-            if (filtered.length) {
-                filtered.forEach(function (u) {
-                    const isSelected = selected.includes(String(u.id)) ? 'selected' : '';
-                    $sel.append(`<option value="${u.id}" ${isSelected}>${u.name}</option>`);
-                });
-                $sel.prop('disabled', false);
-            } else {
-                $sel.append('<option value="" disabled>No users in this agency</option>');
-                $sel.prop('disabled', true);
-            }
+            $sel.select2({
+                width: '100%',
+                placeholder: '-- Please select an Agency first --',
+                allowClear: false
+            });
+            return;
         }
 
-        // Re-init Select2 after DOM update
-        initSelect2($sel);
+        const filtered = ALL_USERS.filter(u => String(u.agency_id) === String(agencyId));
+
+        if (filtered.length) {
+            $sel.append('<option value="">-- Select users --</option>');
+            filtered.forEach(function (u) {
+                const isSelected = selected.includes(String(u.id)) ? 'selected' : '';
+                $sel.append(`<option value="${u.id}" ${isSelected}>${u.name}</option>`);
+            });
+            $sel.prop('disabled', false);
+        } else {
+            $sel.append('<option value="" disabled>No users in this agency</option>');
+            $sel.prop('disabled', true);
+        }
+
+        const $parentModal = $sel.closest('.modal');
+
+        $sel.select2({
+            width: '100%',
+            dropdownParent: $parentModal.length ? $parentModal : $(document.body),
+            placeholder: '-- Select users --',
+            allowClear: true
+        });
+
+        if (selected.length) {
+            $sel.val(selected).trigger('change');
+        }
     }
 
+    // Agency change handler (only fires for admin/super admin)
     $(document).on('change', '.agency-select', function () {
         const agencyId = $(this).val();
 
@@ -401,57 +524,63 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
             populateUsers('create_user_select', agencyId, []);
         } else {
             const targetId    = $(this).data('user-target');
-            // data-selected-users is a JSON array e.g. [1,3]
             const selectedIds = $(this).data('selected-users') || [];
             populateUsers(targetId, agencyId, selectedIds);
         }
     });
 
-
+    // Create modal open
     $('#createModal').on('show.bs.modal', function () {
         const $form = $(this).find('#createLeadForm');
         $form[0].reset();
 
-        // Reset Select2 (IMPORTANT)
-        $('#create_agency_select').val('').trigger('change');
+        if (IS_ADMIN_OR_SUPER) {
+            $('#create_agency_select').val('').trigger('change');
+            $('#create_user_select')
+                .empty()
+                .append('<option value="">-- Select Agency First --</option>')
+                .val(null)
+                .trigger('change')
+                .prop('disabled', true);
+        } else {
+            // For user role, re-init Select2 and clear selection
+            const $userSel = $('#create_user_select');
+            if ($userSel.hasClass('select2-hidden-accessible')) {
+                $userSel.select2('destroy');
+            }
+            $userSel.val(null).select2({
+                width: '100%',
+                dropdownParent: $(this),
+                placeholder: 'Select users...',
+                allowClear: true
+            });
+        }
 
-        $('#create_user_select')
-            .empty()
-            .append('<option value="">-- Select Agency First --</option>')
-            .val(null)
-            .trigger('change')
-            .prop('disabled', true);
-
-        // Clear validation
         $form.find('.is-invalid').removeClass('is-invalid');
         $form.find('.invalid-feedback').remove();
     });
 
+    // Edit modal open
     $('.modal').on('show.bs.modal', function () {
         const $modal = $(this);
-
-        // Skip create modal (already handled)
         if ($modal.attr('id') === 'createModal') return;
 
         const $form = $modal.find('.editLeadForm');
+        if (!$form.length) return;
 
-        if ($form.length) {
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
 
-            // Clear old validation
-            $form.find('.is-invalid').removeClass('is-invalid');
-            $form.find('.invalid-feedback').remove();
-
-            // Re-trigger Select2 values properly
+        if (IS_ADMIN_OR_SUPER) {
             $modal.find('.agency-select').each(function () {
                 $(this).trigger('change');
             });
-
             $modal.find('.user-select').each(function () {
-                const selected = $(this).val();
-                $(this).val(selected).trigger('change');
+                $(this).val($(this).val()).trigger('change');
             });
         }
     });
+
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('.select2').css('width', '100%');
     });
@@ -463,13 +592,10 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 
     function showErrors($form, errors) {
         $.each(errors, function (field, messages) {
-            // Handle array fields like "assigned_user_id.0" → "assigned_user_id"
             const baseName = field.split('.')[0];
             const $input   = $form.find('[name="' + baseName + '"], [name="' + baseName + '[]"]').first();
-
             if ($input.length) {
                 $input.addClass('is-invalid');
-                // For Select2, mark the hidden original select too
                 $input.closest('.form-group')
                       .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
             }
@@ -516,7 +642,6 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
         });
     });
 
-
     $(document).on('submit', '.editLeadForm', function (e) {
         e.preventDefault();
 
@@ -558,7 +683,6 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
         });
     });
 
-
     $(document).on('click', '.btn-delete', function (e) {
         e.preventDefault();
         const url = $(this).attr('href');
@@ -595,6 +719,13 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
         });
     });
 
+    $(document).on('change', 'input[type="file"]', function () {
+        const id = this.id.replace('documentInput_', 'documentName_');
+        const nameField = document.getElementById(id);
+        if (nameField && this.files.length > 0) {
+            nameField.value = this.files[0].name;
+        }
+    });
 })();
 </script>
 

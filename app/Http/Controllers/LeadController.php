@@ -6,22 +6,37 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Models\Agency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
 {
     public function index()
     {
-        // Eager-load pivot users (many-to-many) + agency
+        $authUser = Auth::user();
+
         $leads    = Lead::with(['agency', 'users'])->latest()->get();
-        $users    = User::all();
         $agencies = Agency::all();
 
-        return view('leads.index', compact('leads', 'users', 'agencies'));
+        if (strtolower($authUser->role->name) === 'user') {
+            $users = User::where('agency_id', $authUser->agency_id)
+                         ->where('id', '!=', $authUser->id)
+                         ->get();
+        } else {
+            $users = User::all();
+        }
+
+        return view('leads.index', compact('leads', 'users', 'agencies', 'authUser'));
     }
 
     public function store(Request $request)
     {
+        $authUser = Auth::user();
+
+        if (strtolower($authUser->role->name) === 'user') {
+            $request->merge(['agency_id' => $authUser->agency_id]);
+        }
+
         $validator = Validator::make($request->all(), [
             'name'               => 'required|string|max:255',
             'phone'              => 'required|string|max:20',
@@ -59,7 +74,6 @@ class LeadController extends Controller
             'documents' => $file,
         ]);
 
-        // Sync pivot — stores all selected user IDs into lead_user table
         $lead->users()->sync($request->assigned_user_id);
 
         return response()->json(['success' => 'Lead created successfully']);
@@ -67,7 +81,12 @@ class LeadController extends Controller
 
     public function update(Request $request, $id)
     {
-        $lead = Lead::findOrFail($id);
+        $authUser = Auth::user();
+        $lead     = Lead::findOrFail($id);
+
+        if (strtolower($authUser->role->name) === 'user') {
+            $request->merge(['agency_id' => $authUser->agency_id]);
+        }
 
         $validator = Validator::make($request->all(), [
             'name'               => 'required|string|max:255',
@@ -99,7 +118,6 @@ class LeadController extends Controller
 
         $lead->update($data);
 
-        // Sync pivot — replaces old user assignments with the new selection
         $lead->users()->sync($request->assigned_user_id);
 
         return response()->json(['success' => 'Lead updated successfully']);
