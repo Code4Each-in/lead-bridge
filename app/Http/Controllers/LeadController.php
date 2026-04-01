@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Agency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
@@ -129,5 +130,29 @@ class LeadController extends Controller
         $lead->delete();
 
         return response()->json(['success' => 'Lead deleted successfully']);
+    }
+         public function downloadTemplate()
+    {
+        $filename = 'leads_template.csv';
+
+        // Header row
+        $header = ['name','phone','email','company','city','source','status','agency_id','notes'];
+
+        // Example row (just a single row to show layout)
+        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','New','1','Test note'];
+
+        // Open output stream
+        $handle = fopen('php://temp', 'r+');
+        fputcsv($handle, $header);
+        fputcsv($handle, $exampleRow);
+        rewind($handle);
+
+        $contents = stream_get_contents($handle);
+        fclose($handle);
+
+        return Response::make($contents, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
     }
 }

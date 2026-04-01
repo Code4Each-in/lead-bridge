@@ -1,7 +1,6 @@
-@extends('layout')
-@section('title', 'Leads')
-@section('subtitle', 'Leads')
-@section('content')
+<?php $__env->startSection('title', 'Leads'); ?>
+<?php $__env->startSection('subtitle', 'Leads'); ?>
+<?php $__env->startSection('content'); ?>
 <style>
     .required-label::after {
         content: ' *';
@@ -34,9 +33,9 @@
 
 </style>
 
-@php
+<?php
     $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin', 'admin']);
-@endphp
+?>
 
 <div class="row">
     <div class="col-md-12 grid-margin">
@@ -51,8 +50,8 @@
                             Add Lead
                         </button>
 
-                        <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0">
-                            @csrf
+                        <form id="uploadExcelForm" action="<?php echo e(route('import')); ?>" method="POST" enctype="multipart/form-data" class="mb-0">
+                            <?php echo csrf_field(); ?>
                             <input
                                 type="file"
                                 name="file"
@@ -63,7 +62,7 @@
                             <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
                         </form>
 
-                        <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
+                        <a href="<?php echo e(route('leads.template')); ?>" class="btn btn-info">Download Template</a>
                     </div>
                 </div>
 
@@ -81,45 +80,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leads as $lead)
+                            <?php $__currentLoopData = $leads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <tr>
-                                <td>{{ $lead->name }}</td>
-                                <td>{{ $lead->company }}</td>
-                                <td>{{ $lead->agency->agency_name ?? '-' }}</td>
+                                <td><?php echo e($lead->name); ?></td>
+                                <td><?php echo e($lead->company); ?></td>
+                                <td><?php echo e($lead->agency->agency_name ?? '-'); ?></td>
                                 <td>
-                                    @forelse($lead->users as $user)
+                                    <?php $__empty_1 = true; $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                         <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
-                                            {{ $user->name }}
+                                            <?php echo e($user->name); ?>
+
                                         </span>
-                                    @empty
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                         <span class="text-muted">-</span>
-                                    @endforelse
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    @php
+                                    <?php
                                         $badgeClass = match($lead->status) {
                                             'New'         => 'badge-primary',
                                             'In Progress' => 'badge-warning',
                                             'Closed'      => 'badge-success',
                                             default       => 'badge-secondary',
                                         };
-                                    @endphp
-                                    <span class="badge {{ $badgeClass }}">{{ $lead->status }}</span>
+                                    ?>
+                                    <span class="badge <?php echo e($badgeClass); ?>"><?php echo e($lead->status); ?></span>
                                 </td>
-                                <td>{{ $lead->source }}</td>
+                                <td><?php echo e($lead->source); ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
-                                            data-target="#editModal{{ $lead->id }}">
+                                            data-target="#editModal<?php echo e($lead->id); ?>">
                                         <i class="mdi mdi-pencil-box"></i> Edit
                                     </button>
-                                    <a href="{{ route('leads.delete', $lead->id) }}"
+                                    <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
                                        class="btn btn-sm btn-danger btn-delete">
                                         <i class="mdi mdi-trash-can"></i> Delete
                                     </a>
                                 </td>
                             </tr>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </tbody>
                     </table>
                 </div>
@@ -133,7 +133,7 @@
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form id="createLeadForm" enctype="multipart/form-data">
-            @csrf
+            <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Lead</h5>
@@ -187,8 +187,8 @@
                     </div>
 
                     <div class="row">
-                        {{-- Status: full-width for user role, 4-col for admin --}}
-                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
+                        
+                        <div class="col-md-<?php echo e($isAdminOrSuper ? '4' : '12'); ?>">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
                                 <select name="status" class="form-control">
@@ -199,8 +199,8 @@
                             </div>
                         </div>
 
-                        @if($isAdminOrSuper)
-                            {{-- Agency (admin/super admin only) --}}
+                        <?php if($isAdminOrSuper): ?>
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
@@ -208,14 +208,14 @@
                                             id="create_agency_select"
                                             class="form-control agency-select">
                                         <option value="">--Select Agency--</option>
-                                        @foreach($agencies as $agency)
-                                            <option value="{{ $agency->id }}">{{ $agency->agency_name }}</option>
-                                        @endforeach
+                                        <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($agency->id); ?>"><?php echo e($agency->agency_name); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
 
-                            {{-- Assign User (populated by agency change) --}}
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
@@ -227,11 +227,11 @@
                                     </select>
                                 </div>
                             </div>
-                        @else
-                            {{-- Hidden agency for user role (auto-filled server-side) --}}
-                            {{-- No agency input shown; agency_id injected in controller --}}
+                        <?php else: ?>
+                            
+                            
 
-                            {{-- Assign User: pre-loaded with same-agency users --}}
+                            
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
@@ -239,13 +239,13 @@
                                             id="create_user_select"
                                             class="form-control user-select"
                                             multiple>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                        @endforeach
+                                        <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
 
                     <div class="form-group">
@@ -279,14 +279,14 @@
 </div>
 
 <!--  EDIT MODALS = -->
-@foreach($leads as $lead)
-<div class="modal fade" id="editModal{{ $lead->id }}" tabindex="-1">
+<?php $__currentLoopData = $leads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+<div class="modal fade" id="editModal<?php echo e($lead->id); ?>" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form class="editLeadForm"
-              data-id="{{ $lead->id }}"
-              data-url="{{ route('leads.update', $lead->id) }}"
+              data-id="<?php echo e($lead->id); ?>"
+              data-url="<?php echo e(route('leads.update', $lead->id)); ?>"
               enctype="multipart/form-data">
-            @csrf
+            <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Lead</h5>
@@ -298,13 +298,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">Name</label>
-                                <input type="text" name="name" value="{{ $lead->name }}" class="form-control" placeholder="Full Name">
+                                <input type="text" name="name" value="<?php echo e($lead->name); ?>" class="form-control" placeholder="Full Name">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">Phone</label>
-                                <input type="text" name="phone" value="{{ $lead->phone }}" class="form-control" placeholder="Phone">
+                                <input type="text" name="phone" value="<?php echo e($lead->phone); ?>" class="form-control" placeholder="Phone">
                             </div>
                         </div>
                     </div>
@@ -313,13 +313,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">Email</label>
-                                <input type="email" name="email" value="{{ $lead->email }}" class="form-control" placeholder="Email">
+                                <input type="email" name="email" value="<?php echo e($lead->email); ?>" class="form-control" placeholder="Email">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">Company</label>
-                                <input type="text" name="company" value="{{ $lead->company }}" class="form-control" placeholder="Company">
+                                <input type="text" name="company" value="<?php echo e($lead->company); ?>" class="form-control" placeholder="Company">
                             </div>
                         </div>
                     </div>
@@ -328,111 +328,114 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">City</label>
-                                <input type="text" name="city" value="{{ $lead->city }}" class="form-control" placeholder="City">
+                                <input type="text" name="city" value="<?php echo e($lead->city); ?>" class="form-control" placeholder="City">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="required-label">Source</label>
-                                <input type="text" name="source" value="{{ $lead->source }}" class="form-control" placeholder="Source">
+                                <input type="text" name="source" value="<?php echo e($lead->source); ?>" class="form-control" placeholder="Source">
                             </div>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
+                        <div class="col-md-<?php echo e($isAdminOrSuper ? '4' : '12'); ?>">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
                                 <select name="status" class="form-control">
-                                    <option value="New"         {{ $lead->status == 'New'         ? 'selected' : '' }}>New</option>
-                                    <option value="In Progress" {{ $lead->status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                                    <option value="Closed"      {{ $lead->status == 'Closed'      ? 'selected' : '' }}>Closed</option>
+                                    <option value="New"         <?php echo e($lead->status == 'New'         ? 'selected' : ''); ?>>New</option>
+                                    <option value="In Progress" <?php echo e($lead->status == 'In Progress' ? 'selected' : ''); ?>>In Progress</option>
+                                    <option value="Closed"      <?php echo e($lead->status == 'Closed'      ? 'selected' : ''); ?>>Closed</option>
                                 </select>
                             </div>
                         </div>
 
-                        @if($isAdminOrSuper)
-                            {{-- Agency (admin/super admin only) --}}
+                        <?php if($isAdminOrSuper): ?>
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
                                     <select name="agency_id"
                                             class="form-control agency-select"
-                                            data-user-target="edit_user_{{ $lead->id }}"
-                                            data-selected-users="{{ json_encode($lead->users->pluck('id')->toArray()) }}">
+                                            data-user-target="edit_user_<?php echo e($lead->id); ?>"
+                                            data-selected-users="<?php echo e(json_encode($lead->users->pluck('id')->toArray())); ?>">
                                         <option value="">-- Select Agency --</option>
-                                        @foreach($agencies as $agency)
-                                            <option value="{{ $agency->id }}"
-                                                    {{ $lead->agency_id == $agency->id ? 'selected' : '' }}>
-                                                {{ $agency->agency_name }}
+                                        <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($agency->id); ?>"
+                                                    <?php echo e($lead->agency_id == $agency->id ? 'selected' : ''); ?>>
+                                                <?php echo e($agency->agency_name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
 
-                            {{-- Assigned users (admin/super admin) --}}
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
-                                    @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
+                                    <?php $selectedUserIds = $lead->users->pluck('id')->toArray(); ?>
                                     <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
+                                            id="edit_user_<?php echo e($lead->id); ?>"
                                             class="form-control user-select"
                                             multiple>
-                                        @foreach($users->where('agency_id', $lead->agency_id) as $user)
-                                            <option value="{{ $user->id }}"
-                                                    {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
+                                        <?php $__currentLoopData = $users->where('agency_id', $lead->agency_id); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($user->id); ?>"
+                                                    <?php echo e(in_array($user->id, $selectedUserIds) ? 'selected' : ''); ?>>
+                                                <?php echo e($user->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
-                        @else
-                            {{-- User role: show same-agency users, pre-select existing --}}
+                        <?php else: ?>
+                            
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
-                                    @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
+                                    <?php $selectedUserIds = $lead->users->pluck('id')->toArray(); ?>
                                     <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
+                                            id="edit_user_<?php echo e($lead->id); ?>"
                                             class="form-control user-select"
                                             multiple>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}"
-                                                    {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
+                                        <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($user->id); ?>"
+                                                    <?php echo e(in_array($user->id, $selectedUserIds) ? 'selected' : ''); ?>>
+                                                <?php echo e($user->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
 
                     <div class="form-group">
                         <label class="required-label">Notes</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Notes">{{ $lead->notes }}</textarea>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Notes"><?php echo e($lead->notes); ?></textarea>
                     </div>
 
                     <div class="form-group">
                         <label>Document</label>
-                        @if($lead->documents)
+                        <?php if($lead->documents): ?>
                             <div class="mb-1">
                                 <small class="text-muted">
-                                    Current: <a href="{{ asset('storage/' . $lead->documents) }}" target="_blank">View File</a>
+                                    Current: <a href="<?php echo e(asset('storage/' . $lead->documents)); ?>" target="_blank">View File</a>
                                 </small>
                             </div>
-                        @endif
+                        <?php endif; ?>
                         <div class="input-group">
-                            <input type="file" id="documentInput_{{ $lead->id }}" name="documents" style="display: none;">
+                            <input type="file" id="documentInput_<?php echo e($lead->id); ?>" name="documents" style="display: none;">
                             <input type="text" class="form-control file-upload-info"
-                                id="documentName_{{ $lead->id }}"
+                                id="documentName_<?php echo e($lead->id); ?>"
                                 placeholder="Upload Document" readonly>
                             <span class="input-group-append">
                                 <button class="file-upload-browse btn btn-primary" type="button"
-                                    onclick="document.getElementById('documentInput_{{ $lead->id }}').click();">
+                                    onclick="document.getElementById('documentInput_<?php echo e($lead->id); ?>').click();">
                                     Upload
                                 </button>
                             </span>
@@ -448,15 +451,15 @@
         </form>
     </div>
 </div>
-@endforeach
+<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 <script>
 
-const ALL_USERS = {!! json_encode($users->map(function($u) {
+const ALL_USERS = <?php echo json_encode($users->map(function($u) {
     return ['id' => $u->id, 'name' => $u->name, 'agency_id' => $u->agency_id];
-})) !!};
+})); ?>;
 
-const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
+const IS_ADMIN_OR_SUPER = <?php echo e($isAdminOrSuper ? 'true' : 'false'); ?>;
 </script>
 
 <script>
@@ -646,7 +649,7 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
         $btn.prop('disabled', true).text('Saving…');
 
         $.ajax({
-            url        : '{{ route("leads.store") }}',
+            url        : '<?php echo e(route("leads.store")); ?>',
             method     : 'POST',
             data       : new FormData($form[0]),
             processData: false,
@@ -769,23 +772,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let htmlContent = '';
 
     // 1️⃣ Validation errors
-    @if ($errors->any())
+    <?php if($errors->any()): ?>
         htmlContent += '<b>Validation Errors:</b><ul>';
-        @foreach ($errors->all() as $error)
-            htmlContent += `<li>{{ $error }}</li>`;
-        @endforeach
+        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            htmlContent += `<li><?php echo e($error); ?></li>`;
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         htmlContent += '</ul><br>';
-    @endif
+    <?php endif; ?>
 
     // 2️⃣ Session error
-    @if (session('error'))
-        htmlContent += `<b>Error:</b> {{ session('error') }}<br><br>`;
-    @endif
+    <?php if(session('error')): ?>
+        htmlContent += `<b>Error:</b> <?php echo e(session('error')); ?><br><br>`;
+    <?php endif; ?>
 
     // 3️⃣ Success message + failed rows
-    @if(session('success'))
-        htmlContent += `{{ session('success') }}`;
-        const failedRows = @json(session('failedRows', []));
+    <?php if(session('success')): ?>
+        htmlContent += `<?php echo e(session('success')); ?>`;
+        const failedRows = <?php echo json_encode(session('failedRows', []), 512) ?>;
         if(failedRows.length > 0) {
             htmlContent += '<br><br><b>Failed Rows:</b><ul>';
             failedRows.forEach(function(fail) {
@@ -793,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             htmlContent += '</ul>';
         }
-    @endif
+    <?php endif; ?>
 
     // 4️⃣ Show Swal only if there is any content
     if(htmlContent.length > 0) {
@@ -805,4 +808,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\lead-bridge\resources\views/leads/index.blade.php ENDPATH**/ ?>

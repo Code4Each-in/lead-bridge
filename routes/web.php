@@ -8,6 +8,10 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImportController;
+Route::get('/test', function () {
+    return 'OK';
+});
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -49,3 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/leads/{id}/delete',[LeadController::class, 'destroy'])->name('leads.delete');
 
 });
+// Route::get('/upload', function () {
+//     return view('upload'); // your blade file with the form
+// })->name('upload.form');
+
+Route::post('/import', [ImportController::class, 'import'])->name('import');
+Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
