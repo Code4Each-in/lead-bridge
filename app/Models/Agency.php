@@ -11,15 +11,17 @@ class Agency extends Model
 
     protected $fillable = [
         'agency_name',
-        'primary_contact',
+        'primary_contact_name',
+        'primary_email',
         'phone',
         'address',
         'city',
         'state',
-        'zip'
+        'zip',
+        'logo'
     ];
     public function users()
-{
-    return $this->hasMany(User::class);
-}
+    {
+        return $this->hasMany(User::class);
+    }
 }

@@ -25,7 +25,7 @@
                         <thead>
                             <tr>
                                 <th>Agency Name</th>
-                                <th>Primary Contact</th>
+                                <th>Primary Contact Name</th>
                                 <th>Phone</th>
                                 <th>Address</th>
                                 <th width="150">Action</th>
@@ -35,7 +35,7 @@
                             <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <tr>
                                 <td><?php echo e($agency->agency_name); ?></td>
-                                <td><?php echo e($agency->primary_contact); ?></td>
+                                <td><?php echo e($agency->primary_contact_name); ?></td>
                                 <td><?php echo e($agency->phone); ?></td>
                                 <td>
                                     <?php echo e($agency->address); ?>, <?php echo e($agency->city); ?>, <?php echo e($agency->state); ?> - <?php echo e($agency->zip); ?>
@@ -63,7 +63,7 @@
 <!-- CREATE MODAL -->
 <div class="modal fade" id="createModal">
     <div class="modal-dialog">
-        <form id="createAgencyForm" method="POST" action="<?php echo e(route('agencies.store')); ?>">
+        <form id="createAgencyForm" method="POST" action="<?php echo e(route('agencies.store')); ?>" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
@@ -79,7 +79,22 @@
 
                     <div class="form-group">
                         <label class="required-label">Primary Contact</label>
-                        <input type="text" name="primary_contact" class="form-control" placeholder="Primary Contact">
+                        <input type="text" name="primary_contact_name" class="form-control" placeholder="Primary Contact Name" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required-label">Primary Email</label>
+                        <input type="email" name="primary_email" class="form-control" placeholder="Primary Email" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Logo</label>
+                        <input type="file" name="logo" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="required-label">Phone</label>
@@ -97,10 +112,7 @@
                         <label class="required-label">State</label>
                         <input type="text" name="state" class="form-control" placeholder="State">
                     </div>
-                      <div class="form-group">
-                        <label class="required-label">State</label>
-                        <input type="text" name="state" class="form-control" placeholder="State">
-                    </div>
+
                     <div class="form-group">
                         <label class="required-label">Zip</label>
                         <input type="text" name="zip" class="form-control" placeholder="Zip">
@@ -121,7 +133,7 @@
 <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 <div class="modal fade" id="editModal<?php echo e($agency->id); ?>">
     <div class="modal-dialog">
-        <form class="editAgencyForm" method="POST" action="<?php echo e(route('agencies.update', $agency->id)); ?>">
+        <form class="editAgencyForm" method="POST" action="<?php echo e(route('agencies.update', $agency->id)); ?>" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
@@ -134,9 +146,25 @@
                         <label class="required-label">Agency Name</label>
                         <input type="text" name="agency_name" value="<?php echo e($agency->agency_name); ?>" class="form-control" placeholder="Agency Name" >
                     </div>
+
                     <div class="form-group">
-                        <label class="required-label">Primary Contact</label>
-                        <input type="text" name="primary_contact" value="<?php echo e($agency->primary_contact); ?>" class="form-control" placeholder="Primary Contact" >
+                        <label class="required-label">Primary Contact Name</label>
+                        <input type="text" name="primary_contact_name" value="<?php echo e($agency->primary_contact_name); ?>" class="form-control" placeholder="Primary Contact Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required-label">Primary Email</label>
+                        <input type="email" name="primary_email" value="<?php echo e($agency->primary_email); ?>" class="form-control" placeholder="Primary Email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password (optional)</label>
+                        <input type="password" name="password" class="form-control" placeholder="Password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Logo</label>
+                        <input type="file" name="logo" class="form-control" placeholder="Logo">
                     </div>
                     <div class="form-group">
                         <label class="required-label">Phone</label>
