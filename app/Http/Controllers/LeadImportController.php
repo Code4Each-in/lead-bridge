@@ -6,21 +6,28 @@ use Illuminate\Http\Request;
 use Shuchkin\SimpleXLSX;
 use Shuchkin\SimpleXLS;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-class ImportController extends Controller
+class LeadImportController extends Controller
 {
     public function import(Request $request)
     {
+        //  Validate file
         $request->validate([
             'file' => 'required|mimes:xls,xlsx'
         ]);
+
+        $agencyIdSession = session('agency_id') ?? Auth::user()->agency_id;
+        if (!$agencyIdSession) {
+            return back()->with('error', 'Your agency is not set. Cannot upload leads.');
+        }
 
         $file = $request->file('file');
         $fileName = $file->getClientOriginalName();
         $filePath = $file->getPathname();
 
-        // ✅ Parse Excel file
+        //  Parse XLS/XLSX
         $extension = strtolower($file->getClientOriginalExtension());
         if ($extension === 'xlsx') {
             $xlsx = SimpleXLSX::parse($filePath);
@@ -36,26 +43,29 @@ class ImportController extends Controller
             return back()->with('error', 'File is empty or missing data.');
         }
 
-        // ✅ Validate header
+        //  Validate header
         $expectedHeader = ['name','phone','email','company','city','source','status','agency_id','notes'];
         $header = array_map('strtolower', $rows[0]);
         if ($header !== $expectedHeader) {
-            return back()->with('error', 'Invalid template. Please use the predefined template.');
+            return back()->with('error', 'Invalid template.');
         }
 
-        // ✅ Get active Account Executives grouped by agency
+        //  Get all active AEs in the same agency (role name based)
         $agencyUsers = DB::table('users')
             ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->where('users.status', 1)
-            ->where('roles.name', 'Account Executive')
+            ->where('users.status', 1) // only active users
+            ->where('roles.name', 'Account Executive') // role name, not ID
+            ->where('users.agency_id', $agencyIdSession)
             ->orderBy('users.id')
             ->select('users.*')
             ->get()
-            ->groupBy('agency_id');
+            ->values();
 
-        // ✅ Track round-robin pointer per agency
-        $agencyPointers = [];
+        if ($agencyUsers->isEmpty()) {
+            return back()->with('error', 'No active Account Executives found in your agency.');
+        }
 
+        $pointer = 0; // Round-robin pointer
         $insertedCount = 0;
         $failedCount = 0;
         $failedRows = [];
@@ -66,27 +76,35 @@ class ImportController extends Controller
             $name     = trim($row[0] ?? '');
             $phone    = trim($row[1] ?? '');
             $email    = trim($row[2] ?? '');
-            $agencyId = trim($row[7] ?? '');
+            $leadAgencyId = trim($row[7] ?? '');
 
             $reason = null;
 
-            // ✅ Validation
-            if (empty($name) || empty($agencyId) || (empty($email) && empty($phone))) {
-                $reason = 'Missing mandatory fields (name, agency_id, email/phone)';
+            //  Agency restriction
+            if ($leadAgencyId != $agencyIdSession) {
+                $reason = 'You can only upload leads for your own agency.';
             }
 
-            // ✅ Duplicate check
-            $exists = DB::table('leads')
-                ->where(function($q) use ($email, $phone) {
-                    if (!empty($email)) $q->orWhere('email', $email);
-                    if (!empty($phone)) $q->orWhere('phone', $phone);
-                })
-                ->exists();
-
-            if (!$reason && $exists) {
-                $reason = 'Duplicate record (email or phone already exists)';
+            //  Mandatory fields
+            if (!$reason && (empty($name) || (empty($email) && empty($phone)))) {
+                $reason = 'Missing mandatory fields (name, email/phone).';
             }
 
+            //  Duplicate check
+            if (!$reason) {
+                $exists = DB::table('leads')
+                    ->where(function($q) use ($email, $phone) {
+                        if (!empty($email)) $q->orWhere('email', $email);
+                        if (!empty($phone)) $q->orWhere('phone', $phone);
+                    })
+                    ->exists();
+
+                if ($exists) {
+                    $reason = 'Duplicate record (email or phone already exists).';
+                }
+            }
+
+            //  If failed, add to failedRows
             if ($reason) {
                 $failedCount++;
                 $failedRows[] = [
@@ -97,8 +115,8 @@ class ImportController extends Controller
                 continue;
             }
 
+            //  Insert lead
             try {
-                // ✅ Insert lead
                 $leadId = DB::table('leads')->insertGetId([
                     'name'       => $name,
                     'phone'      => $phone,
@@ -107,37 +125,21 @@ class ImportController extends Controller
                     'city'       => $row[4] ?? null,
                     'source'     => $row[5] ?? null,
                     'status'     => $row[6] ?? 'New',
-                    'agency_id'  => $agencyId,
+                    'agency_id'  => $leadAgencyId,
                     'notes'      => $row[8] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
-                // ✅ Lead Assignment (Round-Robin per Agency)
-                if (isset($agencyUsers[$agencyId]) && count($agencyUsers[$agencyId]) > 0) {
-
-                    if (!isset($agencyPointers[$agencyId])) {
-                        $agencyPointers[$agencyId] = 0;
-                    }
-
-                    $users = $agencyUsers[$agencyId]->values(); // reset keys
-                    $assignCount = 2; // number of AEs per lead
-
-                    // handle if fewer users than assignCount
-                    $assignCount = min($assignCount, count($users));
-
-                    for ($i = 0; $i < $assignCount; $i++) {
-                        $user = $users[$agencyPointers[$agencyId]];
-
-                        DB::table('lead_user')->insert([
-                            'lead_id' => $leadId,
-                            'user_id' => $user->id,
-                        ]);
-
-                        // move pointer
-                        $agencyPointers[$agencyId] =
-                            ($agencyPointers[$agencyId] + 1) % count($users);
-                    }
+                //  Round-robin assignment to AEs
+                $assignCount = 2; // Assign 2 users per lead (change if needed)
+                for ($i = 0; $i < $assignCount; $i++) {
+                    $user = $agencyUsers[$pointer];
+                    DB::table('lead_user')->insert([
+                        'lead_id' => $leadId,
+                        'user_id' => $user->id,
+                    ]);
+                    $pointer = ($pointer + 1) % $agencyUsers->count();
                 }
 
                 $insertedCount++;
@@ -149,35 +151,27 @@ class ImportController extends Controller
                     'reason' => 'Database error: ' . $e->getMessage(),
                     'row_number' => $index + 1
                 ];
-
-                \Log::error('Lead insert failed', [
-                    'row' => $row,
-                    'error' => $e->getMessage()
-                ]);
+                \Log::error('Lead insert failed', ['row' => $row, 'error' => $e->getMessage()]);
             }
         }
 
-        // ✅ Generate failed CSV
+        //  Save failed CSV (optional)
         $failedFileName = null;
-
         if (!empty($failedRows)) {
             $failedFileName = 'failed_' . Str::random(6) . '_' . time() . '.csv';
             $handle = fopen(storage_path('app/' . $failedFileName), 'w');
-
             $csvHeader = array_merge($rows[0], ['reason', 'row_number']);
             fputcsv($handle, $csvHeader);
-
             foreach ($failedRows as $fail) {
                 $rowData = $fail['row'];
                 $rowData[] = $fail['reason'];
                 $rowData[] = $fail['row_number'];
                 fputcsv($handle, $rowData);
             }
-
             fclose($handle);
         }
 
-        // ✅ Log upload
+        //  Log upload
         DB::table('lead_upload_logs')->insert([
             'file_name'      => $fileName,
             'inserted_count' => $insertedCount,

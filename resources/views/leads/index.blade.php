@@ -31,7 +31,19 @@
         margin-top: 1px !important;
         color: #ced4da;
     }
+    .lead-status-simple {
+        padding: 4px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        outline: none;
+        cursor: pointer;
+    }
 
+    .lead-status-simple:focus {
+        border-color: #999;
+    }
 </style>
 
 @php
@@ -95,17 +107,18 @@
                                         <span class="text-muted">-</span>
                                     @endforelse
                                 </td>
-                                <td>
-                                    @php
-                                        $badgeClass = match($lead->status) {
-                                            'New'         => 'badge-primary',
-                                            'In Progress' => 'badge-warning',
-                                            'Closed'      => 'badge-success',
-                                            default       => 'badge-secondary',
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $badgeClass }}">{{ $lead->status }}</span>
-                                </td>
+ <td>
+    <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
+        @php
+            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
+        @endphp
+        @foreach($statuses as $status)
+            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
+                {{ $status }}
+            </option>
+        @endforeach
+    </select>
+</td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-primary edit-lead-btn"
@@ -187,21 +200,9 @@
                     </div>
 
                     <div class="row">
-                        {{-- Status: full-width for user role, 4-col for admin --}}
-                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
-                            <div class="form-group">
-                                <label class="required-label">Status</label>
-                                <select name="status" class="form-control">
-                                    <option value="New">New</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Closed">Closed</option>
-                                </select>
-                            </div>
-                        </div>
-
                         @if($isAdminOrSuper)
                             {{-- Agency (admin/super admin only) --}}
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
                                     <select name="agency_id"
@@ -216,7 +217,7 @@
                             </div>
 
                             {{-- Assign User (populated by agency change) --}}
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
                                     <select name="assigned_user_id[]"
@@ -343,11 +344,16 @@
                         <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
-                                <select name="status" class="form-control">
-                                    <option value="New"         {{ $lead->status == 'New'         ? 'selected' : '' }}>New</option>
-                                    <option value="In Progress" {{ $lead->status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                                    <option value="Closed"      {{ $lead->status == 'Closed'      ? 'selected' : '' }}>Closed</option>
-                                </select>
+                                    <select name="status" class="form-control">
+                                        @php
+                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
+                                        @endphp
+                                        @foreach($statuses as $status)
+                                            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                             </div>
                         </div>
 
@@ -549,7 +555,41 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
             $sel.val(selected).trigger('change');
         }
     }
+    document.querySelectorAll('.lead-status').forEach(function(select){
+        function updateBadgeColor(el) {
+            const status = el.value;
+            let colorClass;
+            switch(status){
+                case 'Not Started': colorClass = 'badge-secondary'; break;
+                case 'In Progress': colorClass = 'badge-warning'; break;
+                case 'Hold':        colorClass = 'badge-info'; break;
+                case 'Lost':        colorClass = 'badge-danger'; break;
+                case 'Complete':    colorClass = 'badge-success'; break;
+                default:            colorClass = 'badge-secondary';
+            }
+            el.className = 'form-control lead-status ' + colorClass;
+        }
 
+        updateBadgeColor(select);
+
+        select.addEventListener('change', function(){
+            updateBadgeColor(this);
+            const leadId = this.dataset.leadId;
+            const status = this.value;
+
+            fetch(`/leads/${leadId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({status: status})
+            })
+            .then(res => res.json())
+            .then(data => console.log(data.success))
+            .catch(err => console.error(err));
+        });
+    });
     // Agency change handler (only fires for admin/super admin)
     $(document).on('change', '.agency-select', function () {
         const agencyId = $(this).val();
@@ -764,11 +804,12 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
 })();
 
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let htmlContent = '';
 
-    // 1️⃣ Validation errors
+    // 1️⃣ Laravel validation errors
     @if ($errors->any())
         htmlContent += '<b>Validation Errors:</b><ul>';
         @foreach ($errors->all() as $error)
@@ -784,10 +825,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 3️⃣ Success message + failed rows
     @if(session('success'))
-        htmlContent += `{{ session('success') }}`;
+        htmlContent += `<b>{{ session('success') }}</b><br><br>`;
         const failedRows = @json(session('failedRows', []));
         if(failedRows.length > 0) {
-            htmlContent += '<br><br><b>Failed Rows:</b><ul>';
+            htmlContent += '<b>Failed Rows:</b><ul>';
             failedRows.forEach(function(fail) {
                 htmlContent += `<li>Row ${fail.row_number || 'N/A'}: ${fail.reason || 'Unknown error'}</li>`;
             });
@@ -795,12 +836,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     @endif
 
-    // 4️⃣ Show Swal only if there is any content
+    // 4️⃣ Show Swal only if there is content
     if(htmlContent.length > 0) {
         Swal.fire({
             icon: htmlContent.includes('Validation Errors') || htmlContent.includes('Error') ? 'error' : 'success',
             title: 'Upload Result',
-            html: htmlContent
+            html: htmlContent,
+            width: 600
         });
     }
 });

@@ -61,7 +61,7 @@ public function store(Request $request)
 
         // Create user
         User::create([
-            'role_id'   => 1,
+            'role_id'   => 2,
             'name'      => $request->primary_contact_name,
             'email'     => $request->primary_email,
             'password'  => Hash::make($request->password),

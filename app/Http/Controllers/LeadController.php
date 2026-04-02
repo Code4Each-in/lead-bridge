@@ -45,7 +45,6 @@ class LeadController extends Controller
             'company'            => 'required|string|max:255',
             'city'               => 'required|string|max:100',
             'source'             => 'required|string|max:100',
-            'status'             => 'required|in:New,In Progress,Closed',
             'agency_id'          => 'required|exists:agencies,id',
             'assigned_user_id'   => 'required|array|min:1',
             'assigned_user_id.*' => 'exists:users,id',
@@ -69,7 +68,7 @@ class LeadController extends Controller
             'company'   => $request->company,
             'city'      => $request->city,
             'source'    => $request->source,
-            'status'    => $request->status ?? 'New',
+            'status'    => 'Not Started',
             'agency_id' => $request->agency_id,
             'notes'     => $request->notes,
             'documents' => $file,
@@ -96,7 +95,7 @@ class LeadController extends Controller
             'company'            => 'required|string|max:255',
             'city'               => 'required|string|max:100',
             'source'             => 'required|string|max:100',
-            'status'             => 'required|in:New,In Progress,Closed',
+            'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
             'agency_id'          => 'required|exists:agencies,id',
             'assigned_user_id'   => 'required|array|min:1',
             'assigned_user_id.*' => 'exists:users,id',
@@ -131,7 +130,7 @@ class LeadController extends Controller
 
         return response()->json(['success' => 'Lead deleted successfully']);
     }
-         public function downloadTemplate()
+    public function downloadTemplate()
     {
         $filename = 'leads_template.csv';
 
@@ -139,7 +138,7 @@ class LeadController extends Controller
         $header = ['name','phone','email','company','city','source','status','agency_id','notes'];
 
         // Example row (just a single row to show layout)
-        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','New','1','Test note'];
+        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','1','Test note'];
 
         // Open output stream
         $handle = fopen('php://temp', 'r+');
@@ -154,5 +153,17 @@ class LeadController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ]);
+    }
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
+        ]);
+
+        $lead = Lead::findOrFail($id);
+        $lead->status = $request->status;
+        $lead->save();
+
+        return response()->json(['success' => 'Status updated successfully']);
     }
 }

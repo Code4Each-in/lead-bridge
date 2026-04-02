@@ -8,7 +8,7 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ImportController;
+use App\Http\Controllers\LeadImportController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -53,6 +53,6 @@ Route::middleware('auth')->group(function () {
 // Route::get('/upload', function () {
 //     return view('upload'); // your blade file with the form
 // })->name('upload.form');
-
-Route::post('/import', [ImportController::class, 'import'])->name('import');
+Route::post('/leads/{id}/status', [LeadController::class, 'updateStatus'])->name('leads.updateStatus');
+Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
