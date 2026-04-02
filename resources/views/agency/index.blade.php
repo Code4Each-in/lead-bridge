@@ -78,7 +78,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="required-label">Primary Contact</label>
+                        <label class="required-label">Primary Contact Name</label>
                         <input type="text" name="primary_contact_name" class="form-control" placeholder="Primary Contact Name" >
                     </div>
 
