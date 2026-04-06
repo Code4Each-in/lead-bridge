@@ -19,7 +19,7 @@ class LeadController extends Controller
         $leads    = Lead::with(['agency', 'users'])->latest()->get();
         $agencies = Agency::all();
 
-        if (in_array(strtolower($authUser->role->name), ['super admin', 'admin'])) {
+        if (strtolower($authUser->role->name) === 'mis user') {
             $users = User::where('agency_id', $authUser->agency_id)
                          ->where('id', '!=', $authUser->id)
                          ->get();
@@ -34,9 +34,9 @@ class LeadController extends Controller
     {
         $authUser = Auth::user();
 
-        if (in_array(strtolower($authUser->role->name), ['super admin', 'admin'])) {
-            $request->merge(['agency_id' => $authUser->agency_id]);
-        }
+        if (strtolower($authUser->role->name) === 'mis user') {
+                $request->merge(['agency_id' => $authUser->agency_id]);
+            }
         $validator = Validator::make($request->all(), [
             'name'               => 'required|string|max:255',
             'phone'              => 'required|string|max:20',
@@ -83,7 +83,7 @@ class LeadController extends Controller
         $authUser = Auth::user();
         $lead     = Lead::findOrFail($id);
 
-        if (in_array(strtolower($authUser->role->name), ['super admin', 'admin'])) {
+        if (strtolower($authUser->role->name) === 'mis user') {
             $request->merge(['agency_id' => $authUser->agency_id]);
         }
 
