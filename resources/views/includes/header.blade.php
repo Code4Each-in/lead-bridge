@@ -27,14 +27,15 @@
       <span class="icon-menu"></span>
     </button>
 
+
     <!-- Search -->
+    @if(optional(auth()->user()->role)->name == 'Super Admin')
     <ul class="navbar-nav mr-lg-2">
       <li class="nav-item nav-search d-none d-lg-block">
         <div class="input-group">
           <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
             <span class="input-group-text" id="search"><i class="icon-search"></i></span>
           </div>
-              @if(optional(auth()->user()->role)->name == 'Super Admin')
                 <div class="nav-item mr-3 d-flex align-items-center">
                     <select id="agency-select" class="form-control select2" multiple style="width: 250px;">
                     @foreach($agencies as $agency)
@@ -45,10 +46,11 @@
                     @endforeach
                     </select>
                 </div>
-                @endif
+                
         </div>
       </li>
     </ul>
+    @endif
 
     <!-- Profile -->
     <ul class="navbar-nav navbar-nav-right">
