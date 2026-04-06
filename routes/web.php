@@ -56,3 +56,5 @@ Route::middleware('auth')->group(function () {
 Route::post('/leads/{id}/status', [LeadController::class, 'updateStatus'])->name('leads.updateStatus');
 Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
+Route::post('/set-agency', [AgencyController::class, 'setAgency'])
+    ->name('set.agency');

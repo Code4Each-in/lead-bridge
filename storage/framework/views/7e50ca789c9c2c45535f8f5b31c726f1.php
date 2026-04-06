@@ -97,7 +97,7 @@
           </li> -->
         <?php if(strtolower(auth()->user()->role->name) == 'super admin'): ?>
 
-          <li class="nav-item">
+          <li class="nav-item"> 
             <a class="nav-link" href="/roles">
               <i class="mdi mdi-shield-account menu-icon"></i>
               <span class="menu-title">Roles</span>
