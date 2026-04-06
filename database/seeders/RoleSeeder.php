@@ -22,6 +22,30 @@ class RoleSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+              [
+                'id' => 3,
+                'name' => 'MIS User',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'name' => 'Account Executive',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 5,
+                'name' => 'QA User',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+              [
+                'id' => 6,
+                'name' => 'Account Manager',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }
