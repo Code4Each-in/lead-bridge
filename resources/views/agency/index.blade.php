@@ -92,9 +92,22 @@
                         <input type="password" name="password" class="form-control" placeholder="Password">
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Logo</label>
                         <input type="file" name="logo" class="form-control">
+                    </div> -->
+                    <div class="form-group">
+                        <label>Logo</label>
+                        <div class="input-group">
+                            <input type="file" id="logoinput" name="logo" style="display: none;">
+                            <input type="text"  class="form-control file-upload-info" id="fileName" placeholder="Upload Logo" readonly>
+                            <span class="input-group-append">
+                                <button class="file-upload-browse btn btn-primary" type="button"
+                                    onclick="document.getElementById('logoinput').click();">
+                                    Upload
+                                </button>
+                            </span>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="required-label">Phone</label>
@@ -162,10 +175,20 @@
                         <input type="password" name="password" class="form-control" placeholder="Password">
                     </div>
 
-                    <div class="form-group">
+                     <div class="form-group">
                         <label>Logo</label>
-                        <input type="file" name="logo" class="form-control" placeholder="Logo">
+                        <div class="input-group">
+                            <input type="file" id="logoinput_{{ $agency->id}}" name="logo" style="display: none;">
+                            <input type="text"  class="form-control file-upload-info" id="fileName_{{ $agency->id }}" placeholder="Upload Logo" readonly>
+                            <span class="input-group-append">
+                                <button class="file-upload-browse btn btn-primary" type="button"
+                                    onclick="document.getElementById('logoinput_{{ $agency->id }}').click();">
+                                    Upload
+                                </button>
+                            </span>
+                        </div>
                     </div>
+
                     <div class="form-group">
                         <label class="required-label">Phone</label>
                         <input type="text" name="phone" value="{{ $agency->phone }}" class="form-control" placeholder="Phone" >
@@ -208,7 +231,13 @@ function waitForJQuery(callback) {
 
 waitForJQuery(function () {
 
-
+   $(document).on('change', 'input[type="file"]', function () {
+        let id = this.id.replace('logoinput', 'fileName');
+        let fileInput = document.getElementById(id);
+        if (fileInput && this.files.length > 0) {
+            fileInput.value = this.files[0].name;
+        }
+    });
     // Clear errors
     function clearErrors(modal) {
         $(modal).find('.is-invalid').removeClass('is-invalid');

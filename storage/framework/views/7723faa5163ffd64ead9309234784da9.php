@@ -2,6 +2,7 @@
 <?php $__env->startSection('subtitle', 'Leads'); ?>
 <?php $__env->startSection('content'); ?>
 <style>
+
     .required-label::after {
         content: ' *';
         color: red;
@@ -46,7 +47,7 @@
 </style>
 
 <?php
-    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin', 'admin']);
+    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin']);
 ?>
 
 <div class="row">
@@ -57,12 +58,12 @@
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h4 class="card-title mb-0">Leads</h4>
 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">
+                    <div class="d-flex">
+                        <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                             Add Lead
                         </button>
 
-                        <form id="uploadExcelForm" action="<?php echo e(route('import')); ?>" method="POST" enctype="multipart/form-data" class="mb-0">
+                        <form id="uploadExcelForm" action="<?php echo e(route('import')); ?>" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                             <?php echo csrf_field(); ?>
                             <input
                                 type="file"
@@ -107,19 +108,19 @@
                                         <span class="text-muted">-</span>
                                     <?php endif; ?>
                                 </td>
- <td>
-    <select class="lead-status-simple" data-lead-id="<?php echo e($lead->id); ?>">
-        <?php
-            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
-        ?>
-        <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $status): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <option value="<?php echo e($status); ?>" <?php echo e($lead->status == $status ? 'selected' : ''); ?>>
-                <?php echo e($status); ?>
+                                <td>
+                                    <select class="lead-status-simple" data-lead-id="<?php echo e($lead->id); ?>">
+                                        <?php
+                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
+                                        ?>
+                                        <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $status): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($status); ?>" <?php echo e($lead->status == $status ? 'selected' : ''); ?>>
+                                                <?php echo e($status); ?>
 
-            </option>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-    </select>
-</td>
+                                            </option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </td>
                                 <td><?php echo e($lead->source); ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-primary edit-lead-btn"
@@ -146,7 +147,7 @@
 <!--  CREATE MODAL = -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <form id="createLeadForm" enctype="multipart/form-data">
+        <form id="createLeadForm"   method="POST" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
@@ -681,7 +682,7 @@ const IS_ADMIN_OR_SUPER = <?php echo e($isAdminOrSuper ? 'true' : 'false'); ?>;
         });
     }
 
-    $('#createLeadForm').on('submit', function (e) {
+    $(document).on('submit', '#createLeadForm', function(e) {
         e.preventDefault();
 
         const $form = $(this);

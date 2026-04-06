@@ -3,6 +3,7 @@
 @section('subtitle', 'Leads')
 @section('content')
 <style>
+
     .required-label::after {
         content: ' *';
         color: red;
@@ -47,7 +48,7 @@
 </style>
 
 @php
-    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin', 'admin']);
+    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin']);
 @endphp
 
 <div class="row">
@@ -58,12 +59,12 @@
                 <div class="d-flex justify-content-between mb-3 align-items-center">
                     <h4 class="card-title mb-0">Leads</h4>
 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">
+                    <div class="d-flex">
+                        <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                             Add Lead
                         </button>
 
-                        <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0">
+                        <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                             @csrf
                             <input
                                 type="file"
@@ -107,18 +108,18 @@
                                         <span class="text-muted">-</span>
                                     @endforelse
                                 </td>
- <td>
-    <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
-        @php
-            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
-        @endphp
-        @foreach($statuses as $status)
-            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
-                {{ $status }}
-            </option>
-        @endforeach
-    </select>
-</td>
+                                <td>
+                                    <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
+                                        @php
+                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
+                                        @endphp
+                                        @foreach($statuses as $status)
+                                            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-primary edit-lead-btn"
@@ -145,7 +146,7 @@
 <!--  CREATE MODAL = -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <form id="createLeadForm" enctype="multipart/form-data">
+        <form id="createLeadForm"   method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
@@ -676,7 +677,7 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
         });
     }
 
-    $('#createLeadForm').on('submit', function (e) {
+    $(document).on('submit', '#createLeadForm', function(e) {
         e.preventDefault();
 
         const $form = $(this);

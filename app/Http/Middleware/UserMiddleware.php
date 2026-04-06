@@ -12,7 +12,7 @@ class UserMiddleware
     {
         $user = $request->user();
 
-        if ($user && strtolower($user->role->name) === 'user') {
+        if ($user && strtolower($user->role->name) === 'MIS user') {
             return $next($request);
         }
 

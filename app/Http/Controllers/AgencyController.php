@@ -13,7 +13,14 @@ class AgencyController extends Controller
 {
     public function index()
     {
-        $agencies = Agency::latest()->get();
+        $selectedAgencyIds = session('agency_ids');
+
+        if (!empty($selectedAgencyIds)) {
+            $agencies = Agency::whereIn('id', $selectedAgencyIds)->latest()->get();
+        } else {
+            $agencies = Agency::latest()->get();
+        }
+
         return view('agency.index', compact('agencies'));
     }
 

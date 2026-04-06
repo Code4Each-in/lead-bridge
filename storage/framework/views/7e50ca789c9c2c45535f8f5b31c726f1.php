@@ -97,7 +97,7 @@
           </li> -->
         <?php if(strtolower(auth()->user()->role->name) == 'super admin'): ?>
 
-          <li class="nav-item"> 
+          <li class="nav-item">
             <a class="nav-link" href="/roles">
               <i class="mdi mdi-shield-account menu-icon"></i>
               <span class="menu-title">Roles</span>
@@ -109,7 +109,8 @@
               <span class="menu-title">Agencies </span>
             </a>
           </li>
-
+        <?php endif; ?>
+        <?php if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin'): ?>
             <li class="nav-item">
                 <a class="nav-link" href="/users">
                     <i class="mdi mdi-account menu-icon icon-head"></i>

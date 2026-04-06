@@ -13,18 +13,13 @@
 
                 {{-- Avatar overlapping cover --}}
                 <div class="text-center profile-avatar-wrap">
-                    @if(auth()->user()->profile)
-                        <img src="{{ asset('storage/' . auth()->user()->profile) }}"
-                             class="profile-avatar rounded-circle"
-                             alt="{{ auth()->user()->name }}">
-                    @else
-                        <div class="profile-avatar-initials rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center mx-auto">
-                            <span>
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(strrchr(auth()->user()->name, ' ') ?: ' x', 1, 1)) }}
-                            </span>
-                        </div>
-                    @endif
-                </div>
+                        <img
+                            src="{{ auth()->user()->profile
+                                    ? asset('storage/' . auth()->user()->profile)
+                                    : asset('assets/images/default-profile.png') }}"
+                            class="profile-avatar rounded-circle"
+                            alt="{{ auth()->user()->name }}">
+                    </div>
 
                 {{-- Name / Email / Role badge --}}
                 <div class="text-center px-4 pb-2 profile-name-section">
