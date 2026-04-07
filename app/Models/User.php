@@ -56,7 +56,7 @@ class User extends Authenticatable
         ];
     }
 
-        public function role()
+    public function role()
     {
         return $this->belongsTo(Role::class);
     }
@@ -66,7 +66,7 @@ class User extends Authenticatable
 
     }
     public function leads()
-{
-    return $this->belongsToMany(Lead::class);
-}
+    {
+        return $this->belongsToMany(Lead::class);
+    }
 }

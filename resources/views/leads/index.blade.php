@@ -48,8 +48,12 @@
 </style>
 
 @php
-    $isAdminOrSuper = in_array(strtolower($authUser->role->name), ['super admin']);
+    $isSuperAdmin   = in_array(strtolower($authUser->role->name), ['super admin']);
+    $isAdminOrMIS   = in_array(strtolower($authUser->role->name), ['admin', 'mis user']);
+    $isAdminOrSuper = $isSuperAdmin || $isAdminOrMIS;
 @endphp
+
+
 
 <div class="row">
     <div class="col-md-12 grid-margin">
@@ -146,7 +150,7 @@
 <!--  CREATE MODAL = -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <form id="createLeadForm"   method="POST" enctype="multipart/form-data">
+        <form id="createLeadForm"   method="POST" action="{{ route('leads.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
@@ -201,7 +205,7 @@
                     </div>
 
                     <div class="row">
-                        @if($isAdminOrSuper)
+                        @if($isSuperAdmin)
                             {{-- Agency (admin/super admin only) --}}
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -285,10 +289,12 @@
 <div class="modal fade" id="editModal{{ $lead->id }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form class="editLeadForm"
+                method="POST"
               data-id="{{ $lead->id }}"
               data-url="{{ route('leads.update', $lead->id) }}"
               enctype="multipart/form-data">
             @csrf
+
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Lead</h5>
@@ -342,7 +348,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-{{ $isAdminOrSuper ? '4' : '12' }}">
+                        <div class="col-md-{{ $isSuperAdmin  ? '4' : '12' }}">
                             <div class="form-group">
                                 <label class="required-label">Status</label>
                                     <select name="status" class="form-control">
@@ -358,7 +364,7 @@
                             </div>
                         </div>
 
-                        @if($isAdminOrSuper)
+                        @if($isSuperAdmin)
                             {{-- Agency (admin/super admin only) --}}
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -463,7 +469,11 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
     return ['id' => $u->id, 'name' => $u->name, 'agency_id' => $u->agency_id];
 })) !!};
 
-const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
+
+    const IS_SUPER_ADMIN    = {{ $isSuperAdmin ? 'true' : 'false' }};
+    const IS_ADMIN_OR_MIS   = {{ $isAdminOrMIS ? 'true' : 'false' }};
+    const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
+
 </script>
 
 <script>
@@ -556,7 +566,7 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
             $sel.val(selected).trigger('change');
         }
     }
-    document.querySelectorAll('.lead-status').forEach(function(select){
+    document.querySelectorAll('.lead-status-simple').forEach(function(select){
         function updateBadgeColor(el) {
             const status = el.value;
             let colorClass;
@@ -568,7 +578,7 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
                 case 'Complete':    colorClass = 'badge-success'; break;
                 default:            colorClass = 'badge-secondary';
             }
-            el.className = 'form-control lead-status ' + colorClass;
+            el.className = 'form-control lead-status-simple ' + colorClass;
         }
 
         updateBadgeColor(select);
@@ -605,56 +615,56 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
     });
 
     // Create modal open
-    $('#createModal').on('show.bs.modal', function () {
-        const $form = $(this).find('#createLeadForm');
-        $form[0].reset();
+  $('#createModal').on('show.bs.modal', function () {
+    const $form = $(this).find('#createLeadForm');
+    $form[0].reset();
 
-        if (IS_ADMIN_OR_SUPER) {
-            $('#create_agency_select').val('').trigger('change');
-            $('#create_user_select')
-                .empty()
-                .append('<option value="">-- Select Agency First --</option>')
-                .val(null)
-                .trigger('change')
-                .prop('disabled', true);
-        } else {
-            // For user role, re-init Select2 and clear selection
-            const $userSel = $('#create_user_select');
-            if ($userSel.hasClass('select2-hidden-accessible')) {
-                $userSel.select2('destroy');
-            }
-            $userSel.val(null).select2({
-                width: '100%',
-                dropdownParent: $(this),
-                placeholder: 'Select users...',
-                allowClear: true
-            });
+    if (IS_SUPER_ADMIN) {
+        // Super admin — reset agency + user selects
+        $('#create_agency_select').val('').trigger('change');
+        $('#create_user_select')
+            .empty()
+            .append('<option value="">-- Select Agency First --</option>')
+            .prop('disabled', true)
+            .trigger('change');
+
+    } else if (IS_ADMIN_OR_MIS) {
+        // ✅ Admin/MIS — no agency select, just reset user select
+        const $userSel = $('#create_user_select');
+        if ($userSel.hasClass('select2-hidden-accessible')) {
+            $userSel.select2('destroy');
         }
+        $userSel.val(null).select2({
+            width         : '100%',
+            dropdownParent: $('#createModal'),
+            placeholder   : 'Select users...',
+            allowClear    : true,
+        });
+    }
 
-        $form.find('.is-invalid').removeClass('is-invalid');
-        $form.find('.invalid-feedback').remove();
-    });
+    $form.find('.is-invalid').removeClass('is-invalid');
+    $form.find('.invalid-feedback').remove();
+});
 
-    // Edit modal open
-    $('.modal').on('show.bs.modal', function () {
-        const $modal = $(this);
-        if ($modal.attr('id') === 'createModal') return;
+// Edit modal
+$('.modal').on('show.bs.modal', function () {
+    const $modal = $(this);
+    if ($modal.attr('id') === 'createModal') return;
 
-        const $form = $modal.find('.editLeadForm');
-        if (!$form.length) return;
+    const $form = $modal.find('.editLeadForm');
+    if (!$form.length) return;
 
-        $form.find('.is-invalid').removeClass('is-invalid');
-        $form.find('.invalid-feedback').remove();
+    $form.find('.is-invalid').removeClass('is-invalid');
+    $form.find('.invalid-feedback').remove();
 
-        if (IS_ADMIN_OR_SUPER) {
-            $modal.find('.agency-select').each(function () {
-                $(this).trigger('change');
-            });
-            $modal.find('.user-select').each(function () {
-                $(this).val($(this).val()).trigger('change');
-            });
-        }
-    });
+    if (IS_SUPER_ADMIN) {
+        // Super admin — trigger agency change to reload users
+        $modal.find('.agency-select').each(function () {
+            if ($(this).val()) $(this).trigger('change');
+        });
+    }
+    // ✅ Admin/MIS — users already pre-rendered with selected, do nothing
+});
 
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('.select2').css('width', '100%');
@@ -665,19 +675,18 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
         $form.find('.invalid-feedback').remove();
     }
 
-    function showErrors($form, errors) {
-        $.each(errors, function (field, messages) {
-            const baseName = field.split('.')[0];
-            const $input   = $form.find('[name="' + baseName + '"], [name="' + baseName + '[]"]').first();
-            if ($input.length) {
-                $input.addClass('is-invalid');
-                $input.closest('.form-group')
-                      .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
-            }
-        });
-    }
+function showErrors($form, errors) {
+    $.each(errors, function (field, messages) {
+        // ✅ handles both field and field[]
+        const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
+        $input.addClass('is-invalid');
+        $input.closest('.form-group')
+              .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+    });
+}
 
     $(document).on('submit', '#createLeadForm', function(e) {
+
         e.preventDefault();
 
         const $form = $(this);
@@ -722,6 +731,7 @@ const IS_ADMIN_OR_SUPER = {{ $isAdminOrSuper ? 'true' : 'false' }};
 
         const $form  = $(this);
         const url    = $form.data('url');
+         console.log('Submitting to:', url);
         const $btn   = $form.find('[type="submit"]');
         clearErrors($form);
 

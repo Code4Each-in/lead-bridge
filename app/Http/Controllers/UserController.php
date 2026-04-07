@@ -6,30 +6,53 @@ use App\Models\Agency;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
 
+    // public function index()
+    // {
+    //     $selectedAgencyIds = session('agency_ids', []);
+
+    //     $query = User::with('role')->latest();
+
+    //     if (!empty($selectedAgencyIds)) {
+    //         $query->whereIn('agency_id', $selectedAgencyIds);
+    //     }
+
+    //     $users = $query->get();
+
+    //     $roles = Role::all();
+    //     $agencies = Agency::all();
+
+    //     return view('users.index', compact('users', 'roles', 'agencies'));
+    // }
     public function index()
     {
-        $selectedAgencyIds = session('agency_ids', []);
+        $authUser = Auth::user();
+        $roleName = strtolower($authUser->role->name);
 
         $query = User::with('role')->latest();
 
-        if (!empty($selectedAgencyIds)) {
-            $query->whereIn('agency_id', $selectedAgencyIds);
+        if (in_array($roleName, ['mis user', 'admin'])) {
+            // Only users of the same agency
+            $query->where('agency_id', $authUser->agency_id);
+
+        } elseif (!empty(session('agency_ids', []))) {
+            // Superadmin with session filter
+            $query->whereIn('agency_id', session('agency_ids'));
         }
+        // else superadmin with no filter → sees all
 
-        $users = $query->get();
-
-        $roles = Role::all();
+        $users    = $query->get();
+        $roles    = Role::all();
         $agencies = Agency::all();
 
-        return view('users.index', compact('users', 'roles', 'agencies'));
+        return view('users.index', compact('users', 'roles', 'agencies', 'authUser'));
     }
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
