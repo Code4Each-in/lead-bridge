@@ -19,6 +19,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth')->na
 Route::middleware(['auth'])->group(function () {
     Route::resource('/dashboard', DashboardController::class);
 });
+
 Route::middleware(['auth', 'active'])->group(function () {
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users/store', [UserController::class, 'store'])->name('users.store');

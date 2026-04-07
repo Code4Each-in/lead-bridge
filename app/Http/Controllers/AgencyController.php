@@ -156,7 +156,7 @@ class AgencyController extends Controller
 
         return response()->json(['success' => 'Agency deleted successfully']);
     }
-     public function setAgency(Request $request)
+    public function setAgency(Request $request)
     {
         session(['agency_ids' => $request->agency_ids ?? []]);
 
