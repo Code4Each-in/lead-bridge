@@ -19,10 +19,15 @@ class LeadController extends Controller
         $leads    = Lead::with(['agency', 'users'])->latest()->get();
         $agencies = Agency::all();
 
-        if (strtolower($authUser->role->name) === 'mis user') {
+        $roleName = strtolower($authUser->role->name);
+
+        if (in_array($roleName, ['mis user', 'admin'])) {
             $users = User::where('agency_id', $authUser->agency_id)
-                         ->where('id', '!=', $authUser->id)
-                         ->get();
+                ->whereHas('role', function ($q) {
+                    $q->whereRaw('LOWER(name) = ?', ['account executive']);
+                })
+                ->where('id', '!=', $authUser->id)
+                ->get();
         } else {
             $users = User::all();
         }
