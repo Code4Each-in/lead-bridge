@@ -50,44 +50,40 @@
     </div>
     <div class="col-md-6 grid-margin transparent">
         <div class="row">
-        <div class="col-md-6 mb-4 stretch-card transparent">
-            <div class="card card-tale">
-            <div class="card-body">
-                <p class="mb-4">Total Agency Users</p>
-                <p class="fs-30 mb-2">4006</p>
-                <p>10.00% (30 days)</p>
+            <div class="col-md-6 mb-4 stretch-card transparent">
+                <div class="card card-tale">
+                    <div class="card-body">
+                        <p class="mb-4">Total Agency Users</p>
+                        <p class="fs-30 mb-2">{{ $totalAgencyUsers }}</p>
+                    </div>
+                </div>
             </div>
+            <div class="col-md-6 mb-4 stretch-card transparent">
+                <div class="card card-dark-blue">
+                    <div class="card-body">
+                        <p class="mb-4">Total Leads</p>
+                        <p class="fs-30 mb-2">{{ $totalLeads }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6 mb-4 stretch-card transparent">
-            <div class="card card-dark-blue">
-            <div class="card-body">
-                <p class="mb-4">Total Leads</p>
-                <p class="fs-30 mb-2">61344</p>
-                <p>22.00% (30 days)</p>
-            </div>
-            </div>
-        </div>
         </div>
         <div class="row">
-        <div class="col-md-6 mb-4 mb-lg-0 stretch-card transparent">
-            <div class="card card-light-blue">
-            <div class="card-body">
-                <p class="mb-4">Pending Leads</p>
-                <p class="fs-30 mb-2">34040</p>
-                <p>2.00% (30 days)</p>
+            <div class="col-md-6 mb-4 mb-lg-0 stretch-card transparent">
+                <div class="card card-light-blue">
+                    <div class="card-body">
+                        <p class="mb-4">Pending Leads</p>
+                        <p class="fs-30 mb-2">{{ $pendingLeads }}</p>
+                    </div>
+                </div>
             </div>
+            <div class="col-md-6 stretch-card transparent">
+                <div class="card card-light-danger">
+                    <div class="card-body">
+                        <p class="mb-4">Completed Leads</p>
+                        <p class="fs-30 mb-2">{{ $completedLeads }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6 stretch-card transparent">
-            <div class="card card-light-danger">
-            <div class="card-body">
-                <p class="mb-4">Completed Leads</p>
-                <p class="fs-30 mb-2">47033</p>
-                <p>0.22% (30 days)</p>
-            </div>
-            </div>
-        </div>
         </div>
     </div>
     </div>
