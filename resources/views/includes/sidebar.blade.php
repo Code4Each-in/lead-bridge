@@ -2,7 +2,7 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="index.html">
+            <a class="nav-link" href="{{ url('/dashboard') }}">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Dashboard</span>
             </a>
@@ -94,13 +94,37 @@
                 <li class="nav-item"> <a class="nav-link" href="pages/samples/error-500.html"> 500 </a></li>
               </ul>
             </div>
+          </li> -->
+        @if(strtolower(auth()->user()->role->name) == 'super admin')
+
+          <li class="nav-item">
+            <a class="nav-link" href="/roles">
+              <i class="mdi mdi-shield-account menu-icon"></i>
+              <span class="menu-title">Roles</span>
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="pages/documentation/documentation.html">
-              <i class="icon-paper menu-icon"></i>
-              <span class="menu-title">Documentation</span>
+            <a class="nav-link" href="/agencies">
+              <i class="mdi  mdi-account-multiple menu-icon "></i>
+              <span class="menu-title">Agencies </span>
             </a>
-          </li> -->
+          </li>
+        @endif
+        @if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin')
+            <li class="nav-item">
+                <a class="nav-link" href="/users">
+                    <i class="mdi mdi-account menu-icon icon-head"></i>
+                    <span class="menu-title">Users</span>
+                </a>
+            </li>
+        @endif
+            <li class="nav-item">
+                <a class="nav-link" href="/leads">
+                    <i class="mdi mdi-chart-bar menu-icon icon-head"></i>
+                    <span class="menu-title">Leads</span>
+                </a>
+            </li>
+
         </ul>
       </nav>
       <!-- partial -->

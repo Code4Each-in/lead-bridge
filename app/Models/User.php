@@ -22,6 +22,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
+        'status',
+        'address',
+        'profile',
+        'city',
+        'state',
+        'zip',
+        'agency_id',
+        'date_of_birth'
     ];
 
     /**
@@ -45,5 +54,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class);
+
+    }
+    public function leads()
+    {
+        return $this->belongsToMany(Lead::class);
     }
 }

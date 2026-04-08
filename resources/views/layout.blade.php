@@ -42,6 +42,13 @@
     $(document).ready(function() {});
     </script>
     @yield('js_scripts')
+    <script>
+    $(document).ready(function () {
+        $('.select2-basic').select2({
+            width: '100%'
+        });
+    });
+</script>
 </body>
 
 </html>

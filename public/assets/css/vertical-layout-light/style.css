@@ -15034,13 +15034,14 @@ a.close.disabled {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 700px;
   pointer-events: auto;
   background-color: #ffffff;
   background-clip: padding-box;
   border: 1px solid #CED4DA;
   border-radius: 0.3rem;
   outline: 0;
+  margin: auto;
 }
 
 .modal-backdrop {
@@ -19059,7 +19060,7 @@ a.text-dark:hover, a.text-dark:focus {
   .table, .jsgrid .jsgrid-table {
     border-collapse: collapse !important;
   }
-  
+
   .table td,
   .jsgrid .jsgrid-table td, .table th, .jsgrid .jsgrid-table th {
     background-color: #ffffff !important;

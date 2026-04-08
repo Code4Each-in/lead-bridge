@@ -13,12 +13,33 @@ class AuthController extends Controller
     }
 
     // Handle login
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
+
+    //     if (Auth::attempt($credentials)) {
+    //         $request->session()->regenerate();
+    //         return redirect()->intended('/dashboard');
+    //     }
+
+    //     return back()->withErrors([
+    //         'email' => 'Invalid credentials',
+    //     ]);
+    // }
     public function login(Request $request)
     {
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            // Regenerate session for security
             $request->session()->regenerate();
+
+            // Get the logged-in user
+            $user = Auth::user();
+
+            // Store agency_id in session
+            $request->session()->put('agency_id', $user->agency_id);
             return redirect()->intended('/dashboard');
         }
 
@@ -26,7 +47,6 @@ class AuthController extends Controller
             'email' => 'Invalid credentials',
         ]);
     }
-
     // Handle logout
     public function logout(Request $request)
     {
