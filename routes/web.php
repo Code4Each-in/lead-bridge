@@ -16,7 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth','active'])->group(function () {
     Route::resource('/dashboard', DashboardController::class);
 });
 
@@ -33,18 +33,18 @@ Route::post('/roles/update/{id}', [RoleController::class, 'update'])->name('role
 Route::get('/roles/delete/{id}', [RoleController::class, 'destroy'])->name('roles.delete');
 });
 Route::post('users/toggle-status/{id}', [UserController::class, 'toggleStatus'])->name('users.toggleStatus');
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','active'])->group(function () {
     Route::get('/agencies', [AgencyController::class, 'index'])->name('agencies.index');
     Route::post('/agencies/store', [AgencyController::class, 'store'])->name('agencies.store');
     Route::post('/agencies/update/{id}', [AgencyController::class, 'update'])->name('agencies.update');
     Route::get('/agencies/delete/{id}', [AgencyController::class, 'destroy'])->name('agencies.delete');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','active'])->group(function () {
     Route::get('/leads',[LeadController::class, 'index'])->name('leads.index');
     Route::post('/leads',[LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/{id}/update',[LeadController::class, 'update'])->name('leads.update');

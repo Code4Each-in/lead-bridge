@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    .card {
+  backdrop-filter: blur(10px);
+}
 
+body {
+  background: linear-gradient(135deg, #4e73df, #224abe);
+}
+
+.card input:focus {
+  box-shadow: none;
+  border-color: #4e73df;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #4e73df, #224abe);
+  border: none;
+}
+</style>
 <head>
   <!-- Required meta tags -->
   <meta charset="utf-8">
@@ -25,26 +43,49 @@
     <div class="container-fluid page-body-wrapper full-page-wrapper">
       <div class="content-wrapper d-flex align-items-center auth px-0">
         <div class="row w-100 mx-0">
-          <div class="col-lg-4 mx-auto">
-            <div class="auth-form-light text-left py-5 px-4 px-sm-5">
-              <div class="brand-logo">
-                <img src="<?php echo e(asset('assets/images/logo.svg')); ?>" alt="logo">
-              </div>
-              <h4>Hello! let's get started</h4>
-              <h6 class="font-weight-light">Sign in to continue.</h6>
-              <form class="pt-3" action="<?php echo e(route('login')); ?>" method="POST">
+        <div class="col-lg-4 mx-auto">
+        <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-body p-5">
+
+            <!-- Logo -->
+            <div class="text-center mb-4">
+                <img src="<?php echo e(asset('assets/images/leadbridge_logo.svg')); ?>" style="height:60px;">
+            </div>
+
+            <!-- Form -->
+            <form action="<?php echo e(route('login')); ?>" method="POST">
                 <?php echo csrf_field(); ?>
-                <div class="form-group">
-                  <input type="email" name="email"class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Email">
+
+                <!-- Email -->
+                <div class="form-group mb-3">
+                <label>Email Address</label>
+                <input type="email" name="email"
+                        class="form-control form-control-lg rounded-pill"
+                        placeholder="Enter your email">
                 </div>
-                <div class="form-group">
-                  <input type="password" name="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password">
+
+                <!-- Password -->
+                <div class="form-group mb-3">
+                <label>Password</label>
+                <input type="password" name="password"
+                        class="form-control form-control-lg rounded-pill"
+                        placeholder="Enter your password">
                 </div>
+
+                <!-- Error -->
                 <?php if($errors->has('email')): ?>
-                <span class="text-danger"><?php echo e($errors->first('email')); ?></span>
+                <div class="text-danger mb-2">
+                    <?php echo e($errors->first('email')); ?>
+
+                </div>
                 <?php endif; ?>
-                <div class="mt-3">
-                  <button class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit">SIGN IN</button>
+
+                <!-- Button -->
+                <div class="mt-4">
+                <button type="submit"
+                    class="btn btn-primary btn-lg btn-block rounded-pill shadow-sm">
+                    Sign In
+                </button>
                 </div>
                 <!-- <div class="my-2 d-flex justify-content-between align-items-center">
                   <div class="form-check">
@@ -63,9 +104,20 @@
                 <!-- <div class="text-center mt-4 font-weight-light">
                   Don't have an account? <a href="register.html" class="text-primary">Create</a>
                 </div> -->
-              </form>
+                <!-- Extra Links -->
+                <!-- <div class="d-flex justify-content-between mt-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="remember">
+                    <label class="form-check-label text-muted">Remember me</label>
+                </div>
+                <a href="#" class="text-primary">Forgot password?</a>
+                </div> -->
+
+            </form>
+
             </div>
-          </div>
+        </div>
+        </div>
         </div>
       </div>
       <!-- content-wrapper ends -->
