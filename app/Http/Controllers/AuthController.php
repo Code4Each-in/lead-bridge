@@ -28,18 +28,27 @@ class AuthController extends Controller
     // }
     public function login(Request $request)
     {
-
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            // Regenerate session for security
-            $request->session()->regenerate();
 
-            // Get the logged-in user
             $user = Auth::user();
+
+            // Check if user is inactive (except super admin)
+            if (!$user->status && $user->role_id !== 1) {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'email' => 'Your account has been deactivated.',
+                ]);
+            }
+
+            //Regenerate session after validation
+            $request->session()->regenerate();
 
             // Store agency_id in session
             $request->session()->put('agency_id', $user->agency_id);
+
             return redirect()->intended('/dashboard');
         }
 

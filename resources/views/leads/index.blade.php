@@ -597,8 +597,25 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
                 body: JSON.stringify({status: status})
             })
             .then(res => res.json())
-            .then(data => console.log(data.success))
-            .catch(err => console.error(err));
+            .then(data => {
+                // Show SweetAlert success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Updated',
+                    text: data.success,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            })
+            .catch(err => {
+                // Show SweetAlert error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                });
+                console.error(err);
+            });
         });
     });
     // Agency change handler (only fires for admin/super admin)

@@ -18,8 +18,12 @@ class LeadImportController extends Controller
             'file' => 'required|mimes:xls,xlsx'
         ]);
 
+        $userRole = strtolower(Auth::user()->role->name ?? '');
+
         $agencyIdSession = session('agency_id') ?? Auth::user()->agency_id;
-        if (!$agencyIdSession) {
+
+        // If not super admin, agency ID is required
+        if (!$agencyIdSession && strtolower($userRole) !== 'super admin') {
             return back()->with('error', 'Your agency is not set. Cannot upload leads.');
         }
 
@@ -50,21 +54,40 @@ class LeadImportController extends Controller
             return back()->with('error', 'Invalid template.');
         }
 
-        //  Get all active AEs in the same agency (role name based)
-        $agencyUsers = DB::table('users')
-            ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->where('users.status', 1) // only active users
-            ->where('roles.name', 'Account Executive') // role name, not ID
-            ->where('users.agency_id', $agencyIdSession)
-            ->orderBy('users.id')
-            ->select('users.*')
-            ->get()
-            ->values();
+        //  Get all active AEs in the same agency
+        // $agencyUsers = DB::table('users')
+        //     ->join('roles', 'users.role_id', '=', 'roles.id')
+        //     ->where('users.status', 1)
+        //     ->where('roles.name', 'Account Executive')
+        //     ->where('users.agency_id', $agencyIdSession)
+        //     ->orderBy('users.id')
+        //     ->select('users.*')
+        //     ->get()
+        //     ->values();
+
+        // if ($agencyUsers->isEmpty()) {
+        //     return back()->with('error', 'No active Account Executives found in your agency.');
+        // }
+
+
+    $query = DB::table('users')
+        ->join('roles', 'users.role_id', '=', 'roles.id')
+        ->where('users.status', 1)
+        ->whereRaw('LOWER(roles.name) = ?', ['account executive']); // case-insensitive role
+
+    // Only filter by agency if NOT Super Admin
+    if ($userRole !== 'super admin') {
+        $query->where('users.agency_id', $agencyIdSession);
+    }
+
+    $agencyUsers = $query->orderBy('users.id')
+        ->select('users.*')
+        ->get()
+        ->values();
 
         if ($agencyUsers->isEmpty()) {
-            return back()->with('error', 'No active Account Executives found in your agency.');
+            return back()->with('error', 'No active Account Executives found.');
         }
-
         $pointer = 0; // Round-robin pointer
         $insertedCount = 0;
         $failedCount = 0;
@@ -77,11 +100,11 @@ class LeadImportController extends Controller
             $phone    = trim($row[1] ?? '');
             $email    = trim($row[2] ?? '');
             $leadAgencyId = trim($row[7] ?? '');
-
             $reason = null;
 
             //  Agency restriction
-            if ($leadAgencyId != $agencyIdSession) {
+            // Skip agency restriction if Super Admin
+            if (strtolower($userRole) !== 'super admin' && $leadAgencyId != $agencyIdSession) {
                 $reason = 'You can only upload leads for your own agency.';
             }
 
@@ -131,16 +154,12 @@ class LeadImportController extends Controller
                     'updated_at' => now(),
                 ]);
 
-                //  Round-robin assignment to AEs
-                $assignCount = 2; // Assign 2 users per lead (change if needed)
-                for ($i = 0; $i < $assignCount; $i++) {
-                    $user = $agencyUsers[$pointer];
-                    DB::table('lead_user')->insert([
-                        'lead_id' => $leadId,
-                        'user_id' => $user->id,
-                    ]);
-                    $pointer = ($pointer + 1) % $agencyUsers->count();
-                }
+                $user = $agencyUsers[$pointer];
+                DB::table('lead_user')->insert([
+                    'lead_id' => $leadId,
+                    'user_id' => $user->id,
+                ]);
+                $pointer = ($pointer + 1) % $agencyUsers->count();
 
                 $insertedCount++;
 
