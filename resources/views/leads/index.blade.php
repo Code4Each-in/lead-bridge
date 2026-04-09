@@ -93,7 +93,6 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Company</th>
-                                <th>Agency</th>
                                 <th>Assigned To</th>
                                 <th>Status</th>
                                 <th>Source</th>
@@ -105,7 +104,6 @@
                             <tr>
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
-                                <td>{{ $lead->agency->agency_name ?? '-' }}</td>
                                 <td>
                                     @forelse($lead->users as $user)
                                         <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
@@ -134,6 +132,10 @@
                                 </td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
+                                    <a href="{{ url('/leads/'.$lead->id)}}"
+                                    class="btn btn-sm btn-primary">
+                                            <i class="mdi mdi mdi-eye "></i> view
+                                        </a>
                                     <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $lead->id }}">

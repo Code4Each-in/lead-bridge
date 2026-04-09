@@ -102,7 +102,6 @@ class UserController extends Controller
         // Only superadmin needs to provide agency
         if ($roleName === 'super admin') {
             $rules['agency_id'] = 'required|exists:agencies,id';
-            $rules['status'] = 'required';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -125,7 +124,7 @@ class UserController extends Controller
             'email'         => $request->email,
             'password'      => Hash::make($request->password),
             'role_id'       => $request->role_id,
-            'status'        => $status,
+            'status'        => 1, // always active
             'city'          => $request->city,
             'state'         => $request->state,
             'zip'           => $request->zip,
@@ -180,7 +179,6 @@ class UserController extends Controller
     {
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
-
         $rules = [
             'name'          => 'required',
             'email'         => "required|email|unique:users,email,$id",
@@ -195,10 +193,10 @@ class UserController extends Controller
 
         if ($roleName === 'super admin') {
             $rules['agency_id'] = 'required|exists:agencies,id';
-            $rules['status'] = 'required';
         }
 
         $validator = Validator::make($request->all(), $rules);
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }

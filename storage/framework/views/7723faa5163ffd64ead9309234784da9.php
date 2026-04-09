@@ -92,7 +92,6 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Company</th>
-                                <th>Agency</th>
                                 <th>Assigned To</th>
                                 <th>Status</th>
                                 <th>Source</th>
@@ -104,7 +103,6 @@
                             <tr>
                                 <td><?php echo e($lead->name); ?></td>
                                 <td><?php echo e($lead->company); ?></td>
-                                <td><?php echo e($lead->agency->agency_name ?? '-'); ?></td>
                                 <td>
                                     <?php $__empty_1 = true; $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                         <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
@@ -136,6 +134,10 @@
                                 </td>
                                 <td><?php echo e($lead->source); ?></td>
                                 <td>
+                                    <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
+                                    class="btn btn-sm btn-primary">
+                                            <i class="mdi mdi mdi-eye "></i> view
+                                        </a>
                                     <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
                                             data-target="#editModal<?php echo e($lead->id); ?>">

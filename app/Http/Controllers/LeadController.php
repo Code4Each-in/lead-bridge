@@ -106,6 +106,7 @@ class LeadController extends Controller
         }
 
         $lead = Lead::create([
+
             'name'      => $request->name,
             'phone'     => $request->phone,
             'email'     => $request->email,
@@ -116,6 +117,7 @@ class LeadController extends Controller
             'agency_id' => $request->agency_id,
             'notes'     => $request->notes,
             'documents' => $file,
+            'created_by'  => $authUser->id, 
         ]);
 
         $lead->users()->sync($request->assigned_user_id);
@@ -213,5 +215,11 @@ class LeadController extends Controller
         $lead->save();
 
         return response()->json(['success' => 'Status updated successfully']);
+    }
+    public function showLead($id)
+    {
+        $lead = Lead::with(['agency', 'users'])->findOrFail($id);
+
+        return view('leads.show', compact('lead'));
     }
 }

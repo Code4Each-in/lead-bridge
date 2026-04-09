@@ -155,13 +155,13 @@
                     </div>
 
                     <?php if($isSuperAdmin): ?>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
                         </select>
-                    </div>
+                    </div> -->
                     <?php endif; ?>
 
                     <div class="form-group">

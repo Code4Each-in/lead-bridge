@@ -49,6 +49,7 @@ Route::middleware(['auth','active'])->group(function () {
     Route::post('/leads',[LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/{id}/update',[LeadController::class, 'update'])->name('leads.update');
     Route::get('/leads/{id}/delete',[LeadController::class, 'destroy'])->name('leads.delete');
+    Route::get('/leads/{leadId}', [LeadController::class, 'showLead'])->name('leads.show');
 
 });
 // Route::get('/upload', function () {

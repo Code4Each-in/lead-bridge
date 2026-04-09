@@ -9,7 +9,7 @@
 
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_settings-panel.html -->
-      <div class="theme-setting-wrapper">
+      <!-- <div class="theme-setting-wrapper">
         <div id="settings-trigger"><i class="ti-settings"></i></div>
         <div id="theme-settings" class="settings-panel">
           <i class="settings-close ti-close"></i>
@@ -26,7 +26,7 @@
             <div class="tiles default"></div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       @include('includes.rightsidebar')
       @include('includes.sidebar')
