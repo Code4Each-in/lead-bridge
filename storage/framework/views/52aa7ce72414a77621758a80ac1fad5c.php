@@ -8,13 +8,23 @@
     }
 
 </style>
+<?php
+    $authUser = Auth::user();
+    $isSuperAdmin = strtolower($authUser->role->name) === 'super admin';
+    $agency = $authUser->agency; // assuming relationship `agency` exists
+?>
 <div class="row">
         <div class="col-md-12 grid-margin">
             <div class="card">
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between mb-3">
-                        <h4 class="card-title">Users</h4>
+                        <h4 class="card-title"> <?php if($isSuperAdmin): ?>
+                                           Users
+                                        <?php else: ?>
+                                            <?php echo e($agency->agency_name); ?>
+
+                                        <?php endif; ?></h4>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">
                             Add User
                         </button>
@@ -34,7 +44,9 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Address</th>
+                                    <?php if($isSuperAdmin): ?>
                                     <th>Agency</th>
+                                    <?php endif; ?>
                                     <th>Status</th>
                                     <th width="180">Action</th>
                                 </tr>
@@ -54,21 +66,27 @@
                                         ])->filter()->implode(', ')); ?>
 
                                     </td>
+                                    <?php if($isSuperAdmin): ?>
                                     <td><?php echo e($user->agency->agency_name ?? 'N/A'); ?></td>
-
+                                    <?php endif; ?>
                                     <td>
-                                        <div class="custom-control custom-switch">
-                                            <input
-                                                type="checkbox"
-                                                class="custom-control-input toggle-status"
-                                                id="status_<?php echo e($user->id); ?>"
-                                                data-id="<?php echo e($user->id); ?>"
-                                                data-url="<?php echo e(route('users.toggleStatus', $user->id)); ?>"
-                                                <?php echo e($user->status ? 'checked' : ''); ?>
+                                        <?php if($isSuperAdmin): ?>
+                                            <div class="custom-control custom-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    class="custom-control-input toggle-status"
+                                                    id="status_<?php echo e($user->id); ?>"
+                                                    data-id="<?php echo e($user->id); ?>"
+                                                    data-url="<?php echo e(route('users.toggleStatus', $user->id)); ?>"
+                                                    <?php echo e($user->status ? 'checked' : ''); ?>
 
-                                            >
-                                            <label class="custom-control-label" for="status_<?php echo e($user->id); ?>"></label>
-                                        </div>
+                                                >
+                                                <label class="custom-control-label" for="status_<?php echo e($user->id); ?>"></label>
+                                            </div>
+                                        <?php else: ?>
+                                            <?php echo e($user->status ? 'Active' : 'Inactive'); ?>
+
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-primary"
@@ -125,11 +143,18 @@
                         <select name="role_id" class="form-control">
                             <option value="">Select Role</option>
                             <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($role->id); ?>"><?php echo e($role->name); ?></option>
+                                <?php if($role->name != 'Super Admin' || $isSuperAdmin): ?>
+                                    <option value="<?php echo e($role->id); ?>"
+                                        <?php echo e(isset($user) && $user->role_id == $role->id ? 'selected' : ''); ?>>
+                                        <?php echo e($role->name); ?>
+
+                                    </option>
+                                <?php endif; ?>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
 
+                    <?php if($isSuperAdmin): ?>
                     <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
@@ -137,6 +162,7 @@
                             <option value="0">Inactive</option>
                         </select>
                     </div>
+                    <?php endif; ?>
 
                     <div class="form-group">
                         <label class="required-label">Date of Birth</label>
@@ -145,31 +171,29 @@
 
                     <div class="form-group">
                         <label class="required-label">City</label>
-                        <input type="text" name="city" class="form-control" placeholder="Location">
+                        <input type="text" name="city" class="form-control" value="<?php echo e($isSuperAdmin ? old('city') : $agency->city); ?>">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">State</label>
-                        <input type="text" name="state" class="form-control" placeholder="State">
+                        <input type="text" name="state" class="form-control" value="<?php echo e($isSuperAdmin ? old('state') : $agency->state); ?>">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">Zip</label>
-                        <input type="text" name="zip" class="form-control" placeholder="Zip">
+                        <input type="text" name="zip" class="form-control" value="<?php echo e($isSuperAdmin ? old('zip') : $agency->zip); ?>">
                     </div>
+                    <!-- Agency (only for superadmin) -->
+                    <?php if($isSuperAdmin): ?>
                     <div class="form-group">
                         <label>Agency</label>
                         <select name="agency_id" class="form-control">
                             <option value="">Select Agency</option>
-                            <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($agency->id); ?>"
-                                    <?php echo e(isset($user) && $user->agency_id == $agency->id ? 'selected' : ''); ?>>
-                                    <?php echo e($agency->agency_name); ?>
-
-                                </option>
+                            <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agencyItem): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($agencyItem->id); ?>"><?php echo e($agencyItem->agency_name); ?></option>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
+                    <?php endif; ?>
+
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">
@@ -186,7 +210,7 @@
 
                     <div class="form-group">
                         <label class="required-label">Address</label>
-                        <textarea name="address" class="form-control" rows="4"></textarea>
+                        <textarea name="address" class="form-control" rows="4"><?php echo e($isSuperAdmin ? old('address') : $agency->address); ?></textarea>
                     </div>
                 </div>
 
@@ -230,15 +254,19 @@
                     <div class="form-group">
                         <label class="required-label">Role</label>
                         <select name="role_id" class="form-control">
+                            <option value="">Select Role</option>
                             <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($role->id); ?>" <?php echo e($user->role_id == $role->id ? 'selected' : ''); ?>>
-                                    <?php echo e($role->name); ?>
+                                <?php if($role->name != 'Super Admin' || $isSuperAdmin): ?>
+                                    <option value="<?php echo e($role->id); ?>" <?php echo e($user->role_id == $role->id ? 'selected' : ''); ?>>
+                                        <?php echo e($role->name); ?>
 
-                                </option>
+                                    </option>
+                                <?php endif; ?>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
-
+                    <!-- Status (only for superadmin) -->
+                    <?php if($isSuperAdmin): ?>
                     <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
@@ -246,7 +274,7 @@
                             <option value="0" <?php echo e($user->status == 0 ? 'selected' : ''); ?>>Inactive</option>
                         </select>
                     </div>
-
+                    <?php endif; ?>
                     <div class="form-group">
                         <label class="required-label">Date of Birth</label>
                         <input type="date" name="date_of_birth" value="<?php echo e($user->date_of_birth); ?>" class="form-control">
@@ -254,31 +282,31 @@
 
                     <div class="form-group">
                         <label class="required-label">City</label>
-                        <input type="text" name="city" value="<?php echo e($user->city); ?>" class="form-control" placeholder="Location">
+                        <input type="text" name="city" class="form-control" value="<?php echo e($isSuperAdmin ? $user->city : $agency->city); ?>">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">State</label>
-                        <input type="text" name="state" value="<?php echo e($user->state); ?>" class="form-control" placeholder="State">
+                        <input type="text" name="state" class="form-control" value="<?php echo e($isSuperAdmin ? $user->state : $agency->state); ?>">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">Zip</label>
-                        <input type="text" name="zip" value="<?php echo e($user->zip); ?>" class="form-control" placeholder="Zip">
+                        <input type="text" name="zip" class="form-control" value="<?php echo e($isSuperAdmin ? $user->zip : $agency->zip); ?>">
                     </div>
+                    <!-- Agency (only for superadmin) -->
+                    <?php if($isSuperAdmin): ?>
                     <div class="form-group">
                         <label>Agency</label>
                         <select name="agency_id" class="form-control">
                             <option value="">Select Agency</option>
-                            <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($agency->id); ?>"
-                                    <?php echo e($user->agency_id == $agency->id ? 'selected' : ''); ?>>
-                                    <?php echo e($agency->agency_name); ?>
+                            <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agencyItem): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($agencyItem->id); ?>" <?php echo e($user->agency_id == $agencyItem->id ? 'selected' : ''); ?>>
+                                    <?php echo e($agencyItem->agency_name); ?>
 
                                 </option>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
+                    <?php endif; ?>
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">
@@ -295,9 +323,13 @@
                         </div>
                     </div>
 
+                    <!-- Address fields (prefill for non-superadmin) -->
                     <div class="form-group">
                         <label class="required-label">Address</label>
-                        <textarea name="address" class="form-control" rows="4"><?php echo e($user->address); ?></textarea>
+                        <textarea name="address" class="form-control" rows="4">
+                            <?php echo e($isSuperAdmin ? $user->address : $agency->address); ?>
+
+                        </textarea>
                     </div>
                 </div>
 

@@ -63,10 +63,12 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
+                         <?php if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin' || strtolower(auth()->user()->role->name) == 'mis user'): ?>
                         <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                             Add Lead
                         </button>
-
+                        <?php endif; ?>
+                        <?php if($isAdminOrMIS): ?>
                         <form id="uploadExcelForm" action="<?php echo e(route('import')); ?>" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                             <?php echo csrf_field(); ?>
                             <input
@@ -80,6 +82,7 @@
                         </form>
 
                         <a href="<?php echo e(route('leads.template')); ?>" class="btn btn-info">Download Template</a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -113,6 +116,7 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
+                                    <?php if($isSuperAdmin): ?>
                                     <select class="lead-status-simple" data-lead-id="<?php echo e($lead->id); ?>">
                                         <?php
                                             $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
@@ -124,14 +128,19 @@
                                             </option>
                                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
+
+                                        <?php else: ?>
+                                            <?php echo e($lead->status); ?>
+
+                                        <?php endif; ?>
                                 </td>
                                 <td><?php echo e($lead->source); ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary edit-lead-btn"
+                                    <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
                                             data-target="#editModal<?php echo e($lead->id); ?>">
                                         <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button>
+                                    </button> -->
                                     <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
                                        class="btn btn-sm btn-danger btn-delete">
                                         <i class="mdi mdi-trash-can"></i> Delete
@@ -225,7 +234,7 @@
                             
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="required-label">Assign User</label>
+                                    <label>Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"
@@ -241,7 +250,7 @@
                             
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label class="required-label">Assign User</label>
+                                    <label >Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"

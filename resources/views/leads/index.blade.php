@@ -64,10 +64,12 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
+                         @if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin' || strtolower(auth()->user()->role->name) == 'mis user')
                         <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                             Add Lead
                         </button>
-
+                        @endif
+                        @if($isAdminOrMIS)
                         <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                             @csrf
                             <input
@@ -81,6 +83,7 @@
                         </form>
 
                         <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
+                        @endif
                     </div>
                 </div>
 
@@ -113,6 +116,7 @@
                                     @endforelse
                                 </td>
                                 <td>
+                                    @if($isSuperAdmin)
                                     <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
                                         @php
                                             $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
@@ -123,14 +127,18 @@
                                             </option>
                                         @endforeach
                                     </select>
+
+                                        @else
+                                            {{ $lead->status }}
+                                        @endif
                                 </td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary edit-lead-btn"
+                                    <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
                                             data-toggle="modal"
                                             data-target="#editModal{{ $lead->id }}">
                                         <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button>
+                                    </button> -->
                                     <a href="{{ route('leads.delete', $lead->id) }}"
                                        class="btn btn-sm btn-danger btn-delete">
                                         <i class="mdi mdi-trash-can"></i> Delete
@@ -224,7 +232,7 @@
                             {{-- Assign User (populated by agency change) --}}
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="required-label">Assign User</label>
+                                    <label>Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"
@@ -240,7 +248,7 @@
                             {{-- Assign User: pre-loaded with same-agency users --}}
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label class="required-label">Assign User</label>
+                                    <label >Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"

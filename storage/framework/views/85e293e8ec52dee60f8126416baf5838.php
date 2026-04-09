@@ -246,13 +246,12 @@ unset($__errorArgs, $__bag); ?>
                         <label class="profile-label">Profile Photo</label>
 
                         
-                        <?php if(auth()->user()->profile): ?>
-                            <div class="mb-2 d-flex align-items-center gap-2">
-                                <img src="<?php echo e(asset('storage/' . auth()->user()->profile)); ?>"
-                                    class="rounded-circle current-thumb"
-                                    alt="Current photo">
-                            </div>
-                        <?php endif; ?>
+                        <div class="mb-2 d-flex align-items-center gap-2">
+                            <img id="profilePreview"
+                                src="<?php echo e(auth()->user()->profile ? asset('storage/' . auth()->user()->profile) : asset('assets/images/default-profile.png')); ?>"
+                                class="rounded-circle current-thumb"
+                                alt="Profile Preview">
+                        </div>
 
                         <div class="input-group">
                             
@@ -277,6 +276,10 @@ unset($__errorArgs, $__bag); ?>"
                                 readonly>
 
                             
+                            <input type="hidden" name="pendingProfile" id="pendingProfile" value="<?php echo e(old('pendingProfile')); ?>">
+                            <input type="hidden" name="pendingProfileName" id="pendingProfileName" value="<?php echo e(old('pendingProfileName')); ?>">
+
+                            
                             <span class="input-group-append">
                                 <button class="btn btn-primary file-upload-browse" type="button"
                                         onclick="document.getElementById('profilePhotoInput').click();">
@@ -295,6 +298,7 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
                         </div>
+
                         <small class="text-muted mt-1 d-block">JPG, JPEG or PNG · Max 2MB</small>
                     </div>
 
@@ -490,10 +494,38 @@ unset($__errorArgs, $__bag); ?>
 </style>
 
 <script>
-// Show chosen filename in the text box
-document.getElementById('profilePhotoInput').addEventListener('change', function () {
-    const nameBox = document.getElementById('profilePhotoName');
-    nameBox.value = this.files.length > 0 ? this.files[0].name : '';
+const fileInput = document.getElementById('profilePhotoInput');
+const nameBox = document.getElementById('profilePhotoName');
+const preview = document.getElementById('profilePreview');
+const pendingInput = document.getElementById('pendingProfile');
+const pendingNameInput = document.getElementById('pendingProfileName');
+
+fileInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        const file = this.files[0];
+        nameBox.value = file.name;
+        pendingNameInput.value = file.name;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            pendingInput.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// On page load, restore preview and filename if they exist
+window.addEventListener('DOMContentLoaded', () => {
+    const oldPending = pendingInput.value;
+    const oldName = pendingNameInput.value;
+
+    if (oldPending) {
+        preview.src = oldPending;
+    }
+    if (oldName) {
+        nameBox.value = oldName;
+    }
 });
 </script>
 <?php $__env->stopSection(); ?>

@@ -90,7 +90,7 @@ class LeadController extends Controller
             'city'               => 'required|string|max:100',
             'source'             => 'required|string|max:100',
             'agency_id'          => 'nullable|exists:agencies,id',
-            'assigned_user_id'   => 'required|array|min:1',
+            'assigned_user_id'   => 'nullable|array|min:1',
             'assigned_user_id.*' => 'exists:users,id',
             'notes'              => 'required|string',
             'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -145,7 +145,7 @@ class LeadController extends Controller
             'source'             => 'required|string|max:100',
             'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
             'agency_id'          => 'nullable|exists:agencies,id',
-            'assigned_user_id'   => 'required|array|min:1',
+            'assigned_user_id'   => 'nullable|array|min:1',
             'assigned_user_id.*' => 'exists:users,id',
             'notes'              => 'required|string',
             'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -183,10 +183,10 @@ class LeadController extends Controller
         $filename = 'leads_template.csv';
 
         // Header row
-        $header = ['name','phone','email','company','city','source','status','agency_id','notes'];
+        $header = ['name','phone','email','company','city','source','status','notes'];
 
         // Example row (just a single row to show layout)
-        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','1','Test note'];
+        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note'];
 
         // Open output stream
         $handle = fopen('php://temp', 'r+');

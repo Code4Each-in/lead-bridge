@@ -9,13 +9,22 @@
     }
 
 </style>
+@php
+    $authUser = Auth::user();
+    $isSuperAdmin = strtolower($authUser->role->name) === 'super admin';
+    $agency = $authUser->agency; // assuming relationship `agency` exists
+@endphp
 <div class="row">
         <div class="col-md-12 grid-margin">
             <div class="card">
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between mb-3">
-                        <h4 class="card-title">Users</h4>
+                        <h4 class="card-title"> @if($isSuperAdmin)
+                                           Users
+                                        @else
+                                            {{ $agency->agency_name }}
+                                        @endif</h4>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">
                             Add User
                         </button>
@@ -35,7 +44,9 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Address</th>
+                                    @if($isSuperAdmin)
                                     <th>Agency</th>
+                                    @endif
                                     <th>Status</th>
                                     <th width="180">Action</th>
                                 </tr>
@@ -54,20 +65,25 @@
                                             $user->zip
                                         ])->filter()->implode(', ') }}
                                     </td>
+                                    @if($isSuperAdmin)
                                     <td>{{ $user->agency->agency_name ?? 'N/A' }}</td>
-
+                                    @endif
                                     <td>
-                                        <div class="custom-control custom-switch">
-                                            <input
-                                                type="checkbox"
-                                                class="custom-control-input toggle-status"
-                                                id="status_{{ $user->id }}"
-                                                data-id="{{ $user->id }}"
-                                                data-url="{{ route('users.toggleStatus', $user->id) }}"
-                                                {{ $user->status ? 'checked' : '' }}
-                                            >
-                                            <label class="custom-control-label" for="status_{{ $user->id }}"></label>
-                                        </div>
+                                        @if($isSuperAdmin)
+                                            <div class="custom-control custom-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    class="custom-control-input toggle-status"
+                                                    id="status_{{ $user->id }}"
+                                                    data-id="{{ $user->id }}"
+                                                    data-url="{{ route('users.toggleStatus', $user->id) }}"
+                                                    {{ $user->status ? 'checked' : '' }}
+                                                >
+                                                <label class="custom-control-label" for="status_{{ $user->id }}"></label>
+                                            </div>
+                                        @else
+                                            {{ $user->status ? 'Active' : 'Inactive' }}
+                                        @endif
                                     </td>
                                     <td>
                                         <button class="btn btn-sm btn-primary"
@@ -124,11 +140,17 @@
                         <select name="role_id" class="form-control">
                             <option value="">Select Role</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                @if($role->name != 'Super Admin' || $isSuperAdmin)
+                                    <option value="{{ $role->id }}"
+                                        {{ isset($user) && $user->role_id == $role->id ? 'selected' : '' }}>
+                                        {{ $role->name }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
 
+                    @if($isSuperAdmin)
                     <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
@@ -136,6 +158,7 @@
                             <option value="0">Inactive</option>
                         </select>
                     </div>
+                    @endif
 
                     <div class="form-group">
                         <label class="required-label">Date of Birth</label>
@@ -144,30 +167,29 @@
 
                     <div class="form-group">
                         <label class="required-label">City</label>
-                        <input type="text" name="city" class="form-control" placeholder="Location">
+                        <input type="text" name="city" class="form-control" value="{{ $isSuperAdmin ? old('city') : $agency->city }}">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">State</label>
-                        <input type="text" name="state" class="form-control" placeholder="State">
+                        <input type="text" name="state" class="form-control" value="{{ $isSuperAdmin ? old('state') : $agency->state }}">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">Zip</label>
-                        <input type="text" name="zip" class="form-control" placeholder="Zip">
+                        <input type="text" name="zip" class="form-control" value="{{ $isSuperAdmin ? old('zip') : $agency->zip }}">
                     </div>
+                    <!-- Agency (only for superadmin) -->
+                    @if($isSuperAdmin)
                     <div class="form-group">
                         <label>Agency</label>
                         <select name="agency_id" class="form-control">
                             <option value="">Select Agency</option>
-                            @foreach($agencies as $agency)
-                                <option value="{{ $agency->id }}"
-                                    {{ isset($user) && $user->agency_id == $agency->id ? 'selected' : '' }}>
-                                    {{ $agency->agency_name }}
-                                </option>
+                            @foreach($agencies as $agencyItem)
+                                <option value="{{ $agencyItem->id }}">{{ $agencyItem->agency_name }}</option>
                             @endforeach
                         </select>
                     </div>
+                    @endif
+
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">
@@ -184,7 +206,7 @@
 
                     <div class="form-group">
                         <label class="required-label">Address</label>
-                        <textarea name="address" class="form-control" rows="4"></textarea>
+                        <textarea name="address" class="form-control" rows="4">{{ $isSuperAdmin ? old('address') : $agency->address }}</textarea>
                     </div>
                 </div>
 
@@ -228,14 +250,18 @@
                     <div class="form-group">
                         <label class="required-label">Role</label>
                         <select name="role_id" class="form-control">
+                            <option value="">Select Role</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
-                                    {{ $role->name }}
-                                </option>
+                                @if($role->name != 'Super Admin' || $isSuperAdmin)
+                                    <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                                        {{ $role->name }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
-
+                    <!-- Status (only for superadmin) -->
+                    @if($isSuperAdmin)
                     <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
@@ -243,7 +269,7 @@
                             <option value="0" {{ $user->status == 0 ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
-
+                    @endif
                     <div class="form-group">
                         <label class="required-label">Date of Birth</label>
                         <input type="date" name="date_of_birth" value="{{ $user->date_of_birth }}" class="form-control">
@@ -251,30 +277,30 @@
 
                     <div class="form-group">
                         <label class="required-label">City</label>
-                        <input type="text" name="city" value="{{ $user->city }}" class="form-control" placeholder="Location">
+                        <input type="text" name="city" class="form-control" value="{{ $isSuperAdmin ? $user->city : $agency->city }}">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">State</label>
-                        <input type="text" name="state" value="{{ $user->state }}" class="form-control" placeholder="State">
+                        <input type="text" name="state" class="form-control" value="{{ $isSuperAdmin ? $user->state : $agency->state }}">
                     </div>
-
                     <div class="form-group">
                         <label class="required-label">Zip</label>
-                        <input type="text" name="zip" value="{{ $user->zip }}" class="form-control" placeholder="Zip">
+                        <input type="text" name="zip" class="form-control" value="{{ $isSuperAdmin ? $user->zip : $agency->zip }}">
                     </div>
+                    <!-- Agency (only for superadmin) -->
+                    @if($isSuperAdmin)
                     <div class="form-group">
                         <label>Agency</label>
                         <select name="agency_id" class="form-control">
                             <option value="">Select Agency</option>
-                            @foreach($agencies as $agency)
-                                <option value="{{ $agency->id }}"
-                                    {{ $user->agency_id == $agency->id ? 'selected' : '' }}>
-                                    {{ $agency->agency_name }}
+                            @foreach($agencies as $agencyItem)
+                                <option value="{{ $agencyItem->id }}" {{ $user->agency_id == $agencyItem->id ? 'selected' : '' }}>
+                                    {{ $agencyItem->agency_name }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
+                    @endif
                     <div class="form-group">
                         <label>Profile</label>
                         <div class="input-group">
@@ -291,9 +317,12 @@
                         </div>
                     </div>
 
+                    <!-- Address fields (prefill for non-superadmin) -->
                     <div class="form-group">
                         <label class="required-label">Address</label>
-                        <textarea name="address" class="form-control" rows="4">{{ $user->address }}</textarea>
+                        <textarea name="address" class="form-control" rows="4">
+                            {{ $isSuperAdmin ? $user->address : $agency->address }}
+                        </textarea>
                     </div>
                 </div>
 
