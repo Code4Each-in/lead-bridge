@@ -11121,7 +11121,7 @@ fieldset:disabled .wizard > .actions a,
 }
 
 .btn-secondary, .wizard > .actions .disabled a {
-  color: #212529;
+  color: #fff;
   background-color: #a3a4a5;
   border-color: #a3a4a5;
 }
