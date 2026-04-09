@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Agency;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,18 +20,27 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-public function boot()
-{
-    View::composer('*', function ($view) {
-        $agencies = Agency::all(); // all agencies
+    public function boot()
+    {
+        View::composer('*', function ($view) {
 
-        $selectedIds = session('agency_ids', []); // IDs stored in session
-        $currentAgency = !empty($selectedIds) ? Agency::find($selectedIds[0]) : null;
+            $user = Auth::user();
 
-        $view->with([
-            'agencies' => $agencies,
-            'currentAgency' => $currentAgency
-        ]);
-    });
-}
+            // Always prefer logged-in user's agency
+            if ($user && $user->agency) {
+                $currentAgency = $user->agency;
+            } else {
+                // fallback (for superadmin or no direct agency)
+                $selectedIds = session('agency_ids', []);
+                $currentAgency = !empty($selectedIds) ? Agency::find($selectedIds[0]) : null;
+            }
+
+            $agencies = Agency::all();
+
+            $view->with([
+                'agencies' => $agencies,
+                'currentAgency' => $currentAgency
+            ]);
+        });
+    }
 }

@@ -50,7 +50,10 @@ class AgencyController extends Controller
             // Upload logo
             $logoPath = null;
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos', 'public');
+                $filename = time() . '_' . $request->file('logo')->getClientOriginalName();
+                $request->file('logo')->move(public_path('assets/images'), $filename);
+
+                $logoPath = 'assets/images/' . $filename;
             }
 
             // Create agency
@@ -77,7 +80,6 @@ class AgencyController extends Controller
                 'state'     => $request->state,
                 'zip'       => $request->zip,
                 'agency_id' => $agency->id,
-                'profile'   => $logoPath,
             ]);
 
             DB::commit();
@@ -115,15 +117,23 @@ class AgencyController extends Controller
         try {
             // Upload new logo
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos', 'public');
-                $agency->logo = $logoPath;
+
+                // delete old file
+                if ($agency->logo && file_exists(public_path($agency->logo))) {
+                    unlink(public_path($agency->logo));
+                }
+
+                $filename = time() . '_' . $request->file('logo')->getClientOriginalName();
+                $request->file('logo')->move(public_path('assets/images'), $filename);
+
+                $agency->logo = 'assets/images/' . $filename;
             }
 
             $agency->update($request->except(['logo', 'password']));
 
             // Update user
             $user = User::where('agency_id', $agency->id)->first();
-
+dd($user);
             if ($user) {
                 $user->update([
                     'name'    => $request->primary_contact_name,

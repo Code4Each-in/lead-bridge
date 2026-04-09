@@ -13,29 +13,14 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
-    // public function index()
-    // {
-    //     $selectedAgencyIds = session('agency_ids', []);
-
-    //     $query = User::with('role')->latest();
-
-    //     if (!empty($selectedAgencyIds)) {
-    //         $query->whereIn('agency_id', $selectedAgencyIds);
-    //     }
-
-    //     $users = $query->get();
-
-    //     $roles = Role::all();
-    //     $agencies = Agency::all();
-
-    //     return view('users.index', compact('users', 'roles', 'agencies'));
-    // }
     public function index()
     {
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
 
-        $query = User::with('role')->latest();
+          $query = User::with('role')
+            ->where('id', '!=', $authUser->id)
+            ->latest();
 
         if (in_array($roleName, ['mis user', 'admin'])) {
             // Only users of the same agency
