@@ -149,23 +149,52 @@
                                     <div class="detail-row">
                                         <i class="mdi mdi-calendar-check"></i>
                                         <span class="label">Start date:</span>
-                                        <span>----</span>
+                                        <span>{{ $lead->start_date ?? '---' }}</span>
                                     </div>
 
                                     <div class="detail-row">
                                         <i class="mdi mdi-calendar-clock"></i>
                                         <span class="label">End date:</span>
-                                        <span>----</span>
+                                        <span>{{ $lead->end_date ?? '---' }}</span>
                                     </div>
                                     <div class="detail-row">
                                         <i class="mdi mdi-file-excel"></i>
                                         <span class="label">Notes:</span>
                                         <span>{{ $lead->notes ?? '---' }}</span>
                                     </div>
-                                     <div class="detail-row">
-                                         <i class="mdi mdi-file-document"></i>
-                                        <span class="label">Document:</span>
-                                        <span>{{ $lead->documents ?? '---' }}</span>
+                                    <div class="detail-item">
+                                        <i class="mdi mdi-file-document"></i>  <span class="label">Documents:</span>
+                                        <span style="margin-left: 40px;">
+                                        @php
+                                            $documents = $lead->documents ? explode(',', $lead->documents) : [];
+                                            $icons = [
+                                                'pdf' => 'mdi mdi-file-pdf',
+                                                'doc' => 'mdi mdi-file-word',
+                                                'docx' => 'mdi mdi-file-word',
+                                                'xls' => 'mdi mdi-file-excel',
+                                                'xlsx' => 'mdi mdi-file-excel',
+                                                'jpg' => 'mdi mdi-file-image',
+                                                'jpeg' => 'mdi mdi-file-image',
+                                                'png' => 'mdi mdi-file-image'
+                                            ];
+                                        @endphp
+
+                                        @if (empty($documents))
+                                            <span>No documents uploaded</span>
+                                        @else
+                                            @foreach ($documents as $doc)
+                                                @php
+                                                    $ext = pathinfo(trim($doc), PATHINFO_EXTENSION);
+                                                    $icon = $icons[strtolower($ext)] ?? 'mdi mdi-file';
+                                                @endphp
+                                                <button class="btn btn-outline-primary btn-sm mb-1"
+                                                    title="{{ trim($doc) }}"
+                                                    onclick="window.open('{{ asset('storage/' . trim($doc)) }}', '_blank')">
+                                                    <i class="{{ $icon }}"></i>
+                                                </button>
+                                            @endforeach
+                                        @endif
+                                        </span>
                                     </div>
                                     <div class="detail-row">
                                          <i class="mdi mdi-information-outline"></i>
