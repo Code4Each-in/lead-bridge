@@ -133,7 +133,6 @@ class AgencyController extends Controller
 
             // Update user
             $user = User::where('agency_id', $agency->id)->first();
-dd($user);
             if ($user) {
                 $user->update([
                     'name'    => $request->primary_contact_name,

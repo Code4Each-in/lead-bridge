@@ -146,14 +146,13 @@
                     <div class="mb-4">
                         <label class="profile-label">Profile Photo</label>
 
-                        {{-- Current photo preview row --}}
-                        @if(auth()->user()->profile)
-                            <div class="mb-2 d-flex align-items-center gap-2">
-                                <img src="{{ asset('storage/' . auth()->user()->profile) }}"
-                                    class="rounded-circle current-thumb"
-                                    alt="Current photo">
-                            </div>
-                        @endif
+                        {{-- Image preview --}}
+                        <div class="mb-2 d-flex align-items-center gap-2">
+                            <img id="profilePreview"
+                                src="{{ auth()->user()->profile ? asset('storage/' . auth()->user()->profile) : asset('assets/images/default-profile.png') }}"
+                                class="rounded-circle current-thumb"
+                                alt="Profile Preview">
+                        </div>
 
                         <div class="input-group">
                             {{-- Hidden real file input --}}
@@ -170,6 +169,10 @@
                                 placeholder="Upload Image"
                                 readonly>
 
+                            {{-- Hidden input to temporarily store base64 of selected file --}}
+                            <input type="hidden" name="pendingProfile" id="pendingProfile" value="{{ old('pendingProfile') }}">
+                            <input type="hidden" name="pendingProfileName" id="pendingProfileName" value="{{ old('pendingProfileName') }}">
+
                             {{-- Trigger button --}}
                             <span class="input-group-append">
                                 <button class="btn btn-primary file-upload-browse" type="button"
@@ -182,6 +185,7 @@
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
+
                         <small class="text-muted mt-1 d-block">JPG, JPEG or PNG · Max 2MB</small>
                     </div>
 
@@ -377,10 +381,38 @@
 </style>
 
 <script>
-// Show chosen filename in the text box
-document.getElementById('profilePhotoInput').addEventListener('change', function () {
-    const nameBox = document.getElementById('profilePhotoName');
-    nameBox.value = this.files.length > 0 ? this.files[0].name : '';
+const fileInput = document.getElementById('profilePhotoInput');
+const nameBox = document.getElementById('profilePhotoName');
+const preview = document.getElementById('profilePreview');
+const pendingInput = document.getElementById('pendingProfile');
+const pendingNameInput = document.getElementById('pendingProfileName');
+
+fileInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        const file = this.files[0];
+        nameBox.value = file.name;
+        pendingNameInput.value = file.name;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            pendingInput.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// On page load, restore preview and filename if they exist
+window.addEventListener('DOMContentLoaded', () => {
+    const oldPending = pendingInput.value;
+    const oldName = pendingNameInput.value;
+
+    if (oldPending) {
+        preview.src = oldPending;
+    }
+    if (oldName) {
+        nameBox.value = oldName;
+    }
 });
 </script>
 @endsection

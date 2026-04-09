@@ -78,7 +78,8 @@ class ProfileController extends Controller
         $user->address       = $request->address;
         $user->save();
 
-        return redirect()->route('profile.index')
-            ->with('success', 'Profile updated successfully.');
+        return back()
+        ->withErrors($validator)
+        ->withInput()->with('success', 'Profile updated successfully.');
     }
 }
