@@ -101,34 +101,36 @@
                         </thead>
                         <tbody>
                             @foreach($leads as $lead)
-                            <tr>
+                            <tr class="clickable-row"
+                                data-href="{{ url('/leads/'.$lead->id) }}"
+                                style="cursor:pointer;">
+
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
+
                                 <td>
                                     @forelse($lead->users as $user)
-                                        <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
+                                        <span class="badge badge-light border"
+                                            style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
                                             {{ $user->name }}
                                         </span>
                                     @empty
                                         <span class="text-muted">-</span>
                                     @endforelse
                                 </td>
-                                <td>
-                                        {{ $lead->status }}
-                                </td>
+
+                                <td>{{ $lead->status }}</td>
                                 <td>{{ $lead->source }}</td>
-                                <td>
-                                    <a href="{{ url('/leads/'.$lead->id)}}"
+
+                                <td onclick="event.stopPropagation();">
+                                    <a href="{{ url('/leads/'.$lead->id) }}"
+                                    target="_blank"
                                     class="btn btn-sm btn-primary">
-                                            <i class="mdi mdi mdi-eye "></i> view
-                                        </a>
-                                    <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
-                                            data-toggle="modal"
-                                            data-target="#editModal{{ $lead->id }}">
-                                        <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button> -->
+                                        <i class="mdi mdi mdi-eye"></i> view
+                                    </a>
+
                                     <a href="{{ route('leads.delete', $lead->id) }}"
-                                       class="btn btn-sm btn-danger btn-delete">
+                                    class="btn btn-sm btn-danger btn-delete">
                                         <i class="mdi mdi-trash-can"></i> Delete
                                     </a>
                                 </td>
@@ -824,7 +826,14 @@ function showErrors($form, errors) {
             nameField.value = this.files[0].name;
         }
     });
-
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".clickable-row").forEach(function (row) {
+            row.addEventListener("click", function (e) {
+                const url = this.getAttribute("data-href");
+                window.open(url, "_blank"); // opens in new tab
+            });
+        });
+    });
 })();
 
 </script>

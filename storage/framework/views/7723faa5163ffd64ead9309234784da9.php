@@ -100,12 +100,17 @@
                         </thead>
                         <tbody>
                             <?php $__currentLoopData = $leads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <tr>
+                            <tr class="clickable-row"
+                                data-href="<?php echo e(url('/leads/'.$lead->id)); ?>"
+                                style="cursor:pointer;">
+
                                 <td><?php echo e($lead->name); ?></td>
                                 <td><?php echo e($lead->company); ?></td>
+
                                 <td>
                                     <?php $__empty_1 = true; $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                        <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
+                                        <span class="badge badge-light border"
+                                            style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
                                             <?php echo e($user->name); ?>
 
                                         </span>
@@ -113,38 +118,19 @@
                                         <span class="text-muted">-</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
-                                    <?php if($isSuperAdmin): ?>
-                                    <select class="lead-status-simple" data-lead-id="<?php echo e($lead->id); ?>">
-                                        <?php
-                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
-                                        ?>
-                                        <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $status): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <option value="<?php echo e($status); ?>" <?php echo e($lead->status == $status ? 'selected' : ''); ?>>
-                                                <?php echo e($status); ?>
 
-                                            </option>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    </select>
-
-                                        <?php else: ?>
-                                            <?php echo e($lead->status); ?>
-
-                                        <?php endif; ?>
-                                </td>
+                                <td><?php echo e($lead->status); ?></td>
                                 <td><?php echo e($lead->source); ?></td>
-                                <td>
+
+                                <td onclick="event.stopPropagation();">
                                     <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
+                                    target="_blank"
                                     class="btn btn-sm btn-primary">
-                                            <i class="mdi mdi mdi-eye "></i> view
-                                        </a>
-                                    <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
-                                            data-toggle="modal"
-                                            data-target="#editModal<?php echo e($lead->id); ?>">
-                                        <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button> -->
+                                        <i class="mdi mdi mdi-eye"></i> view
+                                    </a>
+
                                     <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
-                                       class="btn btn-sm btn-danger btn-delete">
+                                    class="btn btn-sm btn-danger btn-delete">
                                         <i class="mdi mdi-trash-can"></i> Delete
                                     </a>
                                 </td>
@@ -844,7 +830,14 @@ function showErrors($form, errors) {
             nameField.value = this.files[0].name;
         }
     });
-
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".clickable-row").forEach(function (row) {
+            row.addEventListener("click", function (e) {
+                const url = this.getAttribute("data-href");
+                window.open(url, "_blank"); // opens in new tab
+            });
+        });
+    });
 })();
 
 </script>
