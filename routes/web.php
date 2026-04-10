@@ -5,10 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadDocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeadImportController;
+use App\Http\Controllers\LeadNoteController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -60,3 +62,8 @@ Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
 Route::post('/set-agency', [AgencyController::class, 'setAgency'])
     ->name('set.agency');
+Route::post('/notes', [LeadNoteController::class, 'store']);
+Route::put('/notes/{id}', [LeadNoteController::class, 'update']);
+
+Route::post('/documents', [LeadDocumentController::class, 'store']);
+Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy']);

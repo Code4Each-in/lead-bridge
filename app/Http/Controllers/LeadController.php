@@ -117,7 +117,7 @@ class LeadController extends Controller
             'agency_id' => $request->agency_id,
             'notes'     => $request->notes,
             'documents' => $file,
-            'created_by'  => $authUser->id, 
+            'created_by'  => $authUser->id,
         ]);
 
         $lead->users()->sync($request->assigned_user_id);
@@ -218,7 +218,7 @@ class LeadController extends Controller
     }
     public function showLead($id)
     {
-        $lead = Lead::with(['agency', 'users'])->findOrFail($id);
+        $lead = Lead::with(['agency', 'users', 'leadNotes.user', 'leadDocuments'])->findOrFail($id);
 
         return view('leads.show', compact('lead'));
     }

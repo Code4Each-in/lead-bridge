@@ -49,5 +49,15 @@ class Lead extends Model
         return $this->users()->whereHas('role', function($q) {
             $q->where('name', 'QA');
         });
+
     }
+    public function leadNotes()
+    {
+        return $this->hasMany(LeadNote::class);
+    }
+        public function leadDocuments()
+        {
+            return $this->hasMany(LeadDocument::class);
+        }
+
 }
