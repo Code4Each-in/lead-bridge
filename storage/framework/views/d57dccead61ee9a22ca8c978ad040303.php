@@ -2,7 +2,6 @@
 <?php $__env->startSection('subtitle', 'Leads'); ?>
 <?php $__env->startSection('content'); ?>
 <style>
-    /* ── Card ─────────────────────────────────── */
     .custom-card {
         border-radius: 14px;
         box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -28,7 +27,7 @@
         font-size: 16px;
     }
 
-    /* ── Detail Rows ─────────────────────────── */
+
     .detail-row {
         display: flex;
         align-items: flex-start;
@@ -58,7 +57,6 @@
         padding-top: 1px;
     }
 
-    /* ── Document row ───────────────────────── */
     .detail-item {
         display: flex;
         align-items: flex-start;
@@ -82,7 +80,6 @@
         border-width: 0.5px;
     }
 
-    /* ── Status pill & dropdown ──────────────── */
     .status-container {
         position: relative;
         display: inline-block;
@@ -133,11 +130,6 @@
     .status-lost     { background: #fee2e2; color: #991b1b; }
     .status-complete { background: #dcfce7; color: #166534; }
 
-    /* ═══════════════════════════════════════════
-       RIGHT CARD — redesigned
-    ═══════════════════════════════════════════ */
-
-    /* Section label */
     .rp-section {
         font-size: 10.5px;
         font-weight: 600;
@@ -248,7 +240,8 @@
     }
     .rpb-amber::before { background: #f59e0b; }
 </style>
-
+<!-- Quill CSS -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
@@ -459,150 +452,295 @@
                         </div>
 
                     </div>
-                    <div class="col-md-12">
-                                <div class="card-header custom-header">
-                                    <i class="mdi mdi-chart-bar menu-icon icon-head me-2"></i>
-                                    Notes and Documents
-                                </div>
-                                <div class="card-body">
+                        <div class="col-md-12">
 
-                                    <!-- TABS -->
-                                    <ul class="nav nav-tabs" id="noteDocTab" role="tablist">
-                                        <li class="nav-item">
-                                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#notes">
-                                                Notes
-                                            </button>
-                                        </li>
-                                        <li class="nav-item">
-                                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
-                                                Documents
-                                            </button>
-                                        </li>
-                                    </ul>
+                            <!-- HEADER -->
+                            <div class="card-header custom-header">
+                                <i class="mdi mdi-chart-bar menu-icon icon-head me-2"></i>
+                                Notes and Documents
+                            </div>
 
-                                    <div class="tab-content mt-3">
-                                        <h5 class="mb-3">Activity</h5>
+                            <div class="card-body">
 
-                                        <?php $__currentLoopData = $lead->leadNotes->sortByDesc('created_at'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <h5 class="mb-3">Activity</h5>
 
-                                            <div class="mb-3 p-3 border rounded">
+                                <!-- TIMELINE -->
+                                <?php $__currentLoopData = $activities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
-                                                <strong><?php echo e($note->user->name); ?></strong>
+                                    <div class="mb-3 p-3 border rounded d-flex justify-content-between">
+
+                                        <!-- LEFT CONTENT -->
+                                        <div>
+
+                                            
+                                            <?php if($activity['type'] === 'note'): ?>
+
+                                            <strong><?php echo e($activity['data']->user->name); ?></strong>
+
+                                            <small class="text-muted">
+                                                <?php echo e($activity['data']->created_at->diffForHumans()); ?>
+
+                                            </small>
+
+
+                                            <!-- VIEW MODE -->
+                                            <p id="view-<?php echo e($activity['data']->id); ?>" data-content="<?php echo e($activity['data']->content); ?>" class="mb-0">
+                                                <?php echo $activity['data']->content; ?>
+
+                                            </p>
+
+                                            <!-- EDIT MODE (hidden by default) -->
+                                            <form id="edit-form-<?php echo e($activity['data']->id); ?>"
+                                                method="POST"
+                                                action="<?php echo e(route('notes.update', $activity['data']->id)); ?>"
+                                                class="d-none">
+
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('PUT'); ?>
+
+                                                <div id="editor-<?php echo e($activity['data']->id); ?>" style="height:150px;">
+                                                    <?php echo $activity['data']->content; ?>
+
+                                                </div>
+
+                                                <input type="hidden" name="content" id="hidden-content-<?php echo e($activity['data']->id); ?>">
+
+                                                <button class="btn btn-sm btn-success">Save</button>
+
+                                                <button type="button"
+                                                        class="btn btn-sm btn-secondary"
+                                                        onclick="cancelEdit(<?php echo e($activity['data']->id); ?>)">
+                                                    Cancel
+                                                </button>
+                                            </form>
+
+                                            <?php endif; ?>
+
+                                            
+                                            <?php if($activity['type'] === 'document'): ?>
+
+                                                📎
+                                                <a href="<?php echo e(Storage::url($activity['data']->file)); ?>" target="_blank">
+                                                    <?php echo e($activity['data']->file_name); ?>
+
+                                                </a>
+
                                                 <small class="text-muted">
-                                                    <?php echo e($note->created_at->diffForHumans()); ?>
-
+                                                    (<?php echo e(number_format($activity['data']->file_size / 1024, 1)); ?> KB)
                                                 </small>
 
-                                                <?php if($note->is_edited): ?>
-                                                    <span class="badge bg-warning">Edited</span>
-                                                <?php endif; ?>
-
-                                                <p class="mb-2"><?php echo $note->content; ?></p>
-
-                                                <!-- SHOW DOCUMENTS UPLOADED AT SAME TIME -->
-                                                <?php $__currentLoopData = $lead->documents->where('created_at', $note->created_at); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                    <div>
-                                                        📎 <a href="<?php echo e(Storage::url($doc->file)); ?>" target="_blank">
-                                                            <?php echo e($doc->file_name); ?>
-
-                                                        </a>
-                                                    </div>
-                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
-                                            </div>
-
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                        <!-- NOTES TAB -->
-                                        <div class="tab-pane fade show active" id="notes">
-
-                                            <!-- Add Note -->
-                                                <form method="POST" action="/notes-with-files" enctype="multipart/form-data">
-                                                    <?php echo csrf_field(); ?>
-                                                    <input type="hidden" name="lead_id" value="<?php echo e($lead->id); ?>">
-
-                                                    <!-- Text Editor -->
-                                                    <textarea name="content" class="form-control mb-2"
-                                                            placeholder="Type your comment here..."></textarea>
-
-                                                    <!-- File Upload -->
-                                                    <input type="file" name="files[]" multiple class="form-control mb-2">
-
-                                                    <button class="btn btn-primary">Comment</button>
-                                                </form>
-
-                                            <hr>
-
-                                            <!-- Notes List -->
-                                            <?php $__currentLoopData = $lead->leadNotes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <div class="mb-3 p-2 border rounded">
-
-                                                    <strong><?php echo e($note->user->name); ?></strong>
-                                                    <small class="text-muted">
-                                                        <?php echo e($note->created_at->diffForHumans()); ?>
-
-                                                    </small>
-
-                                                    <?php if($note->is_edited): ?>
-                                                        <span class="badge bg-warning">Edited</span>
-                                                    <?php endif; ?>
-
-                                                    <p class="mb-1"><?php echo $note->content; ?></p>
-
-                                                    <?php if($note->user_id == auth()->id()): ?>
-                                                        <button class="btn btn-sm btn-outline-secondary">Edit</button>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                            <?php endif; ?>
 
                                         </div>
 
-                                        <!-- DOCUMENT TAB -->
-                                        <div class="tab-pane fade" id="documents">
+                                        <!-- ACTIONS -->
+                                        <div>
 
-                                            <!-- Upload -->
-                                            <form method="POST" action="/documents" enctype="multipart/form-data">
-                                                <?php echo csrf_field(); ?>
-                                                <input type="hidden" name="lead_id" value="<?php echo e($lead->id); ?>">
+                                            
+                                            <?php if($activity['type'] === 'note'): ?>
+                                                <?php if($activity['data']->user_id == auth()->id()): ?>
 
-                                                <input type="file" name="files[]" multiple class="form-control mb-2">
+                                                    <button type="button"
+                                                            class="btn btn-link text-primary p-0"
+                                                            onclick="editNote(<?php echo e($activity['data']->id); ?>)">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                    </button>
 
-                                                <button class="btn btn-success">Upload Files</button>
-                                            </form>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
 
-                                            <hr>
 
-                                            <!-- Document List -->
-                                            <?php $__currentLoopData = $lead->leadDocuments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                                            
+                                                <?php if($activity['type'] === 'document'): ?>
 
-                                                    <a href="<?php echo e(Storage::url($doc->file)); ?>" target="_blank">
-                                                        <?php echo e($doc->file_name); ?>
+                                                    <?php if(strtolower(auth()->user()->role->name) === 'super admin'): ?>
 
-                                                    </a>
-
-                                                    <?php if(auth()->user()->role == 'super_admin'): ?>
-                                                        <form method="POST" action="/documents/<?php echo e($doc->id); ?>">
+                                                        <form id="delete-form-<?php echo e($activity['data']->id); ?>"
+                                                            method="POST"
+                                                            action="<?php echo e(route('documents.destroy', $activity['data']->id)); ?>"
+                                                            style="display:none;">
                                                             <?php echo csrf_field(); ?>
                                                             <?php echo method_field('DELETE'); ?>
-                                                            <button class="btn btn-sm btn-danger">Delete</button>
                                                         </form>
+
+                                                        <button type="button"
+                                                                class="btn btn-link text-danger p-0"
+                                                                onclick="confirmDelete(<?php echo e($activity['data']->id); ?>)"
+                                                                title="Delete Document">
+
+                                                            <i class="mdi mdi-delete"></i>
+
+                                                        </button>
+
                                                     <?php endif; ?>
 
-                                                </div>
-                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                <?php endif; ?>
 
                                         </div>
 
                                     </div>
-                                </div>
-                    </div>
+
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                                <hr>
+
+                                <!-- COMMENT FORM -->
+                                <form id="comment-form" method="POST"
+                                    action="<?php echo e(route('notes.store')); ?>"
+                                    enctype="multipart/form-data">
+
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="lead_id" value="<?php echo e($lead->id); ?>">
+
+                                    <div id="create-editor" style="height:150px; background:#fff;"></div>
+                                    <input type="hidden" name="content" id="create-content">
+                                    <input type="hidden" id="edit-note-id" value="">
+                                    <input type="file"
+                                        name="files[]"
+                                        multiple
+                                        class="form-control mb-2">
+
+                                    <button class="btn btn-primary">
+                                        Comment
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+<!-- Quill JS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
+let editors = {};
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // CREATE editor (ONLY ONCE)
+    editors['create'] = new Quill('#create-editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link'],
+                ['clean']
+            ]
+        }
+    });
+
+    editors['create'].on('text-change', function () {
+        document.getElementById('create-content').value =
+            editors['create'].root.innerHTML;
+    });
+
+});
+// EDIT editors
+function initEditor(id) {
+
+    const container = document.getElementById('editor-' + id);
+
+    if (editors[id]) return;
+
+    editors[id] = new Quill(container, {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link'],
+                ['clean']
+            ]
+        }
+    });
+}
+
+function editNote(id) {
+
+    const view = document.getElementById('view-' + id);
+
+    if (!view) {
+        console.error('Note not found:', id);
+        return;
+    }
+
+    const content = view.getAttribute('data-content');
+
+    console.log('Editing note ID:', id);
+    console.log('Note content:', content);
+
+    const quill = editors['create'];
+
+    quill.setContents([]);
+
+    quill.clipboard.dangerouslyPasteHTML(content);
+
+    document.getElementById('edit-note-id').value = id;
+
+    document.getElementById('create-content').value = content;
+
+    document.querySelector('#comment-form button').innerText = 'Update';
+
+    document.getElementById('create-editor').scrollIntoView({
+        behavior: 'smooth'
+    });
+}
+function cancelEdit(id) {
+
+    const view = document.getElementById('view-' + id);
+    const form = document.getElementById('edit-form-' + id);
+
+    view.classList.remove('d-none');
+    form.classList.add('d-none');
+}
+function confirmDelete(id) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This document will be deleted permanently!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + id).submit();
+        }
+    });
+}
+document.getElementById('comment-form').addEventListener('submit', function(e) {
+
+    const editId = document.getElementById('edit-note-id').value;
+
+    document.getElementById('create-content').value =
+        editors['create'].root.innerHTML;
+
+    if (editId) {
+
+        this.action = `/notes/${editId}`;
+        this.method = 'POST';
+
+        // remove old _method if exists
+        let old = this.querySelector('input[name="_method"]');
+        if (old) old.remove();
+
+        let methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'PUT';
+        this.appendChild(methodInput);
+    }
+});
+function resetEditor() {
+    editors['create'].setContents([]);
+    document.getElementById('edit-note-id').value = '';
+    document.querySelector('#comment-form button').innerText = 'Comment';
+}
+
     document.querySelectorAll('.status-container').forEach(container => {
     const badge    = container.querySelector('.status-badge');
     const dropdown = container.querySelector('.status-dropdown');

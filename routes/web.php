@@ -62,8 +62,20 @@ Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
 Route::post('/set-agency', [AgencyController::class, 'setAgency'])
     ->name('set.agency');
-Route::post('/notes', [LeadNoteController::class, 'store']);
-Route::put('/notes/{id}', [LeadNoteController::class, 'update']);
+/*
+| NOTES
+*/
+Route::post('/notes', [LeadNoteController::class, 'store'])
+    ->name('notes.store');
 
-Route::post('/documents', [LeadDocumentController::class, 'store']);
-Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy']);
+Route::put('/notes/{id}', [LeadNoteController::class, 'update'])
+    ->name('notes.update');
+
+/*
+| DOCUMENTS
+*/
+Route::post('/documents', [LeadDocumentController::class, 'store'])
+    ->name('documents.store');
+
+Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
+    ->name('documents.destroy');

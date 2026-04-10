@@ -218,8 +218,33 @@ class LeadController extends Controller
     }
     public function showLead($id)
     {
-        $lead = Lead::with(['agency', 'users', 'leadNotes.user', 'leadDocuments'])->findOrFail($id);
+        $lead = Lead::with([
+            'agency',
+            'users',
+            'leadNotes.user',
+            'leadDocuments'
+        ])->findOrFail($id);
 
-        return view('leads.show', compact('lead'));
+        $activities = collect();
+
+        foreach ($lead->leadNotes as $note) {
+            $activities->push([
+                'type' => 'note',
+                'data' => $note,
+                'created_at' => $note->created_at
+            ]);
+        }
+
+        foreach ($lead->leadDocuments as $doc) {
+            $activities->push([
+                'type' => 'document',
+                'data' => $doc,
+                'created_at' => $doc->created_at
+            ]);
+        }
+
+        $activities = $activities->sortByDesc('created_at');
+
+        return view('leads.show', compact('lead', 'activities'));
     }
 }

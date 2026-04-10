@@ -55,9 +55,9 @@ class Lead extends Model
     {
         return $this->hasMany(LeadNote::class);
     }
-        public function leadDocuments()
-        {
-            return $this->hasMany(LeadDocument::class);
-        }
+    public function leadDocuments()
+    {
+        return $this->hasMany(LeadDocument::class);
+    }
 
 }

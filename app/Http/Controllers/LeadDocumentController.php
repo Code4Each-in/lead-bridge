@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\LeadDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LeadDocumentController extends Controller
 {
         public function store(Request $request)
         {
             $request->validate([
-                'files.*' => 'file|max:5120' // each file max 5MB
+                'files.*' => 'file|max:5120'
             ]);
 
             if ($request->hasFile('files')) {
@@ -32,17 +33,18 @@ class LeadDocumentController extends Controller
             return back();
         }
 
-    public function destroy($id)
-    {
-        if (auth()->user()->role !== 'super_admin') {
-            abort(403);
+        public function destroy($id)
+        {
+            $doc = LeadDocument::findOrFail($id);
+
+            // Only allow super admin
+            if (strtolower(auth()->user()->role->name) !== 'super admin') {
+                abort(403, 'Only Super Admin can delete');
+            }
+
+            Storage::delete($doc->file);
+            $doc->delete();
+
+            return back();
         }
-
-        $doc = LeadDocument::findOrFail($id);
-
-        Storage::delete($doc->file);
-        $doc->delete();
-
-        return back();
-    }
 }

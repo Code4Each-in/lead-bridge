@@ -114,21 +114,7 @@
                                     @endforelse
                                 </td>
                                 <td>
-                                    @if($isSuperAdmin)
-                                    <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
-                                        @php
-                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
-                                        @endphp
-                                        @foreach($statuses as $status)
-                                            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
-                                                {{ $status }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-
-                                        @else
-                                            {{ $lead->status }}
-                                        @endif
+                                        {{ $lead->status }}
                                 </td>
                                 <td>{{ $lead->source }}</td>
                                 <td>
