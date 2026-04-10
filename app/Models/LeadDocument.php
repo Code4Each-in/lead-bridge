@@ -8,6 +8,7 @@ class LeadDocument extends Model
 {
     protected $fillable = [
         'lead_id',
+        'note_id',
         'uploaded_by',
         'file',
         'file_name',
@@ -17,5 +18,9 @@ class LeadDocument extends Model
     public function lead()
     {
         return $this->belongsTo(Lead::class);
+    }
+    public function note()
+    {
+        return $this->belongsTo(LeadNote::class, 'note_id');
     }
 }

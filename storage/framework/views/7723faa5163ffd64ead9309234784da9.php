@@ -682,7 +682,7 @@ $('.modal').on('show.bs.modal', function () {
             if ($(this).val()) $(this).trigger('change');
         });
     }
-    // ✅ Admin/MIS — users already pre-rendered with selected, do nothing
+    
 });
 
     $('.modal').on('shown.bs.modal', function () {

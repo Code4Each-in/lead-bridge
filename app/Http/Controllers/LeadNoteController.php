@@ -11,41 +11,44 @@ class LeadNoteController extends Controller
 {
 
 
-public function store(Request $request)
-{
-    $request->validate([
-        'content' => 'nullable|string',
-        'files.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120'
-    ]);
-
-    // Save note
-    if ($request->content) {
-        LeadNote::create([
-            'lead_id' => $request->lead_id,
-            'user_id' => auth()->id(),
-            'content' => $request->content,
+    public function store(Request $request)
+    {
+        $request->validate([
+            'content' => 'nullable|string',
+            'files.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120'
         ]);
-    }
 
-    // Save multiple files
-    if ($request->hasFile('files')) {
-        foreach ($request->file('files') as $file) {
+        $note = null;
 
-            $path = $file->store('lead_documents');
-
-            LeadDocument::create([
+        // Save note
+        if ($request->content) {
+            $note = LeadNote::create([
                 'lead_id' => $request->lead_id,
-                'uploaded_by' => auth()->id(),
-                'file' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientMimeType(),
-                'file_size' => $file->getSize(),
+                'user_id' => auth()->id(),
+                'content' => $request->content,
             ]);
         }
-    }
 
-    return back();
-}
+        // Save multiple files
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+
+                $filePath = $file->store('lead_documents', 'public');
+
+                LeadDocument::create([
+                    'lead_id' => $request->lead_id,
+                    'note_id' => $note?->id,
+                    'uploaded_by' => auth()->id(),
+                    'file' => $filePath,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+        }
+
+        return back();
+    }
         public function update(Request $request, $id)
         {
             $note = LeadNote::findOrFail($id);
@@ -70,7 +73,7 @@ public function store(Request $request)
                 abort(403, 'Only Super Admin can delete');
             }
 
-            Storage::delete($doc->file);
+            Storage::disk('public')->delete($doc->file);
             $doc->delete();
 
             return back();

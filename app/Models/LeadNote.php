@@ -17,4 +17,8 @@ class LeadNote extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function documents()
+    {
+        return $this->hasMany(LeadDocument::class, 'note_id');
+    }
 }

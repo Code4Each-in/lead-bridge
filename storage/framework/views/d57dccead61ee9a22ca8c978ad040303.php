@@ -473,53 +473,47 @@
                                         <div>
 
                                             
-                                            <?php if($activity['type'] === 'note'): ?>
+                                                <?php if($activity['type'] === 'note'): ?>
 
-                                            <strong><?php echo e($activity['data']->user->name); ?></strong>
+                                                <strong><?php echo e($activity['data']->user->name); ?></strong>
 
-                                            <small class="text-muted">
-                                                <?php echo e($activity['data']->created_at->diffForHumans()); ?>
+                                                <small class="text-muted">
+                                                    <?php echo e($activity['data']->created_at->diffForHumans()); ?>
 
-                                            </small>
+                                                </small>
 
-
-                                            <!-- VIEW MODE -->
-                                            <p id="view-<?php echo e($activity['data']->id); ?>" data-content="<?php echo e($activity['data']->content); ?>" class="mb-0">
-                                                <?php echo $activity['data']->content; ?>
-
-                                            </p>
-
-                                            <!-- EDIT MODE (hidden by default) -->
-                                            <form id="edit-form-<?php echo e($activity['data']->id); ?>"
-                                                method="POST"
-                                                action="<?php echo e(route('notes.update', $activity['data']->id)); ?>"
-                                                class="d-none">
-
-                                                <?php echo csrf_field(); ?>
-                                                <?php echo method_field('PUT'); ?>
-
-                                                <div id="editor-<?php echo e($activity['data']->id); ?>" style="height:150px;">
+                                                <p class="mb-2">
                                                     <?php echo $activity['data']->content; ?>
 
-                                                </div>
+                                                </p>
 
-                                                <input type="hidden" name="content" id="hidden-content-<?php echo e($activity['data']->id); ?>">
+                                                
+                                                    <?php if($activity['data']->documents->count()): ?>
+                                                        <div class="mt-2">
+                                                            <?php $__currentLoopData = $activity['data']->documents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
-                                                <button class="btn btn-sm btn-success">Save</button>
+                                                                <i class="mdi mdi-file-document me-1 text-primary"></i>
 
-                                                <button type="button"
-                                                        class="btn btn-sm btn-secondary"
-                                                        onclick="cancelEdit(<?php echo e($activity['data']->id); ?>)">
-                                                    Cancel
-                                                </button>
-                                            </form>
+                                                                <a href="<?php echo e(Storage::url($doc->file)); ?>" target="_blank">
+                                                                    <?php echo e($doc->file_name); ?>
 
-                                            <?php endif; ?>
+                                                                </a>
+
+                                                                <small class="text-muted">
+                                                                    (<?php echo e(number_format($doc->file_size / 1024, 1)); ?> KB)
+                                                                </small>
+
+                                                                <br>
+                                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                <?php endif; ?>
 
                                             
                                             <?php if($activity['type'] === 'document'): ?>
 
-                                                📎
+                                                <i class="mdi mdi-file-document me-1 text-primary"></i>
                                                 <a href="<?php echo e(Storage::url($activity['data']->file)); ?>" target="_blank">
                                                     <?php echo e($activity['data']->file_name); ?>
 
@@ -625,10 +619,18 @@ document.addEventListener("DOMContentLoaded", function () {
         theme: 'snow',
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline'],
+                [{ font: [] }, { size: [] }],                 // font & size
+                ['bold', 'italic', 'underline', 'strike'],    // formatting
+                [{ color: [] }, { background: [] }],          // text color
+                [{ script: 'sub' }, { script: 'super' }],     // sub/superscript
+                [{ header: 1 }, { header: 2 }, 'blockquote', 'code-block'],
+
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link'],
-                ['clean']
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
+
+                ['link', 'image', 'video'],                   // media
+                ['clean']                                     // remove formatting
             ]
         }
     });

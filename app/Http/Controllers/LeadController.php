@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class LeadController extends Controller
 {
@@ -125,6 +126,55 @@ class LeadController extends Controller
         return response()->json(['success' => 'Lead created successfully']);
     }
 
+    // public function update(Request $request, $id)
+    // {
+    //     $authUser = Auth::user();
+    //     $lead     = Lead::findOrFail($id);
+
+    //     $roleName = strtolower($authUser->role->name);
+
+    //     // Force agency for restricted roles
+    //     if (in_array($roleName, ['mis user', 'admin'])) {
+    //         $request->merge([
+    //             'agency_id' => $authUser->agency_id
+    //         ]);
+    //     }
+    //     $validator = Validator::make($request->all(), [
+    //         'name'               => 'required|string|max:255',
+    //         'phone'              => 'required|string|max:20',
+    //         'email'              => 'required|email|max:255',
+    //         'company'            => 'required|string|max:255',
+    //         'city'               => 'required|string|max:100',
+    //         'source'             => 'required|string|max:100',
+    //         'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
+    //         'agency_id'          => 'nullable|exists:agencies,id',
+    //         'assigned_user_id'   => 'nullable|array|min:1',
+    //         'assigned_user_id.*' => 'exists:users,id',
+    //         'notes'              => 'required|string',
+    //         'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $data = $request->only([
+    //         'name', 'phone', 'email', 'company',
+    //         'city', 'source', 'status', 'agency_id', 'notes',
+    //     ]);
+
+    //     if ($request->hasFile('documents')) {
+    //         $data['documents'] = $request->file('documents')->store('leads', 'public');
+    //     }
+
+    //     $lead->update($data);
+
+    //     $lead->users()->sync($request->assigned_user_id);
+
+    //     return response()->json(['success' => 'Lead updated successfully']);
+    // }
+
+
     public function update(Request $request, $id)
     {
         $authUser = Auth::user();
@@ -132,25 +182,24 @@ class LeadController extends Controller
 
         $roleName = strtolower($authUser->role->name);
 
-        // Force agency for restricted roles
         if (in_array($roleName, ['mis user', 'admin'])) {
             $request->merge([
                 'agency_id' => $authUser->agency_id
             ]);
         }
+
         $validator = Validator::make($request->all(), [
-            'name'               => 'required|string|max:255',
-            'phone'              => 'required|string|max:20',
-            'email'              => 'required|email|max:255',
-            'company'            => 'required|string|max:255',
-            'city'               => 'required|string|max:100',
-            'source'             => 'required|string|max:100',
+            'name'   => 'required|string|max:255',
+            'phone'  => 'required|string|max:20',
+            'email'  => 'required|email|max:255',
+            'company'=> 'required|string|max:255',
+            'city'   => 'required|string|max:100',
+            'source' => 'required|string|max:100',
             'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
-            'agency_id'          => 'nullable|exists:agencies,id',
+            'agency_id' => 'nullable|exists:agencies,id',
             'assigned_user_id'   => 'nullable|array|min:1',
             'assigned_user_id.*' => 'exists:users,id',
-            'notes'              => 'required|string',
-            'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+            'notes' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -158,9 +207,23 @@ class LeadController extends Controller
         }
 
         $data = $request->only([
-            'name', 'phone', 'email', 'company',
-            'city', 'source', 'status', 'agency_id', 'notes',
+            'name','phone','email','company',
+            'city','source','status','agency_id','notes',
         ]);
+
+
+        if ($request->status === 'In Progress' && !$lead->start_date) {
+            $data['start_date'] = Carbon::now();
+        }
+
+        if ($request->status === 'Complete' && !$lead->end_date) {
+            $data['end_date'] = Carbon::now();
+        }
+
+        // Optional: reset end_date if reopened
+        if ($request->status !== 'Complete') {
+            $data['end_date'] = null;
+        }
 
         if ($request->hasFile('documents')) {
             $data['documents'] = $request->file('documents')->store('leads', 'public');
@@ -172,7 +235,6 @@ class LeadController extends Controller
 
         return response()->json(['success' => 'Lead updated successfully']);
     }
-
     public function destroy($id)
     {
         $lead = Lead::findOrFail($id);
@@ -204,6 +266,18 @@ class LeadController extends Controller
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ]);
     }
+    // public function updateStatus(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
+    //     ]);
+
+    //     $lead = Lead::findOrFail($id);
+    //     $lead->status = $request->status;
+    //     $lead->save();
+
+    //     return response()->json(['success' => 'Status updated successfully']);
+    // }
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -211,6 +285,19 @@ class LeadController extends Controller
         ]);
 
         $lead = Lead::findOrFail($id);
+
+        if ($request->status === 'In Progress' && !$lead->start_date) {
+            $lead->start_date = now();
+        }
+
+        if ($request->status === 'Complete' && !$lead->end_date) {
+            $lead->end_date = now();
+        }
+
+        if ($request->status !== 'Complete') {
+            $lead->end_date = null;
+        }
+
         $lead->status = $request->status;
         $lead->save();
 
@@ -222,11 +309,13 @@ class LeadController extends Controller
             'agency',
             'users',
             'leadNotes.user',
+            'leadNotes.documents', // important
             'leadDocuments'
         ])->findOrFail($id);
 
         $activities = collect();
 
+        // 1. Notes (with attached documents)
         foreach ($lead->leadNotes as $note) {
             $activities->push([
                 'type' => 'note',
@@ -235,7 +324,8 @@ class LeadController extends Controller
             ]);
         }
 
-        foreach ($lead->leadDocuments as $doc) {
+        // 2. Standalone documents (no note_id)
+        foreach ($lead->leadDocuments->whereNull('note_id') as $doc) {
             $activities->push([
                 'type' => 'document',
                 'data' => $doc,
@@ -243,7 +333,8 @@ class LeadController extends Controller
             ]);
         }
 
-        $activities = $activities->sortByDesc('created_at');
+        // 3. Sort timeline
+        $activities = $activities;
 
         return view('leads.show', compact('lead', 'activities'));
     }

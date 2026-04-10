@@ -469,50 +469,44 @@
                                         <div>
 
                                             {{-- NOTE --}}
-                                            @if($activity['type'] === 'note')
+                                                @if($activity['type'] === 'note')
 
-                                            <strong>{{ $activity['data']->user->name }}</strong>
+                                                <strong>{{ $activity['data']->user->name }}</strong>
 
-                                            <small class="text-muted">
-                                                {{ $activity['data']->created_at->diffForHumans() }}
-                                            </small>
+                                                <small class="text-muted">
+                                                    {{ $activity['data']->created_at->diffForHumans() }}
+                                                </small>
 
-
-                                            <!-- VIEW MODE -->
-                                            <p id="view-{{ $activity['data']->id }}" data-content="{{ $activity['data']->content }}" class="mb-0">
-                                                {!! $activity['data']->content !!}
-                                            </p>
-
-                                            <!-- EDIT MODE (hidden by default) -->
-                                            <form id="edit-form-{{ $activity['data']->id }}"
-                                                method="POST"
-                                                action="{{ route('notes.update', $activity['data']->id) }}"
-                                                class="d-none">
-
-                                                @csrf
-                                                @method('PUT')
-
-                                                <div id="editor-{{ $activity['data']->id }}" style="height:150px;">
+                                                <p class="mb-2">
                                                     {!! $activity['data']->content !!}
-                                                </div>
+                                                </p>
 
-                                                <input type="hidden" name="content" id="hidden-content-{{ $activity['data']->id }}">
+                                                {{-- DOCUMENTS UNDER NOTE --}}
+                                                    @if($activity['data']->documents->count())
+                                                        <div class="mt-2">
+                                                            @foreach($activity['data']->documents as $doc)
 
-                                                <button class="btn btn-sm btn-success">Save</button>
+                                                                <i class="mdi mdi-file-document me-1 text-primary"></i>
 
-                                                <button type="button"
-                                                        class="btn btn-sm btn-secondary"
-                                                        onclick="cancelEdit({{ $activity['data']->id }})">
-                                                    Cancel
-                                                </button>
-                                            </form>
+                                                                <a href="{{ Storage::url($doc->file) }}" target="_blank">
+                                                                    {{ $doc->file_name }}
+                                                                </a>
 
-                                            @endif
+                                                                <small class="text-muted">
+                                                                    ({{ number_format($doc->file_size / 1024, 1) }} KB)
+                                                                </small>
+
+                                                                <br>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+
+                                                @endif
 
                                             {{-- DOCUMENT --}}
                                             @if($activity['type'] === 'document')
 
-                                                📎
+                                                <i class="mdi mdi-file-document me-1 text-primary"></i>
                                                 <a href="{{ Storage::url($activity['data']->file) }}" target="_blank">
                                                     {{ $activity['data']->file_name }}
                                                 </a>
@@ -617,10 +611,18 @@ document.addEventListener("DOMContentLoaded", function () {
         theme: 'snow',
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline'],
+                [{ font: [] }, { size: [] }],                 // font & size
+                ['bold', 'italic', 'underline', 'strike'],    // formatting
+                [{ color: [] }, { background: [] }],          // text color
+                [{ script: 'sub' }, { script: 'super' }],     // sub/superscript
+                [{ header: 1 }, { header: 2 }, 'blockquote', 'code-block'],
+
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link'],
-                ['clean']
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
+
+                ['link', 'image', 'video'],                   // media
+                ['clean']                                     // remove formatting
             ]
         }
     });
