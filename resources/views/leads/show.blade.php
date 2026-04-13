@@ -485,6 +485,7 @@
 
                                                 {{-- DOCUMENTS UNDER NOTE --}}
                                                     @if($activity['data']->documents->count())
+
                                                         <div class="mt-2">
                                                             @foreach($activity['data']->documents as $doc)
 
@@ -537,10 +538,8 @@
                                                 @endif
                                             @endif
 
-
                                             {{-- DELETE DOCUMENT --}}
                                                 @if($activity['type'] === 'document')
-
                                                     @if(strtolower(auth()->user()->role->name) === 'super admin')
 
                                                         <form id="delete-form-{{ $activity['data']->id }}"
@@ -559,7 +558,6 @@
                                                             <i class="mdi mdi-delete"></i>
 
                                                         </button>
-
                                                     @endif
 
                                                 @endif
@@ -589,7 +587,7 @@
                                         class="form-control mb-2">
 
                                     <button class="btn btn-primary">
-                                        Comment
+                                        Sent
                                     </button>
 
                                 </form>

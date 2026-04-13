@@ -33,18 +33,18 @@ class LeadDocumentController extends Controller
         return back();
     }
 
-        public function destroy($id)
-        {
-            $doc = LeadDocument::findOrFail($id);
+    public function destroy($id)
+    {
+        $doc = LeadDocument::findOrFail($id);
 
-            // Only allow super admin
-            if (strtolower(auth()->user()->role->name) !== 'super admin') {
-                abort(403, 'Only Super Admin can delete');
-            }
-
-            Storage::disk('public')->delete($doc->file);
-            $doc->delete();
-
-            return back();
+        // Only allow super admin
+        if (strtolower(auth()->user()->role->name) !== 'super admin') {
+            abort(403, 'Only Super Admin can delete');
         }
+
+        Storage::disk('public')->delete($doc->file);
+        $doc->delete();
+
+        return back();
+    }
 }

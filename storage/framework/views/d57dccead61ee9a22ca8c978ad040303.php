@@ -482,13 +482,16 @@
 
                                                 </small>
 
-                                                <p class="mb-2">
+                                                <p class="mb-2"
+                                                id="view-<?php echo e($activity['data']->id); ?>"
+                                                data-content="<?php echo \Illuminate\Support\Js::from($activity['data']->content)->toHtml() ?>">
                                                     <?php echo $activity['data']->content; ?>
 
                                                 </p>
 
                                                 
                                                     <?php if($activity['data']->documents->count()): ?>
+
                                                         <div class="mt-2">
                                                             <?php $__currentLoopData = $activity['data']->documents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
@@ -534,19 +537,17 @@
                                             <?php if($activity['type'] === 'note'): ?>
                                                 <?php if($activity['data']->user_id == auth()->id()): ?>
 
-                                                    <button type="button"
-                                                            class="btn btn-link text-primary p-0"
-                                                            onclick="editNote(<?php echo e($activity['data']->id); ?>)">
-                                                        <i class="mdi mdi-pencil"></i>
-                                                    </button>
+                                                <button type="button"
+                                                        class="btn btn-link text-primary p-0"
+                                                        onclick="editNote(<?php echo e($activity['data']->id); ?>, <?php echo \Illuminate\Support\Js::from($activity['data']->content)->toHtml() ?>)">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </button>
 
                                                 <?php endif; ?>
                                             <?php endif; ?>
 
-
                                             
                                                 <?php if($activity['type'] === 'document'): ?>
-
                                                     <?php if(strtolower(auth()->user()->role->name) === 'super admin'): ?>
 
                                                         <form id="delete-form-<?php echo e($activity['data']->id); ?>"
@@ -565,7 +566,6 @@
                                                             <i class="mdi mdi-delete"></i>
 
                                                         </button>
-
                                                     <?php endif; ?>
 
                                                 <?php endif; ?>
@@ -595,7 +595,7 @@
                                         class="form-control mb-2">
 
                                     <button class="btn btn-primary">
-                                        Comment
+                                        Sent
                                     </button>
 
                                 </form>
@@ -661,24 +661,11 @@ function initEditor(id) {
     });
 }
 
-function editNote(id) {
-
-    const view = document.getElementById('view-' + id);
-
-    if (!view) {
-        console.error('Note not found:', id);
-        return;
-    }
-
-    const content = view.getAttribute('data-content');
-
-    console.log('Editing note ID:', id);
-    console.log('Note content:', content);
+function editNote(id, content) {
 
     const quill = editors['create'];
 
     quill.setContents([]);
-
     quill.clipboard.dangerouslyPasteHTML(content);
 
     document.getElementById('edit-note-id').value = id;

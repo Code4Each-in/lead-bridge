@@ -315,7 +315,7 @@ class LeadController extends Controller
 
         $activities = collect();
 
-        // 1. Notes (with attached documents)
+       
         foreach ($lead->leadNotes as $note) {
             $activities->push([
                 'type' => 'note',
@@ -324,8 +324,7 @@ class LeadController extends Controller
             ]);
         }
 
-        // 2. Standalone documents (no note_id)
-        foreach ($lead->leadDocuments->whereNull('note_id') as $doc) {
+        foreach ($lead->leadDocuments as $doc) {
             $activities->push([
                 'type' => 'document',
                 'data' => $doc,
