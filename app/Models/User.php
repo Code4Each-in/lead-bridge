@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Notifications\UserCreatedNotification;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -68,5 +69,7 @@ class User extends Authenticatable
     public function leads()
     {
         return $this->belongsToMany(Lead::class);
+
     }
+
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Agency;
 use App\Models\User;
 use App\Models\Role;
+use App\Notifications\UserCreatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -38,22 +39,31 @@ class UserController extends Controller
 
         return view('users.index', compact('users', 'roles', 'agencies', 'authUser'));
     }
+
     // public function store(Request $request)
     // {
-    //     $validator = Validator::make($request->all(), [
+    //     $authUser = Auth::user();
+    //     $roleName = strtolower($authUser->role->name);
+
+    //     $rules = [
     //         'name'          => 'required',
     //         'email'         => 'required|email|unique:users',
     //         'password'      => 'required',
     //         'role_id'       => 'required',
-    //         'status'        => 'required',
     //         'date_of_birth' => 'required|date',
     //         'city'          => 'required',
     //         'state'         => 'required',
     //         'zip'           => 'required',
     //         'address'       => 'required',
-    //         'agency_id'    => 'required|exists:agencies,id',
     //         'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-    //     ]);
+    //     ];
+
+    //     // Only superadmin needs to provide agency
+    //     if ($roleName === 'super admin') {
+    //         $rules['agency_id'] = 'required|exists:agencies,id';
+    //     }
+
+    //     $validator = Validator::make($request->all(), $rules);
 
     //     if ($validator->fails()) {
     //         return response()->json(['errors' => $validator->errors()], 422);
@@ -64,17 +74,21 @@ class UserController extends Controller
     //         $profilePath = $request->file('profile')->store('profiles', 'public');
     //     }
 
+    //     // Set agency_id and status automatically for non-superadmin
+    //     $agencyId = $roleName === 'super admin' ? $request->agency_id : $authUser->agency_id;
+    //     $status   = $roleName === 'super admin' ? $request->status : 1; // always active
+
     //     User::create([
     //         'name'          => $request->name,
     //         'email'         => $request->email,
     //         'password'      => Hash::make($request->password),
     //         'role_id'       => $request->role_id,
-    //         'status'        => $request->status,
+    //         'status'        => 1, // always active
     //         'city'          => $request->city,
     //         'state'         => $request->state,
     //         'zip'           => $request->zip,
     //         'address'       => $request->address,
-    //         'agency_id' => $request->agency_id,
+    //         'agency_id'     => $agencyId,
     //         'date_of_birth' => $request->date_of_birth,
     //         'profile'       => $profilePath
     //     ]);
@@ -99,7 +113,7 @@ class UserController extends Controller
             'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ];
 
-        // Only superadmin needs to provide agency
+        // Only superadmin needs agency
         if ($roleName === 'super admin') {
             $rules['agency_id'] = 'required|exists:agencies,id';
         }
@@ -110,21 +124,26 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // store profile image
         $profilePath = null;
         if ($request->hasFile('profile')) {
             $profilePath = $request->file('profile')->store('profiles', 'public');
         }
 
-        // Set agency_id and status automatically for non-superadmin
-        $agencyId = $roleName === 'super admin' ? $request->agency_id : $authUser->agency_id;
-        $status   = $roleName === 'super admin' ? $request->status : 1; // always active
+        // agency logic
+        $agencyId = $roleName === 'super admin'
+            ? $request->agency_id
+            : $authUser->agency_id;
 
-        User::create([
+        $plainPassword = $request->password;
+
+        // create user
+        $user = User::create([
             'name'          => $request->name,
             'email'         => $request->email,
             'password'      => Hash::make($request->password),
             'role_id'       => $request->role_id,
-            'status'        => 1, // always active
+            'status'        => 1,
             'city'          => $request->city,
             'state'         => $request->state,
             'zip'           => $request->zip,
@@ -134,7 +153,14 @@ class UserController extends Controller
             'profile'       => $profilePath
         ]);
 
-        return response()->json(['success' => 'User has been created successfully.']);
+        // load relations (IMPORTANT for email)
+        $user->load(['role', 'agency']);
+
+        // send notification with password
+        $user->notify(new UserCreatedNotification($user, $plainPassword));
+        return response()->json([
+            'success' => 'User has been created successfully.'
+        ]);
     }
     // public function update(Request $request, $id)
     // {
