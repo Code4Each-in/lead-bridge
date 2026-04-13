@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeadImportController;
 use App\Http\Controllers\LeadNoteController;
+use App\Http\Controllers\ReminderController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -79,3 +80,7 @@ Route::post('/documents', [LeadDocumentController::class, 'store'])
 
 Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
     ->name('documents.destroy');
+
+
+Route::post('/reminders', [ReminderController::class, 'store'])->name('reminders.store');
+Route::get('/reminders/delete/{id}', [ReminderController::class, 'destroy'])->name('reminders.delete');

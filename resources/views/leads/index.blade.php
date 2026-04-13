@@ -8,7 +8,13 @@
         content: ' *';
         color: red;
     }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    .select2-container .select2-selection--single {
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: 45px !important;
+     }
+    /* .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     font-size: 13px !important;
     padding: 4px 4px !important;
     }
@@ -31,7 +37,7 @@
     .select2-container--default .select2-selection--multiple .select2-selection__clear{
         margin-top: 1px !important;
         color: #ced4da;
-    }
+    } */
     .lead-status-simple {
         padding: 4px 8px;
         font-size: 13px;
@@ -51,6 +57,7 @@
     $isSuperAdmin   = in_array(strtolower($authUser->role->name), ['super admin']);
     $isAdminOrMIS   = in_array(strtolower($authUser->role->name), ['admin', 'mis user']);
     $isAdminOrSuper = $isSuperAdmin || $isAdminOrMIS;
+    $role = strtolower(optional(auth()->user()->role)->name);
 @endphp
 
 
@@ -64,25 +71,20 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
-                         @if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin' || strtolower(auth()->user()->role->name) == 'mis user')
-                        <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
-                            Add Lead
-                        </button>
+                        
+                        @if(in_array($role, ['super admin','admin','mis user']))
+                            <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
+                                Add Lead
+                            </button>
                         @endif
-                        @if($isAdminOrMIS)
-                        <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
-                            @csrf
-                            <input
-                                type="file"
-                                name="file"
-                                accept=".xls,.xlsx"
-                                style="display: none;"
-                                id="excelFileInput"
-                            >
-                            <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
-                        </form>
+                        @if(in_array($role, ['admin','mis user']))
+                            <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
+                                @csrf
+                                <input type="file" name="file" accept=".xls,.xlsx" style="display: none;" id="excelFileInput">
+                                <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
+                            </form>
 
-                        <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
+                            <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
                         @endif
                     </div>
                 </div>
@@ -123,16 +125,28 @@
                                 <td>{{ $lead->source }}</td>
 
                                 <td onclick="event.stopPropagation();">
-                                    <a href="{{ url('/leads/'.$lead->id) }}"
-                                    target="_blank"
-                                    class="btn btn-sm btn-primary">
-                                        <i class="mdi mdi mdi-eye"></i> view
-                                    </a>
 
-                                    <a href="{{ route('leads.delete', $lead->id) }}"
-                                    class="btn btn-sm btn-danger btn-delete">
-                                        <i class="mdi mdi-trash-can"></i> Delete
-                                    </a>
+                                    @if(in_array($role, ['super admin','admin','account executive','qa user','account manager']))
+                                        <a href="{{ url('/leads/'.$lead->id) }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary">
+                                            <i class="mdi mdi-eye"></i> View
+                                        </a>
+                                    @endif
+                                    @if(in_array($role, ['super admin','admin','mis user']))
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary edit-lead-btn"
+                                                data-toggle="modal"
+                                                data-target="#editModal{{ $lead->id }}">
+                                            <i class="mdi mdi-pencil-box"></i> Edit
+                                        </button>
+                                    @endif
+                                    @if(in_array($role, ['super admin','admin']))
+                                        <a href="{{ route('leads.delete', $lead->id) }}"
+                                        class="btn btn-sm btn-danger btn-delete">
+                                            <i class="mdi mdi-trash-can"></i> Delete
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach
@@ -220,13 +234,24 @@
                             </div>
 
                             {{-- Assign User (populated by agency change) --}}
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"
                                             multiple>
+                                        <option value="">-- Select Agency First --</option>
+                                    </select>
+                                </div>
+                            </div> -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Assign User</label>
+                                    <select name="assigned_user_id"
+                                            id="create_user_select"
+                                            class="form-control"
+                                            >
                                         <option value="">-- Select Agency First --</option>
                                     </select>
                                 </div>
@@ -238,11 +263,11 @@
                             {{-- Assign User: pre-loaded with same-agency users --}}
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label >Assign User</label>
-                                    <select name="assigned_user_id[]"
+                                    <label>Assign User</label>
+                                    <select name="assigned_user_id"
                                             id="create_user_select"
-                                            class="form-control user-select"
-                                            multiple>
+                                            class="form-control">
+                                        <option value="">-- Select User --</option>
                                         @foreach($users as $user)
                                             <option value="{{ $user->id }}">{{ $user->name }}</option>
                                         @endforeach
@@ -257,7 +282,7 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes"></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Document</label>
                         <div class="input-group">
                             <input type="file" id="documentInput_create" name="documents" style="display: none;">
@@ -270,7 +295,7 @@
                                 </button>
                             </span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -387,17 +412,17 @@
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
                                     @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
-                                    <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
-                                            class="form-control user-select"
-                                            multiple>
-                                        @foreach($users->where('agency_id', $lead->agency_id) as $user)
-                                            <option value="{{ $user->id }}"
+                                        <select name="assigned_user_id"
+                                                id="edit_user_{{ $lead->id }}"
+                                                class="form-control">
+                                            <option value="">-- Select User --</option>
+                                            @foreach($users->where('agency_id', $lead->agency_id) as $user)
+                                                <option value="{{ $user->id }}"
                                                     {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                                    {{ $user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                 </div>
                             </div>
                         @else
@@ -406,17 +431,17 @@
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
                                     @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
-                                    <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
-                                            class="form-control user-select"
-                                            multiple>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}"
+                                        <select name="assigned_user_id"
+                                                id="edit_user_{{ $lead->id }}"
+                                                class="form-control">
+                                            <option value="">-- Select User --</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}"
                                                     {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                                    {{ $user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                 </div>
                             </div>
                         @endif
@@ -427,7 +452,7 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes">{{ $lead->notes }}</textarea>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Document</label>
                         @if($lead->documents)
                             <div class="mb-1">
@@ -448,7 +473,7 @@
                                 </button>
                             </span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -496,25 +521,25 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
     // Initialize Select2 on all user selects for user-role (no agency dependency)
-    if (!IS_ADMIN_OR_SUPER) {
-        $('#create_user_select').select2({
-            width: '100%',
-            dropdownParent: $('#createModal'),
-            placeholder: 'Select users...',
-            allowClear: true
-        });
+    // if (!IS_ADMIN_OR_SUPER) {
+    //     $('#create_user_select').select2({
+    //         width: '100%',
+    //         dropdownParent: $('#createModal'),
+    //         placeholder: 'Select users...',
+    //         allowClear: true
+    //     });
 
-        $('.user-select').each(function () {
-            const $sel    = $(this);
-            const $modal  = $sel.closest('.modal');
-            $sel.select2({
-                width: '100%',
-                dropdownParent: $modal.length ? $modal : $(document.body),
-                placeholder: 'Select users...',
-                allowClear: true
-            });
-        });
-    }
+    //     $('.user-select').each(function () {
+    //         const $sel    = $(this);
+    //         const $modal  = $sel.closest('.modal');
+    //         $sel.select2({
+    //             width: '100%',
+    //             dropdownParent: $modal.length ? $modal : $(document.body),
+    //             placeholder: 'Select users...',
+    //             allowClear: true
+    //         });
+    //     });
+    // }
 
     function populateUsers(targetId, agencyId, selectedIds) {
         const $sel    = $('#' + targetId);
@@ -644,7 +669,7 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
             .trigger('change');
 
     } else if (IS_ADMIN_OR_MIS) {
-        // ✅ Admin/MIS — no agency select, just reset user select
+        // Admin/MIS — no agency select, just reset user select
         const $userSel = $('#create_user_select');
         if ($userSel.hasClass('select2-hidden-accessible')) {
             $userSel.select2('destroy');
@@ -678,12 +703,12 @@ $('.modal').on('show.bs.modal', function () {
             if ($(this).val()) $(this).trigger('change');
         });
     }
-    
+
 });
 
-    $('.modal').on('shown.bs.modal', function () {
-        $(this).find('.select2').css('width', '100%');
-    });
+        // $('.modal').on('shown.bs.modal', function () {
+        //     $(this).find('.select2').css('width', '100%');
+        // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');

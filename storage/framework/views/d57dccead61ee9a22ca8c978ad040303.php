@@ -253,14 +253,48 @@
                         <div class="col-md-8 mb-4">
                             <div class="card custom-card h-100">
 
-                                <div class="card-header custom-header">
-                                    <i class="mdi mdi-chart-bar menu-icon icon-head me-2"></i>
-                                    <?php echo e($lead->name ?? 'Lead Name'); ?>
+                                <div class="card-header custom-header d-flex justify-content-between align-items-center">
+
+                                    <div>
+                                        <i class="mdi mdi-chart-bar menu-icon icon-head me-2"></i>
+                                        <?php echo e($lead->name ?? 'Lead Name'); ?>
+
+                                    </div>
+
+                                    <!-- RIGHT SIDE BUTTONS -->
+                                    <div class="d-flex gap-2">
+
+                                        <!-- ADD REMINDER -->
+                                        <button class="btn btn-warning btn-sm"
+                                                data-toggle="modal"
+                                                data-target="#addReminderModal">
+                                            <i class="mdi mdi-bell-plus"></i> Add Reminder
+                                        </button>
+
+                                        <!-- VIEW REMINDER -->
+                                        <button class="btn btn-info btn-sm"
+                                                data-toggle="modal"
+                                                data-target="#viewReminderModal">
+                                            <i class="mdi mdi-bell"></i> Reminders
+                                        </button>
+
+                                    </div>
 
                                 </div>
 
                                 <div class="card-body">
 
+                                    <div class="detail-row">
+                                        <i class="mdi mdi-email"></i>
+                                        <span class="label">Email:</span>
+                                        <span><?php echo e($lead->email ?? '-'); ?></span>
+                                    </div>
+
+                                    <div class="detail-row">
+                                        <i class="mdi mdi-phone"></i>
+                                        <span class="label">Phone:</span>
+                                        <span><?php echo e($lead->phone ?? '-'); ?></span>
+                                    </div>
                                     <div class="detail-row">
                                         <i class="mdi mdi-account"></i>
                                         <span class="label">Agency:</span>
@@ -303,7 +337,7 @@
                                         <span style="color:#6b7280; font-size:13px;"><?php echo e($lead->notes ?? '---'); ?></span>
                                     </div>
 
-                                    <div class="detail-item">
+                                    <!-- <div class="detail-item">
                                         <i class="mdi mdi-file-document"></i>
                                         <span class="label">Documents:</span>
                                         <span style="margin-left: 8px;">
@@ -337,7 +371,7 @@
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         <?php endif; ?>
                                         </span>
-                                    </div>
+                                    </div> -->
 
                                     <div class="detail-row">
                                         <i class="mdi mdi-information-outline"></i>
@@ -365,8 +399,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- RIGHT: Users — redesigned -->
+                        <!-- RIGHT: Users —  -->
                         <div class="col-md-4 mb-4">
                             <div class="card custom-card h-100">
 
@@ -393,7 +426,7 @@
                                                 <?php endif; ?>
                                             </div>
                                             <div class="rp-info">
-                                                <span class="rp-name"><?php echo e($lead->creator->name); ?></span>
+                                                <span class="rp-name"><?php echo e($lead->creator->name); ?><small> (<?php echo e($lead->creator->role->name); ?>)</small></span>
                                                 <span class="rp-badge rpb-blue">Created Lead</span>
                                             </div>
                                         </div>
@@ -416,7 +449,7 @@
                                                     <?php endif; ?>
                                                 </div>
                                                 <div class="rp-info">
-                                                    <span class="rp-name"><?php echo e($user->name); ?></span>
+                                                    <span class="rp-name"><?php echo e($user->name); ?><small> (<?php echo e($user->role->name); ?>)</small></span>
                                                     <span class="rp-badge rpb-green">Assigned Lead</span>
                                                 </div>
                                             </div>
@@ -440,7 +473,7 @@
                                                     <?php endif; ?>
                                                 </div>
                                                 <div class="rp-info">
-                                                    <span class="rp-name"><?php echo e($qa->name); ?></span>
+                                                    <span class="rp-name"><?php echo e($qa->name); ?><small> (<?php echo e($qa->role->name); ?>)</small></span>
                                                     <span class="rp-badge rpb-amber">QA Lead</span>
                                                 </div>
                                             </div>
@@ -478,7 +511,7 @@
                                                 <strong><?php echo e($activity['data']->user->name); ?></strong>
 
                                                 <small class="text-muted">
-                                                    <?php echo e($activity['data']->created_at->diffForHumans()); ?>
+                                                    <?php echo e($activity['data']->created_at->format('M d, Y h:i A')); ?>
 
                                                 </small>
 
@@ -604,6 +637,95 @@
                         </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<!-- add reminder modal -->
+<div class="modal fade" id="addReminderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="<?php echo e(route('reminders.store')); ?>" method="POST" class="modal-content">
+            <?php echo csrf_field(); ?>
+       <input type="hidden" name="lead_id" value="<?php echo e($lead->id); ?>">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Reminder</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Time</label>
+                    <input type="time" name="time" class="form-control" required>
+                </div>
+
+                <!-- OPTIONAL NOTE -->
+                <div class="form-group">
+                    <label>Note (Optional)</label>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="Add a note..."></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Save Reminder</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<!-- view reminder modal -->
+ <div class="modal fade" id="viewReminderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Your Reminders</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <?php if(isset($reminders) && count($reminders) > 0): ?>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Note</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <?php $__currentLoopData = $reminders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reminder): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <tr>
+                                    <td><?php echo e($reminder->date); ?></td>
+                                    <td><?php echo e($reminder->time); ?></td>
+                                    <td><?php echo e($reminder->notes ?? '-'); ?></td>
+
+                                    <td>
+                                        <a href="<?php echo e(route('reminders.delete', $reminder->id)); ?>"
+                                           class="btn btn-sm btn-danger btn-delete">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </tbody>
+                    </table>
+
+                <?php else: ?>
+                    <p class="text-muted">No reminders found.</p>
+                <?php endif; ?>
+
+            </div>
+
         </div>
     </div>
 </div>

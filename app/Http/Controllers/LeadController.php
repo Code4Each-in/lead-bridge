@@ -91,7 +91,7 @@ class LeadController extends Controller
             'city'               => 'required|string|max:100',
             'source'             => 'required|string|max:100',
             'agency_id'          => 'nullable|exists:agencies,id',
-            'assigned_user_id'   => 'nullable|array|min:1',
+            'assigned_user_id'   => 'nullable|min:1',
             'assigned_user_id.*' => 'exists:users,id',
             'notes'              => 'required|string',
             'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -197,7 +197,7 @@ class LeadController extends Controller
             'source' => 'required|string|max:100',
             'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
             'agency_id' => 'nullable|exists:agencies,id',
-            'assigned_user_id'   => 'nullable|array|min:1',
+            'assigned_user_id'   => 'nullable|min:1',
             'assigned_user_id.*' => 'exists:users,id',
             'notes' => 'required|string',
         ]);
@@ -315,7 +315,7 @@ class LeadController extends Controller
 
         $activities = collect();
 
-       
+
         foreach ($lead->leadNotes as $note) {
             $activities->push([
                 'type' => 'note',
@@ -333,7 +333,7 @@ class LeadController extends Controller
         }
 
         // 3. Sort timeline
-        $activities = $activities;
+        $activities = $activities->sortBy('created_at')->values();
 
         return view('leads.show', compact('lead', 'activities'));
     }
