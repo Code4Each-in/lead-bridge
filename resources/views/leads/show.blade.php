@@ -477,7 +477,9 @@
                                                     {{ $activity['data']->created_at->diffForHumans() }}
                                                 </small>
 
-                                                <p class="mb-2">
+                                                <p class="mb-2"
+                                                id="view-{{ $activity['data']->id }}"
+                                                data-content="@js($activity['data']->content)">
                                                     {!! $activity['data']->content !!}
                                                 </p>
 
@@ -526,11 +528,11 @@
                                             @if($activity['type'] === 'note')
                                                 @if($activity['data']->user_id == auth()->id())
 
-                                                    <button type="button"
-                                                            class="btn btn-link text-primary p-0"
-                                                            onclick="editNote({{ $activity['data']->id }})">
-                                                        <i class="mdi mdi-pencil"></i>
-                                                    </button>
+                                                <button type="button"
+                                                        class="btn btn-link text-primary p-0"
+                                                        onclick="editNote({{ $activity['data']->id }}, @js($activity['data']->content))">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </button>
 
                                                 @endif
                                             @endif
@@ -653,24 +655,11 @@ function initEditor(id) {
     });
 }
 
-function editNote(id) {
-
-    const view = document.getElementById('view-' + id);
-
-    if (!view) {
-        console.error('Note not found:', id);
-        return;
-    }
-
-    const content = view.getAttribute('data-content');
-
-    console.log('Editing note ID:', id);
-    console.log('Note content:', content);
+function editNote(id, content) {
 
     const quill = editors['create'];
 
     quill.setContents([]);
-
     quill.clipboard.dangerouslyPasteHTML(content);
 
     document.getElementById('edit-note-id').value = id;
