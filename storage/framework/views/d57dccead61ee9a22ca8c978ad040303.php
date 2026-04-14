@@ -246,7 +246,27 @@
     <div class="col-md-12 grid-margin">
         <div class="card">
             <div class="card-body">
-                <div class="container-fluid">
+                    <!-- RIGHT SIDE BUTTONS -->
+                    <div class="d-flex justify-content-between align-items-center w-100">
+
+                        <div></div> <!-- left side empty or title -->
+
+                        <div class="d-flex ">
+                            <button class="btn btn-warning btn-sm mr-2"
+                                    data-toggle="modal"
+                                    data-target="#addReminderModal">
+                                <i class="mdi mdi-bell-plus"></i> Add Reminder
+                            </button>
+
+                            <button class="btn btn-info btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#viewReminderModal">
+                                <i class="mdi mdi-bell"></i> Reminders
+                            </button>
+                        </div>
+
+                    </div>
+                <div class="container-fluid mt-3">
                     <div class="row">
 
                         <!-- LEFT: Details -->
@@ -261,24 +281,7 @@
 
                                     </div>
 
-                                    <!-- RIGHT SIDE BUTTONS -->
-                                    <div class="d-flex gap-2">
 
-                                        <!-- ADD REMINDER -->
-                                        <button class="btn btn-warning btn-sm"
-                                                data-toggle="modal"
-                                                data-target="#addReminderModal">
-                                            <i class="mdi mdi-bell-plus"></i> Add Reminder
-                                        </button>
-
-                                        <!-- VIEW REMINDER -->
-                                        <button class="btn btn-info btn-sm"
-                                                data-toggle="modal"
-                                                data-target="#viewReminderModal">
-                                            <i class="mdi mdi-bell"></i> Reminders
-                                        </button>
-
-                                    </div>
 
                                 </div>
 
@@ -655,7 +658,7 @@
 
                 <div class="form-group">
                     <label>Date</label>
-                    <input type="date" name="date" class="form-control" required>
+                    <input type="date" name="date" class="form-control" min="<?php echo e(date('Y-m-d')); ?>" required>
                 </div>
 
                 <div class="form-group">
@@ -707,13 +710,17 @@
                                 <tr>
                                     <td><?php echo e($reminder->date); ?></td>
                                     <td><?php echo e($reminder->time); ?></td>
-                                    <td><?php echo e($reminder->notes ?? '-'); ?></td>
+                                    <td><?php echo e($reminder->notes ?? 'N/A'); ?></td>
 
                                     <td>
-                                        <a href="<?php echo e(route('reminders.delete', $reminder->id)); ?>"
-                                           class="btn btn-sm btn-danger btn-delete">
+                                    <form action="<?php echo e(route('reminders.delete', $reminder->id)); ?>" method="POST" style="display:inline;">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
+
+                                        <button type="submit" class="btn btn-sm btn-danger">
                                             Delete
-                                        </a>
+                                        </button>
+                                    </form>
                                     </td>
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

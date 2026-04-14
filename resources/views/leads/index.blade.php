@@ -71,7 +71,7 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
-                        
+
                         @if(in_array($role, ['super admin','admin','mis user']))
                             <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                                 Add Lead
@@ -867,7 +867,6 @@ function showErrors($form, errors) {
 document.addEventListener('DOMContentLoaded', function() {
     let htmlContent = '';
 
-    // 1️⃣ Laravel validation errors
     @if ($errors->any())
         htmlContent += '<b>Validation Errors:</b><ul>';
         @foreach ($errors->all() as $error)
@@ -876,12 +875,10 @@ document.addEventListener('DOMContentLoaded', function() {
         htmlContent += '</ul><br>';
     @endif
 
-    // 2️⃣ Session error
     @if (session('error'))
         htmlContent += `<b>Error:</b> {{ session('error') }}<br><br>`;
     @endif
 
-    // 3️⃣ Success message + failed rows
     @if(session('success'))
         htmlContent += `<b>{{ session('success') }}</b><br><br>`;
         const failedRows = @json(session('failedRows', []));
@@ -894,7 +891,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     @endif
 
-    // 4️⃣ Show Swal only if there is content
     if(htmlContent.length > 0) {
         Swal.fire({
             icon: htmlContent.includes('Validation Errors') || htmlContent.includes('Error') ? 'error' : 'success',

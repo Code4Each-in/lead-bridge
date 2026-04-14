@@ -11,7 +11,6 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeadImportController;
 use App\Http\Controllers\LeadNoteController;
-use App\Http\Controllers\ReminderController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -82,5 +81,8 @@ Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
     ->name('documents.destroy');
 
 
-Route::post('/reminders', [ReminderController::class, 'store'])->name('reminders.store');
-Route::get('/reminders/delete/{id}', [ReminderController::class, 'destroy'])->name('reminders.delete');
+Route::post('/reminders', [LeadController::class, 'storeReminder'])->name('reminders.store');
+Route::delete('/reminder/delete/{id}', [LeadController::class, 'destroyReminder'])
+    ->name('reminders.delete');
+    // routes/web.php
+Route::post('/reminders/{reminder}/dismiss', [DashboardController::class, 'dismissReminder']);

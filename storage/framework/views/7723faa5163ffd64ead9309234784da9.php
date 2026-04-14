@@ -70,7 +70,7 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
-                        
+
                         <?php if(in_array($role, ['super admin','admin','mis user'])): ?>
                             <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
                                 Add Lead
@@ -871,7 +871,6 @@ function showErrors($form, errors) {
 document.addEventListener('DOMContentLoaded', function() {
     let htmlContent = '';
 
-    // 1️⃣ Laravel validation errors
     <?php if($errors->any()): ?>
         htmlContent += '<b>Validation Errors:</b><ul>';
         <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -880,12 +879,10 @@ document.addEventListener('DOMContentLoaded', function() {
         htmlContent += '</ul><br>';
     <?php endif; ?>
 
-    // 2️⃣ Session error
     <?php if(session('error')): ?>
         htmlContent += `<b>Error:</b> <?php echo e(session('error')); ?><br><br>`;
     <?php endif; ?>
 
-    // 3️⃣ Success message + failed rows
     <?php if(session('success')): ?>
         htmlContent += `<b><?php echo e(session('success')); ?></b><br><br>`;
         const failedRows = <?php echo json_encode(session('failedRows', []), 512) ?>;
@@ -898,7 +895,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     <?php endif; ?>
 
-    // 4️⃣ Show Swal only if there is content
     if(htmlContent.length > 0) {
         Swal.fire({
             icon: htmlContent.includes('Validation Errors') || htmlContent.includes('Error') ? 'error' : 'success',

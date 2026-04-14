@@ -2,13 +2,70 @@
 @section('title', 'Dashboard')
 @section('subtitle', 'Dashboard')
 @section('content')
+<style>
+    .reminders-wrap { font-family: inherit; }
+.reminders-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.reminders-title { font-size: 15px; font-weight: 600; color: #2c2c2a; display: flex; align-items: center; gap: 8px; }
+.badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; display: inline-block; }
 
+.reminder-card {
+    position: relative;
+    background: linear-gradient(135deg, #EEEDFE 0%, #E6F1FB 100%);
+    border: 1px solid #AFA9EC;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.15s;
+}
+.reminder-card:hover { border-color: #7F77DD; }
+
+.reminder-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.reminder-icon img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.reminder-body { flex: 1; min-width: 0; }
+.reminder-name { font-size: 14px; font-weight: 600; color: #3C3489; margin-bottom: 2px; }
+.reminder-note { font-size: 13px; color: #534AB7; margin-bottom: 6px; }
+
+.reminder-time {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #534AB7; color: #EEEDFE;
+    font-size: 12px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px;
+}
+.reminder-time svg { width: 12px; height: 12px; stroke: #CECBF6; stroke-width: 2; fill: none; }
+
+.close-btn {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px;
+    border-radius: 50%; background: #AFA9EC;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.close-btn:hover { background: #7F77DD; }
+.close-btn svg { width: 10px; height: 10px; stroke: #26215C; stroke-width: 2.5; fill: none; }
+</style>
 
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="row">
         <div class="col-12 col-xl-8 mb-4 mb-xl-0">
             <h3 class="font-weight-bold">{{ $agencyName }}</h3>
+
             <!-- <h6 class="font-weight-normal mb-0">All systems are running smoothly! You have <span class="text-primary">3 unread alerts!</span></h6> -->
         </div>
         <!-- <div class="col-12 col-xl-4">
@@ -29,7 +86,37 @@
         </div>
     </div>
     </div>
-    <div class="row">
+    @if($todayReminders->count())
+    <div id="reminders-section">
+        <div class="reminders-header">
+            <div class="reminders-title">
+                <span class="badge-dot"></span>
+                Today's Reminders
+            </div>
+        </div>
+        <div id="reminders-list">
+            @foreach($todayReminders as $reminder)
+            <div class="reminder-card" id="reminder-{{ $reminder->id }}">
+                <div class="reminder-icon">
+                    <img src="{{ auth()->user()->profile
+                        ? asset('storage/' . auth()->user()->profile)
+                        : asset('assets/images/default-profile.png') }}"
+                        alt="profile">
+                </div>
+                <div class="reminder-body">
+                    <div class="reminder-name">{{ $reminder->lead->name ?? 'Lead' }}</div>
+                    <div class="reminder-note">{{ $reminder->notes }}</div>
+                    <span class="reminder-time">{{ $reminder->time }}</span>
+                </div>
+                <button class="close-btn" onclick="removeReminder({{ $reminder->id }})" title="Dismiss">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+    <div class="row mt-3">
         <div class="col-md-6 grid-margin stretch-card">
             <div class="card tale-bg">
                 <div class="card-people mt-auto">
@@ -678,6 +765,41 @@ function success(position) {
 function error(err) {
     console.warn(`Geolocation error (${err.code}): ${err.message}`);
     // fallback: default weather already shown
+}
+function removeReminder(id) {
+    const el = document.getElementById('reminder-' + id);
+    if (!el) return;
+
+    el.style.transition = 'opacity 0.25s, transform 0.25s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+
+    fetch(`/reminders/${id}/dismiss`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+    })
+    .catch(err => {
+        console.error(err);
+    });
+
+    setTimeout(() => {
+        el.remove();
+
+        const list = document.getElementById('reminders-list');
+        const section = document.getElementById('reminders-section');
+
+        if (list && !list.querySelector('.reminder-card')) {
+            section.style.opacity = '0';
+            setTimeout(() => section.remove(), 200);
+        }
+    }, 260);
 }
 </script>
 @endsection

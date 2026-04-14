@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\User;
 use App\Models\Agency;
+use App\Models\LeadReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -309,7 +310,7 @@ class LeadController extends Controller
             'agency',
             'users',
             'leadNotes.user',
-            'leadNotes.documents', // important
+            'leadNotes.documents',
             'leadDocuments'
         ])->findOrFail($id);
 
@@ -332,9 +333,62 @@ class LeadController extends Controller
             ]);
         }
 
-        // 3. Sort timeline
-        $activities = $activities->sortBy('created_at')->values();
 
-        return view('leads.show', compact('lead', 'activities'));
+        $activities = $activities->sortBy('created_at')->values();
+        $authUser = auth()->user();
+        $roleName = $authUser->role->name ?? null;
+
+        $query = LeadReminder::where('lead_id', $id);
+
+        if ($roleName !== 'super admin') {
+            $query->where('agency_id', $authUser->agency_id);
+        }
+
+        $reminders = LeadReminder::where('lead_id', $id)->latest()->get();
+        return view('leads.show', compact('lead', 'activities','reminders'));
     }
+    public function storeReminder(Request $request)
+    {
+        $authUser = auth()->user();
+        $roleName = strtolower($authUser->role->name ?? '');
+
+
+        $request->validate([
+            'lead_id' => 'required|exists:leads,id',
+            'date'    => 'required|date|after_or_equal:today',
+            'time'    => 'required',
+            'notes'   => 'nullable|string'
+        ]);
+
+        $agencyId = match ($roleName) {
+            'admin', 'mis user' => $authUser->agency_id,
+            'super admin'       => null,
+            default             => $authUser->agency_id,
+        };
+
+        LeadReminder::create([
+            'user_id'   => $authUser->id,
+            'lead_id'   => $request->lead_id,
+            'agency_id' => $agencyId,
+            'date'      => $request->date,
+            'time'      => $request->time,
+            'notes'     => $request->notes,
+            'is_triggered' => 0
+        ]);
+
+        return back()->with('success', 'Reminder added successfully');
+    }
+    public function destroyReminder($id)
+    {
+        $reminder = LeadReminder::findOrFail($id);
+
+        if ($reminder->user_id != auth()->id()) {
+            return back()->with('error', 'You cannot delete this reminder. Only creator can delete it.');
+        }
+
+        $reminder->delete();
+
+        return back()->with('success', 'Reminder deleted successfully');
+    }
+
 }

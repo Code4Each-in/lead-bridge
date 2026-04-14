@@ -15,7 +15,8 @@ class LeadReminder extends Model
         'date',
         'time',
         'notes',
-        'is_triggered'
+        'is_triggered',
+        'dismissed_at'
     ];
 
     /*
