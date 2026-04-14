@@ -248,23 +248,46 @@
         <div class="card">
             <div class="card-body">
                     <!-- RIGHT SIDE BUTTONS -->
-                    <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="d-flex gap-2 mb-3">
 
-                        <div></div> <!-- left side empty or title -->
+                        @php
+                            $role = strtolower(auth()->user()->role->name ?? '');
+                            $isAdmin = in_array($role, ['super admin', 'admin']);
+                        @endphp
 
-                        <div class="d-flex ">
-                            <button class="btn btn-warning btn-sm mr-2"
-                                    data-toggle="modal"
-                                    data-target="#addReminderModal">
-                                <i class="mdi mdi-bell-plus"></i> Add Reminder
+                        {{-- AE --}}
+                        @if($isAdmin || $role == 'account executive')
+                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
+                                Move to QA
+                            </button>
+                        @endif
+
+                        {{-- QA --}}
+                        @if($isAdmin || $role == 'qa user')
+                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
+                                Move to Manager
                             </button>
 
-                            <button class="btn btn-info btn-sm"
-                                    data-toggle="modal"
-                                    data-target="#viewReminderModal">
-                                <i class="mdi mdi-bell"></i> Reminders
-                            </button>
-                        </div>
+                            <form method="POST" action="{{ route('lead.return-ae', $lead->id) }}" class="d-inline">
+                                @csrf
+                                <button class="btn btn-secondary btn-sm">
+                                    Return to AE
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- MANAGER --}}
+                        @if($isAdmin || $role == 'account manager')
+                            <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline">
+                                @csrf
+                                <button class="btn btn-success btn-sm">Complete</button>
+                            </form>
+
+                            <form method="POST" action="{{ route('lead.lost', $lead->id) }}" class="d-inline">
+                                @csrf
+                                <button class="btn btn-danger btn-sm">Lost</button>
+                            </form>
+                        @endif
 
                     </div>
                 <div class="container-fluid mt-3">
@@ -726,6 +749,62 @@
             </div>
 
         </div>
+    </div>
+</div>
+<!-- qa selection -->
+ <div class="modal fade" id="qaModal">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('lead.move-to-qa', $lead->id) }}">
+            @csrf
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Select QA User</h5>
+                </div>
+
+                <div class="modal-body">
+                    <select name="qa_user_id" class="form-control" required>
+                        <option value="">Select QA</option>
+                        @foreach($qaUsers as $qa)
+                            <option value="{{ $qa->id }}">{{ $qa->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm">Assign</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+<!-- manager selection -->
+ <div class="modal fade" id="managerModal">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('lead.move-to-manager', $lead->id) }}">
+            @csrf
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Select Manager</h5>
+                </div>
+
+                <div class="modal-body">
+                    <select name="manager_user_id" class="form-control" required>
+                        <option value="">Select Manager</option>
+                        @foreach($managers as $manager)
+                            <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-success btn-sm">Assign</button>
+                </div>
+            </div>
+
+        </form>
     </div>
 </div>
 <!-- Quill JS -->

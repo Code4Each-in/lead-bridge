@@ -247,23 +247,46 @@
         <div class="card">
             <div class="card-body">
                     <!-- RIGHT SIDE BUTTONS -->
-                    <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="d-flex gap-2 mb-3">
 
-                        <div></div> <!-- left side empty or title -->
+                        <?php
+                            $role = strtolower(auth()->user()->role->name ?? '');
+                            $isAdmin = in_array($role, ['super admin', 'admin']);
+                        ?>
 
-                        <div class="d-flex ">
-                            <button class="btn btn-warning btn-sm mr-2"
-                                    data-toggle="modal"
-                                    data-target="#addReminderModal">
-                                <i class="mdi mdi-bell-plus"></i> Add Reminder
+                        
+                        <?php if($isAdmin || $role == 'account executive'): ?>
+                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
+                                Move to QA
+                            </button>
+                        <?php endif; ?>
+
+                        
+                        <?php if($isAdmin || $role == 'qa user'): ?>
+                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
+                                Move to Manager
                             </button>
 
-                            <button class="btn btn-info btn-sm"
-                                    data-toggle="modal"
-                                    data-target="#viewReminderModal">
-                                <i class="mdi mdi-bell"></i> Reminders
-                            </button>
-                        </div>
+                            <form method="POST" action="<?php echo e(route('lead.return-ae', $lead->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
+                                <button class="btn btn-secondary btn-sm">
+                                    Return to AE
+                                </button>
+                            </form>
+                        <?php endif; ?>
+
+                        
+                        <?php if($isAdmin || $role == 'account manager'): ?>
+                            <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
+                                <button class="btn btn-success btn-sm">Complete</button>
+                            </form>
+
+                            <form method="POST" action="<?php echo e(route('lead.lost', $lead->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
+                                <button class="btn btn-danger btn-sm">Lost</button>
+                            </form>
+                        <?php endif; ?>
 
                     </div>
                 <div class="container-fluid mt-3">
@@ -734,6 +757,62 @@
             </div>
 
         </div>
+    </div>
+</div>
+<!-- qa selection -->
+ <div class="modal fade" id="qaModal">
+    <div class="modal-dialog">
+        <form method="POST" action="<?php echo e(route('lead.move-to-qa', $lead->id)); ?>">
+            <?php echo csrf_field(); ?>
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Select QA User</h5>
+                </div>
+
+                <div class="modal-body">
+                    <select name="qa_user_id" class="form-control" required>
+                        <option value="">Select QA</option>
+                        <?php $__currentLoopData = $qaUsers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $qa): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($qa->id); ?>"><?php echo e($qa->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm">Assign</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+<!-- manager selection -->
+ <div class="modal fade" id="managerModal">
+    <div class="modal-dialog">
+        <form method="POST" action="<?php echo e(route('lead.move-to-manager', $lead->id)); ?>">
+            <?php echo csrf_field(); ?>
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Select Manager</h5>
+                </div>
+
+                <div class="modal-body">
+                    <select name="manager_user_id" class="form-control" required>
+                        <option value="">Select Manager</option>
+                        <?php $__currentLoopData = $managers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $manager): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($manager->id); ?>"><?php echo e($manager->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-success btn-sm">Assign</button>
+                </div>
+            </div>
+
+        </form>
     </div>
 </div>
 <!-- Quill JS -->

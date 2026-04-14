@@ -14,14 +14,29 @@ use Carbon\Carbon;
 
 class LeadController extends Controller
 {
+
     // public function index()
     // {
     //     $authUser = Auth::user();
-
-    //     $leads    = Lead::with(['agency', 'users'])->latest()->get();
-    //     $agencies = Agency::all();
-
     //     $roleName = strtolower($authUser->role->name);
+
+    //     // Build leads query
+    //     $leadsQuery = Lead::with(['agency', 'users'])->latest();
+
+    //     if (in_array($roleName, ['mis user', 'admin'])) {
+    //         // Only leads belonging to same agency
+    //         $leadsQuery->where('agency_id', $authUser->agency_id);
+
+    //     } elseif ($roleName === 'account executive') {
+    //         // Only leads assigned to this user
+    //         $leadsQuery->whereHas('users', function ($q) use ($authUser) {
+    //             $q->where('users.id', $authUser->id);
+    //         });
+    //     }
+    //     // superadmin → no filter, sees everything
+
+    //     $leads    = $leadsQuery->get();
+    //     $agencies = Agency::all();
 
     //     if (in_array($roleName, ['mis user', 'admin'])) {
     //         $users = User::where('agency_id', $authUser->agency_id)
@@ -41,31 +56,52 @@ class LeadController extends Controller
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
 
-        // Build leads query
         $leadsQuery = Lead::with(['agency', 'users'])->latest();
 
-        if (in_array($roleName, ['mis user', 'admin'])) {
-            // Only leads belonging to same agency
-            $leadsQuery->where('agency_id', $authUser->agency_id);
+        // ADMIN / SUPER ADMIN → SEE ALL
+        if (!in_array($roleName, ['super admin', 'admin'])) {
 
-        } elseif ($roleName === 'account executive') {
-            // Only leads assigned to this user
-            $leadsQuery->whereHas('users', function ($q) use ($authUser) {
-                $q->where('users.id', $authUser->id);
-            });
+            // ACCOUNT EXECUTIVE → only his leads
+            if ($roleName === 'account executive') {
+
+                $leadsQuery->where('assigned_to', $authUser->id)
+                        ->where('stage', 'ae');
+            }
+
+            // QA USER → only QA assigned leads
+            elseif ($roleName === 'qa user') {
+
+                $leadsQuery->where('assigned_qa_id', $authUser->id)
+                        ->where('stage', 'qa');
+            }
+
+            // MANAGER → only manager assigned leads
+            elseif ($roleName === 'account manager') {
+
+                $leadsQuery->where('assigned_manager_id', $authUser->id)
+                        ->where('stage', 'manager');
+            }
+
+            // MIS / ADMIN (agency level restriction)
+            elseif ($roleName === 'mis user') {
+
+                $leadsQuery->where('agency_id', $authUser->agency_id);
+            }
         }
-        // superadmin → no filter, sees everything
 
-        $leads    = $leadsQuery->get();
+        $leads = $leadsQuery->get();
         $agencies = Agency::all();
 
+        // users dropdown logic
         if (in_array($roleName, ['mis user', 'admin'])) {
+
             $users = User::where('agency_id', $authUser->agency_id)
                 ->whereHas('role', function ($q) {
                     $q->whereRaw('LOWER(name) = ?', ['account executive']);
                 })
                 ->where('id', '!=', $authUser->id)
                 ->get();
+
         } else {
             $users = User::all();
         }
@@ -120,60 +156,13 @@ class LeadController extends Controller
             'notes'     => $request->notes,
             'documents' => $file,
             'created_by'  => $authUser->id,
+            'assigned_to' => $request->assigned_user_id,
         ]);
 
-        $lead->users()->sync($request->assigned_user_id);
+        $lead->users()->attach($request->assigned_user_id);
 
         return response()->json(['success' => 'Lead created successfully']);
     }
-
-    // public function update(Request $request, $id)
-    // {
-    //     $authUser = Auth::user();
-    //     $lead     = Lead::findOrFail($id);
-
-    //     $roleName = strtolower($authUser->role->name);
-
-    //     // Force agency for restricted roles
-    //     if (in_array($roleName, ['mis user', 'admin'])) {
-    //         $request->merge([
-    //             'agency_id' => $authUser->agency_id
-    //         ]);
-    //     }
-    //     $validator = Validator::make($request->all(), [
-    //         'name'               => 'required|string|max:255',
-    //         'phone'              => 'required|string|max:20',
-    //         'email'              => 'required|email|max:255',
-    //         'company'            => 'required|string|max:255',
-    //         'city'               => 'required|string|max:100',
-    //         'source'             => 'required|string|max:100',
-    //         'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
-    //         'agency_id'          => 'nullable|exists:agencies,id',
-    //         'assigned_user_id'   => 'nullable|array|min:1',
-    //         'assigned_user_id.*' => 'exists:users,id',
-    //         'notes'              => 'required|string',
-    //         'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(['errors' => $validator->errors()], 422);
-    //     }
-
-    //     $data = $request->only([
-    //         'name', 'phone', 'email', 'company',
-    //         'city', 'source', 'status', 'agency_id', 'notes',
-    //     ]);
-
-    //     if ($request->hasFile('documents')) {
-    //         $data['documents'] = $request->file('documents')->store('leads', 'public');
-    //     }
-
-    //     $lead->update($data);
-
-    //     $lead->users()->sync($request->assigned_user_id);
-
-    //     return response()->json(['success' => 'Lead updated successfully']);
-    // }
 
 
     public function update(Request $request, $id)
@@ -221,7 +210,6 @@ class LeadController extends Controller
             $data['end_date'] = Carbon::now();
         }
 
-        // Optional: reset end_date if reopened
         if ($request->status !== 'Complete') {
             $data['end_date'] = null;
         }
@@ -232,7 +220,7 @@ class LeadController extends Controller
 
         $lead->update($data);
 
-        $lead->users()->sync($request->assigned_user_id);
+        $lead->users()->attach($request->assigned_user_id);
 
         return response()->json(['success' => 'Lead updated successfully']);
     }
@@ -267,18 +255,6 @@ class LeadController extends Controller
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ]);
     }
-    // public function updateStatus(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|in:Not Started,In Progress,Hold,Lost,Complete',
-    //     ]);
-
-    //     $lead = Lead::findOrFail($id);
-    //     $lead->status = $request->status;
-    //     $lead->save();
-
-    //     return response()->json(['success' => 'Status updated successfully']);
-    // }
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -345,7 +321,14 @@ class LeadController extends Controller
         }
 
         $reminders = LeadReminder::where('lead_id', $id)->latest()->get();
-        return view('leads.show', compact('lead', 'activities','reminders'));
+        $qaUsers = User::whereHas('role', function ($q) {
+            $q->where('name', 'qa user');
+        })->get();
+
+        $managers = User::whereHas('role', function ($q) {
+            $q->where('name', 'account manager');
+        })->get();
+        return view('leads.show', compact('lead', 'activities','reminders', 'qaUsers', 'managers'));
     }
     public function storeReminder(Request $request)
     {
@@ -389,6 +372,78 @@ class LeadController extends Controller
         $reminder->delete();
 
         return back()->with('success', 'Reminder deleted successfully');
+    }
+    public function moveToQA(Request $request, $id)
+    {
+        $request->validate([
+            'qa_user_id' => 'required|exists:users,id'
+        ]);
+
+        $lead = Lead::findOrFail($id);
+
+        $lead->update([
+            'assigned_qa_id' => $request->qa_user_id,
+            'previous_ae_id' => auth()->id(),
+            'stage' => 'qa',
+        ]);
+
+        // pivot table update (optional but recommended)
+        // $lead->users()->sync([$request->qa_user_id]);
+
+        return back()->with('success', 'Lead moved to QA successfully');
+
+    }
+    public function moveToManager(Request $request, $id)
+    {
+        $request->validate([
+            'manager_user_id' => 'required|exists:users,id'
+        ]);
+
+        $lead = Lead::findOrFail($id);
+
+        $lead->update([
+            'assigned_manager_id' => $request->manager_user_id,
+            'stage' => 'manager',
+        ]);
+
+        // $lead->users()->sync([$request->manager_user_id]);
+
+        return back()->with('success', 'Lead moved to Manager successfully');
+    }
+    public function returnToAE($id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        $lead->update([
+            'assigned_to' => $lead->previous_ae_id,
+            'stage' => 'ae',
+        ]);
+
+        $lead->users()->sync([$lead->previous_ae_id]);
+
+        return back()->with('success', 'Lead returned to Account Executive');
+    }
+    public function markComplete($id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        $lead->update([
+            'stage' => 'completed',
+            'assigned_to' => null,
+        ]);
+
+        return back()->with('success', 'Lead marked as Completed');
+    }
+    public function markLost($id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        $lead->update([
+            'stage' => 'lost',
+            'assigned_to' => null,
+        ]);
+
+        return back()->with('success', 'Lead marked as Lost');
     }
 
 }

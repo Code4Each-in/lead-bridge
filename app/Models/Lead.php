@@ -19,6 +19,11 @@ class Lead extends Model
         'documents',
         'created_by',
         'start_date',
+        'assigned_to',
+        'assigned_qa_id',
+        'assigned_manager_id',
+        'previous_ae_id',
+        'stage',
         'end_date',
     ];
 

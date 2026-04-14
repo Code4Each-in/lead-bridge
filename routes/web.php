@@ -84,5 +84,19 @@ Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
 Route::post('/reminders', [LeadController::class, 'storeReminder'])->name('reminders.store');
 Route::delete('/reminder/delete/{id}', [LeadController::class, 'destroyReminder'])
     ->name('reminders.delete');
+    Route::post('/lead/{id}/move-to-qa', [LeadController::class, 'moveToQA'])
+    ->name('lead.move-to-qa');
+
+Route::post('/lead/{id}/move-to-manager', [LeadController::class, 'moveToManager'])
+    ->name('lead.move-to-manager');
+
+Route::post('/lead/{id}/return-ae', [LeadController::class, 'returnToAE'])
+    ->name('lead.return-ae');
+
+Route::post('/lead/{id}/complete', [LeadController::class, 'markComplete'])
+    ->name('lead.complete');
+
+Route::post('/lead/{id}/lost', [LeadController::class, 'markLost'])
+    ->name('lead.lost');
     // routes/web.php
 Route::post('/reminders/{reminder}/dismiss', [DashboardController::class, 'dismissReminder']);
