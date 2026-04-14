@@ -239,7 +239,13 @@
         background: #fffbeb;
         color: #b45309;
     }
+
     .rpb-amber::before { background: #f59e0b; }
+    .rpb-purple {
+        background: #e0e7ff;
+        color: #6f42c1;
+    }
+    .rpb-purple::before { background: #6f42c1; }
 </style>
 <!-- Quill CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -256,14 +262,14 @@
                         @endphp
 
                         {{-- AE --}}
-                        @if($isAdmin || $role == 'account executive')
+                        @if( $role == 'account executive')
                             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
                                 Move to QA
                             </button>
                         @endif
 
                         {{-- QA --}}
-                        @if($isAdmin || $role == 'qa user')
+                        @if( $role == 'qa user')
                             <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
                                 Move to Manager
                             </button>
@@ -277,7 +283,7 @@
                         @endif
 
                         {{-- MANAGER --}}
-                        @if($isAdmin || $role == 'account manager')
+                        @if( $role == 'account manager')
                             <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline">
                                 @csrf
                                 <button class="btn btn-success btn-sm">Complete</button>
@@ -425,86 +431,138 @@
                             </div>
                         </div>
                         <!-- RIGHT: Users —  -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card custom-card h-100">
+                   <!-- RIGHT: Users — Lead Overview -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card custom-card h-100">
 
-                                <div class="card-header custom-header">
-                                    <i class="fa-solid fa-users me-2 icon-head"></i>
-                                    Lead Overview
-                                </div>
+                            <div class="card-header custom-header">
+                                <i class="fa-solid fa-users me-2 icon-head"></i>
+                                Lead Overview
+                            </div>
 
-                                <div class="card-body px-3 py-2">
+                            <div class="card-body px-3 py-2">
 
-                                    <!-- Created By -->
-                                    @if($lead->creator)
+                                <!-- ================= CREATED BY ================= -->
+                                @if($lead->creator)
+                                    @php
+                                        $words = explode(' ', trim($lead->creator->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    @endphp
+
+                                    <div class="rp-section">Created by</div>
+
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-blue">
+                                            {{ $initials }}
+
+                                            @if($lead->creator->profile)
+                                                <img src="{{ asset('storage/' . $lead->creator->profile) }}" alt="{{ $lead->creator->name }}">
+                                            @endif
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                {{ $lead->creator->name }}
+                                                <small>({{ $lead->creator->role->name }})</small>
+                                            </span>
+                                            <span class="rp-badge rpb-blue">Created Lead</span>
+                                        </div>
+                                    </div>
+                                @endif
+
+
+                                <!-- ================= ACCOUNT EXECUTIVE (pivot users) ================= -->
+                                @if($lead->users->count())
+                                    <div class="rp-section">Account Executive</div>
+
+                                    @foreach($lead->users as $user)
                                         @php
-                                            $words    = explode(' ', trim($lead->creator->name));
+                                            $words = explode(' ', trim($user->name));
                                             $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
                                         @endphp
-                                        <div class="rp-section">Created by</div>
+
                                         <div class="user-row">
-                                            <div class="rp-avatar av-blue">
+                                            <div class="rp-avatar av-green">
                                                 {{ $initials }}
-                                                @if($lead->creator->profile)
-                                                    <img src="{{ asset('storage/' . $lead->creator->profile) }}" alt="{{ $lead->creator->name }}">
+
+                                                @if($user->profile)
+                                                    <img src="{{ asset('storage/' . $user->profile) }}" alt="{{ $user->name }}">
                                                 @endif
                                             </div>
+
                                             <div class="rp-info">
-                                                <span class="rp-name">{{ $lead->creator->name }}<small> ({{ $lead->creator->role->name }})</small></span>
-                                                <span class="rp-badge rpb-blue">Created Lead</span>
+                                                <span class="rp-name">
+                                                    {{ $user->name }}
+                                                    <small>({{ $user->role->name }})</small>
+                                                </span>
+                                                <span class="rp-badge rpb-green">AE Assigned</span>
                                             </div>
                                         </div>
-                                    @endif
+                                    @endforeach
+                                @endif
 
-                                    <!-- Assigned To -->
-                                    @if($lead->users->count())
-                                        <div class="rp-section">Assigned to</div>
-                                        @foreach($lead->users as $user)
-                                            @php
-                                                $words    = explode(' ', trim($user->name));
-                                                $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                            @endphp
-                                            <div class="user-row">
-                                                <div class="rp-avatar av-green">
-                                                    {{ $initials }}
-                                                    @if($user->profile)
-                                                        <img src="{{ asset('storage/' . $user->profile) }}" alt="{{ $user->name }}">
-                                                    @endif
-                                                </div>
-                                                <div class="rp-info">
-                                                    <span class="rp-name">{{ $user->name }}<small> ({{ $user->role->name }})</small></span>
-                                                    <span class="rp-badge rpb-green">Assigned Lead</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endif
 
-                                    <!-- QA Users -->
-                                    @if($lead->qaUsers->count())
-                                        <div class="rp-section">Quality Assurance</div>
-                                        @foreach($lead->qaUsers as $qa)
-                                            @php
-                                                $words    = explode(' ', trim($qa->name));
-                                                $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                            @endphp
-                                            <div class="user-row">
-                                                <div class="rp-avatar av-amber">
-                                                    {{ $initials }}
-                                                    @if($qa->profile)
-                                                        <img src="{{ asset('storage/' . $qa->profile) }}" alt="{{ $qa->name }}">
-                                                    @endif
-                                                </div>
-                                                <div class="rp-info">
-                                                    <span class="rp-name">{{ $qa->name }}<small> ({{ $qa->role->name }})</small></span>
-                                                    <span class="rp-badge rpb-amber">QA Lead</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endif
+                                <!-- ================= QA USER ================= -->
+                                @if($lead->qaUser)
+                                    <div class="rp-section">Quality Assurance</div>
 
-                                </div>
+                                    @php
+                                        $qa = $lead->qaUser;
+                                        $words = explode(' ', trim($qa->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    @endphp
+
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-amber">
+                                            {{ $initials }}
+
+                                            @if($qa->profile)
+                                                <img src="{{ asset('storage/' . $qa->profile) }}">
+                                            @endif
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                {{ $qa->name }}
+                                                <small>({{ $qa->role->name }})</small>
+                                            </span>
+                                            <span class="rp-badge rpb-amber">QA Assigned</span>
+                                        </div>
+                                    </div>
+                                @endif
+
+
+                                <!-- ================= MANAGER ================= -->
+                                @if($lead->manager)
+                                    <div class="rp-section">Account Manager</div>
+
+                                    @php
+                                        $words = explode(' ', trim($lead->manager->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    @endphp
+
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-purple">
+                                            {{ $initials }}
+
+                                            @if($lead->manager->profile)
+                                                <img src="{{ asset('storage/' . $lead->manager->profile) }}" alt="{{ $lead->manager->name }}">
+                                            @endif
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                {{ $lead->manager->name }}
+                                                <small>({{ $lead->manager->role->name }})</small>
+                                            </span>
+                                            <span  class="rp-badge rpb-purple">Manager Assigned</span>
+                                        </div>
+                                    </div>
+                                @endif
+
                             </div>
                         </div>
+                    </div>
 
                     </div>
                         <div class="col-md-12">

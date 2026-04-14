@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\LeadDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadActivityNotification;
+use App\Models\Lead;
+
 
 class LeadDocumentController extends Controller
 {
@@ -29,7 +33,18 @@ class LeadDocumentController extends Controller
                 ]);
             }
         }
+        $lead = Lead::find($request->lead_id);
 
+        $users = $lead->involvedUsers();
+
+        Notification::send(
+            $lead->involvedUsers(),
+            new LeadActivityNotification(
+                $lead,
+                'note_added',
+                'A new note has been added to the lead.'
+            )
+        );
         return back();
     }
 

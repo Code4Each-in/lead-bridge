@@ -14,30 +14,6 @@
     display: block;
     height: 45px !important;
      }
-    /* .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    font-size: 13px !important;
-    padding: 4px 4px !important;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    padding: 5px !important;
-    padding-left: 20px !important;
-
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
-        font-size: 12px !important;
-    }
-    .select2-container--default.select2-container--disabled .select2-selection--multiple {
-        background-color: #ffffff !important;
-        padding: 11px !important;
-        border: 1px solid #ced4da   !important;
-    }
-    .select2-container--default .select2-search--inline .select2-search__field {
-        font-size: 14px !important;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__clear{
-        margin-top: 1px !important;
-        color: #ced4da;
-    } */
     .lead-status-simple {
         padding: 4px 8px;
         font-size: 13px;
@@ -102,7 +78,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leads as $lead)
+                            @forelse($leads as $lead)
                             <tr class="clickable-row"
                                 data-href="{{ url('/leads/'.$lead->id) }}"
                                 style="cursor:pointer;">
@@ -134,22 +110,30 @@
                                         </a>
                                     @endif
                                     @if(in_array($role, ['super admin','admin','mis user']))
-                                        <button type="button"
-                                                class="btn btn-sm btn-primary edit-lead-btn"
-                                                data-toggle="modal"
-                                                data-target="#editModal{{ $lead->id }}">
+                                       <button type="button"
+                                            class="btn btn-sm btn-primary edit-lead-btn"
+                                            data-id="{{ $lead->id }}">
                                             <i class="mdi mdi-pencil-box"></i> Edit
                                         </button>
                                     @endif
                                     @if(in_array($role, ['super admin','admin']))
-                                        <a href="{{ route('leads.delete', $lead->id) }}"
-                                        class="btn btn-sm btn-danger btn-delete">
-                                            <i class="mdi mdi-trash-can"></i> Delete
+                                      <a href="{{ route('leads.delete', $lead->id) }}"
+                                            class="btn btn-sm btn-danger btn-delete"
+                                            data-id="{{ $lead->id }}">
+                                            <i class="mdi mdi-delete"></i> Delete
                                         </a>
+
+
                                     @endif
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No leads found
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -309,7 +293,7 @@
 
 <!--  EDIT MODALS = -->
 @foreach($leads as $lead)
-<div class="modal fade" id="editModal{{ $lead->id }}" tabindex="-1">
+<div class="modal fade" id="editModal{{ $lead->id }}" >
     <div class="modal-dialog modal-lg">
         <form class="editLeadForm"
                 method="POST"
@@ -500,46 +484,29 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('excelFileInput');
-        const selectBtn = document.getElementById('selectExcelBtn');
-        const form = document.getElementById('uploadExcelForm');
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('excelFileInput');
+    const selectBtn = document.getElementById('selectExcelBtn');
+    const form = document.getElementById('uploadExcelForm');
 
-        // When the user clicks the button, open file select
+    if (selectBtn && fileInput && form) {
+
+        // Open file picker
         selectBtn.addEventListener('click', function() {
             fileInput.click();
         });
 
-        // When a file is selected, auto-submit the form
+        // Auto-submit on file select
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
                 form.submit();
             }
         });
-    });
+
+    }
+});
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
-
-    // Initialize Select2 on all user selects for user-role (no agency dependency)
-    // if (!IS_ADMIN_OR_SUPER) {
-    //     $('#create_user_select').select2({
-    //         width: '100%',
-    //         dropdownParent: $('#createModal'),
-    //         placeholder: 'Select users...',
-    //         allowClear: true
-    //     });
-
-    //     $('.user-select').each(function () {
-    //         const $sel    = $(this);
-    //         const $modal  = $sel.closest('.modal');
-    //         $sel.select2({
-    //             width: '100%',
-    //             dropdownParent: $modal.length ? $modal : $(document.body),
-    //             placeholder: 'Select users...',
-    //             allowClear: true
-    //         });
-    //     });
-    // }
 
     function populateUsers(targetId, agencyId, selectedIds) {
         const $sel    = $('#' + targetId);
@@ -655,57 +622,63 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
     });
 
     // Create modal open
-  $('#createModal').on('show.bs.modal', function () {
-    const $form = $(this).find('#createLeadForm');
-    $form[0].reset();
+    $('#createModal').on('show.bs.modal', function () {
+        const $form = $(this).find('#createLeadForm');
+        $form[0].reset();
 
-    if (IS_SUPER_ADMIN) {
-        // Super admin — reset agency + user selects
-        $('#create_agency_select').val('').trigger('change');
-        $('#create_user_select')
-            .empty()
-            .append('<option value="">-- Select Agency First --</option>')
-            .prop('disabled', true)
-            .trigger('change');
+        if (IS_SUPER_ADMIN) {
+            // Super admin — reset agency + user selects
+            $('#create_agency_select').val('').trigger('change');
+            $('#create_user_select')
+                .empty()
+                .append('<option value="">-- Select Agency First --</option>')
+                .prop('disabled', true)
+                .trigger('change');
 
-    } else if (IS_ADMIN_OR_MIS) {
-        // Admin/MIS — no agency select, just reset user select
-        const $userSel = $('#create_user_select');
-        if ($userSel.hasClass('select2-hidden-accessible')) {
-            $userSel.select2('destroy');
+        } else if (IS_ADMIN_OR_MIS) {
+            // Admin/MIS — no agency select, just reset user select
+            const $userSel = $('#create_user_select');
+            if ($userSel.hasClass('select2-hidden-accessible')) {
+                $userSel.select2('destroy');
+            }
+            $userSel.val(null).select2({
+                width         : '100%',
+                dropdownParent: $('#createModal'),
+                placeholder   : 'Select users...',
+                allowClear    : true,
+            });
         }
-        $userSel.val(null).select2({
-            width         : '100%',
-            dropdownParent: $('#createModal'),
-            placeholder   : 'Select users...',
-            allowClear    : true,
+
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
+    });
+
+    // Edit modal
+    $(document).on('show.bs.modal', '[id^="editModal"]', function () {
+        const $modal = $(this);
+        const $form = $modal.find('.editLeadForm');
+        if (!$form.length) return;
+
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
+
+        if (IS_SUPER_ADMIN) {
+            $modal.find('.agency-select').each(function () {
+                if ($(this).val()) $(this).trigger('change');
+            });
+        }
+    });
+    $(document).ready(function () {
+
+        $('.edit-lead-btn').click(function () {
+            let id = $(this).data('id');
+
+            // console.log('clicked direct', id);
+
+            $('#editModal' + id).modal('show');
         });
-    }
 
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').remove();
-});
-
-// Edit modal
-$('.modal').on('show.bs.modal', function () {
-    const $modal = $(this);
-    if ($modal.attr('id') === 'createModal') return;
-
-    const $form = $modal.find('.editLeadForm');
-    if (!$form.length) return;
-
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').remove();
-
-    if (IS_SUPER_ADMIN) {
-        // Super admin — trigger agency change to reload users
-        $modal.find('.agency-select').each(function () {
-            if ($(this).val()) $(this).trigger('change');
-        });
-    }
-
-});
-
+    });
         // $('.modal').on('shown.bs.modal', function () {
         //     $(this).find('.select2').css('width', '100%');
         // });
@@ -717,7 +690,6 @@ $('.modal').on('show.bs.modal', function () {
 
 function showErrors($form, errors) {
     $.each(errors, function (field, messages) {
-        // ✅ handles both field and field[]
         const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
         $input.addClass('is-invalid');
         $input.closest('.form-group')
@@ -808,41 +780,48 @@ function showErrors($form, errors) {
         });
     });
 
+$(document).ready(function () {
+
     $(document).on('click', '.btn-delete', function (e) {
+
         e.preventDefault();
+
         const url = $(this).attr('href');
 
         Swal.fire({
-            title             : 'Are you sure?',
-            text              : 'This lead will be permanently deleted!',
-            icon              : 'warning',
-            showCancelButton  : true,
+            title: 'Are you sure?',
+            text: 'This lead will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor : '#6c757d',
-            confirmButtonText : 'Yes, delete it!',
-        }).then(function (result) {
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+        }).then((result) => {
+
             if (result.isConfirmed) {
+
                 $.ajax({
-                    url    : url,
-                    method : 'GET',
+                    url: url,
+                    method: 'GET',
                     success: function (res) {
-                        if (res.success) {
-                            Swal.fire({
-                                icon : 'success',
-                                title: 'Deleted!',
-                                text : res.success,
-                                timer: 1500,
-                                showConfirmButton: false,
-                            }).then(() => location.reload());
-                        }
+
+                        Swal.fire('Deleted!', res.success, 'success')
+                            .then(() => location.reload());
+
                     },
                     error: function () {
-                        Swal.fire('Error', 'Could not delete this lead.', 'error');
-                    },
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
+
                 });
+
             }
+
         });
+
     });
+
+});
 
     $(document).on('change', 'input[type="file"]', function () {
         const id = this.id.replace('documentInput_', 'documentName_');

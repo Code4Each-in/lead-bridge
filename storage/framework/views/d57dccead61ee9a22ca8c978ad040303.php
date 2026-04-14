@@ -238,7 +238,13 @@
         background: #fffbeb;
         color: #b45309;
     }
+
     .rpb-amber::before { background: #f59e0b; }
+    .rpb-purple {
+        background: #e0e7ff;
+        color: #6f42c1;
+    }
+    .rpb-purple::before { background: #6f42c1; }
 </style>
 <!-- Quill CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -255,14 +261,14 @@
                         ?>
 
                         
-                        <?php if($isAdmin || $role == 'account executive'): ?>
+                        <?php if( $role == 'account executive'): ?>
                             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
                                 Move to QA
                             </button>
                         <?php endif; ?>
 
                         
-                        <?php if($isAdmin || $role == 'qa user'): ?>
+                        <?php if( $role == 'qa user'): ?>
                             <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
                                 Move to Manager
                             </button>
@@ -276,7 +282,7 @@
                         <?php endif; ?>
 
                         
-                        <?php if($isAdmin || $role == 'account manager'): ?>
+                        <?php if( $role == 'account manager'): ?>
                             <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline">
                                 <?php echo csrf_field(); ?>
                                 <button class="btn btn-success btn-sm">Complete</button>
@@ -426,89 +432,146 @@
                             </div>
                         </div>
                         <!-- RIGHT: Users —  -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card custom-card h-100">
+                   <!-- RIGHT: Users — Lead Overview -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card custom-card h-100">
 
-                                <div class="card-header custom-header">
-                                    <i class="fa-solid fa-users me-2 icon-head"></i>
-                                    Lead Overview
-                                </div>
+                            <div class="card-header custom-header">
+                                <i class="fa-solid fa-users me-2 icon-head"></i>
+                                Lead Overview
+                            </div>
 
-                                <div class="card-body px-3 py-2">
+                            <div class="card-body px-3 py-2">
 
-                                    <!-- Created By -->
-                                    <?php if($lead->creator): ?>
+                                <!-- ================= CREATED BY ================= -->
+                                <?php if($lead->creator): ?>
+                                    <?php
+                                        $words = explode(' ', trim($lead->creator->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    ?>
+
+                                    <div class="rp-section">Created by</div>
+
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-blue">
+                                            <?php echo e($initials); ?>
+
+
+                                            <?php if($lead->creator->profile): ?>
+                                                <img src="<?php echo e(asset('storage/' . $lead->creator->profile)); ?>" alt="<?php echo e($lead->creator->name); ?>">
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                <?php echo e($lead->creator->name); ?>
+
+                                                <small>(<?php echo e($lead->creator->role->name); ?>)</small>
+                                            </span>
+                                            <span class="rp-badge rpb-blue">Created Lead</span>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+
+                                <!-- ================= ACCOUNT EXECUTIVE (pivot users) ================= -->
+                                <?php if($lead->users->count()): ?>
+                                    <div class="rp-section">Account Executive</div>
+
+                                    <?php $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <?php
-                                            $words    = explode(' ', trim($lead->creator->name));
+                                            $words = explode(' ', trim($user->name));
                                             $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
                                         ?>
-                                        <div class="rp-section">Created by</div>
+
                                         <div class="user-row">
-                                            <div class="rp-avatar av-blue">
+                                            <div class="rp-avatar av-green">
                                                 <?php echo e($initials); ?>
 
-                                                <?php if($lead->creator->profile): ?>
-                                                    <img src="<?php echo e(asset('storage/' . $lead->creator->profile)); ?>" alt="<?php echo e($lead->creator->name); ?>">
+
+                                                <?php if($user->profile): ?>
+                                                    <img src="<?php echo e(asset('storage/' . $user->profile)); ?>" alt="<?php echo e($user->name); ?>">
                                                 <?php endif; ?>
                                             </div>
+
                                             <div class="rp-info">
-                                                <span class="rp-name"><?php echo e($lead->creator->name); ?><small> (<?php echo e($lead->creator->role->name); ?>)</small></span>
-                                                <span class="rp-badge rpb-blue">Created Lead</span>
+                                                <span class="rp-name">
+                                                    <?php echo e($user->name); ?>
+
+                                                    <small>(<?php echo e($user->role->name); ?>)</small>
+                                                </span>
+                                                <span class="rp-badge rpb-green">AE Assigned</span>
                                             </div>
                                         </div>
-                                    <?php endif; ?>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php endif; ?>
 
-                                    <!-- Assigned To -->
-                                    <?php if($lead->users->count()): ?>
-                                        <div class="rp-section">Assigned to</div>
-                                        <?php $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <?php
-                                                $words    = explode(' ', trim($user->name));
-                                                $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                            ?>
-                                            <div class="user-row">
-                                                <div class="rp-avatar av-green">
-                                                    <?php echo e($initials); ?>
 
-                                                    <?php if($user->profile): ?>
-                                                        <img src="<?php echo e(asset('storage/' . $user->profile)); ?>" alt="<?php echo e($user->name); ?>">
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="rp-info">
-                                                    <span class="rp-name"><?php echo e($user->name); ?><small> (<?php echo e($user->role->name); ?>)</small></span>
-                                                    <span class="rp-badge rpb-green">Assigned Lead</span>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    <?php endif; ?>
+                                <!-- ================= QA USER ================= -->
+                                <?php if($lead->qaUser): ?>
+                                    <div class="rp-section">Quality Assurance</div>
 
-                                    <!-- QA Users -->
-                                    <?php if($lead->qaUsers->count()): ?>
-                                        <div class="rp-section">Quality Assurance</div>
-                                        <?php $__currentLoopData = $lead->qaUsers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $qa): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <?php
-                                                $words    = explode(' ', trim($qa->name));
-                                                $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                            ?>
-                                            <div class="user-row">
-                                                <div class="rp-avatar av-amber">
-                                                    <?php echo e($initials); ?>
+                                    <?php
+                                        $qa = $lead->qaUser;
+                                        $words = explode(' ', trim($qa->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    ?>
 
-                                                    <?php if($qa->profile): ?>
-                                                        <img src="<?php echo e(asset('storage/' . $qa->profile)); ?>" alt="<?php echo e($qa->name); ?>">
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="rp-info">
-                                                    <span class="rp-name"><?php echo e($qa->name); ?><small> (<?php echo e($qa->role->name); ?>)</small></span>
-                                                    <span class="rp-badge rpb-amber">QA Lead</span>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    <?php endif; ?>
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-amber">
+                                            <?php echo e($initials); ?>
 
-                                </div>
+
+                                            <?php if($qa->profile): ?>
+                                                <img src="<?php echo e(asset('storage/' . $qa->profile)); ?>">
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                <?php echo e($qa->name); ?>
+
+                                                <small>(<?php echo e($qa->role->name); ?>)</small>
+                                            </span>
+                                            <span class="rp-badge rpb-amber">QA Assigned</span>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+
+                                <!-- ================= MANAGER ================= -->
+                                <?php if($lead->manager): ?>
+                                    <div class="rp-section">Account Manager</div>
+
+                                    <?php
+                                        $words = explode(' ', trim($lead->manager->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    ?>
+
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-purple">
+                                            <?php echo e($initials); ?>
+
+
+                                            <?php if($lead->manager->profile): ?>
+                                                <img src="<?php echo e(asset('storage/' . $lead->manager->profile)); ?>" alt="<?php echo e($lead->manager->name); ?>">
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                <?php echo e($lead->manager->name); ?>
+
+                                                <small>(<?php echo e($lead->manager->role->name); ?>)</small>
+                                            </span>
+                                            <span  class="rp-badge rpb-purple">Manager Assigned</span>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
                             </div>
                         </div>
+                    </div>
 
                     </div>
                         <div class="col-md-12">

@@ -6,11 +6,12 @@ use App\Models\LeadNote;
 use Illuminate\Http\Request;
 use App\Models\LeadDocument;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadActivityNotification;
+use App\Models\Lead;
 
 class LeadNoteController extends Controller
 {
-
-
     public function store(Request $request)
     {
         $request->validate([
@@ -46,7 +47,18 @@ class LeadNoteController extends Controller
                 ]);
             }
         }
+            $lead = Lead::find($request->lead_id);
 
+            $users = $lead->involvedUsers();
+
+            Notification::send(
+                $lead->involvedUsers(),
+                new LeadActivityNotification(
+                    $lead,
+                    'note_added',
+                    'A new note has been added to the lead.'
+                )
+            );
         return back();
     }
         public function update(Request $request, $id)

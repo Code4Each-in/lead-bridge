@@ -64,22 +64,19 @@ class LeadController extends Controller
             // ACCOUNT EXECUTIVE → only his leads
             if ($roleName === 'account executive') {
 
-                $leadsQuery->where('assigned_to', $authUser->id)
-                        ->where('stage', 'ae');
+                $leadsQuery->where('assigned_to', $authUser->id);
             }
 
             // QA USER → only QA assigned leads
             elseif ($roleName === 'qa user') {
 
-                $leadsQuery->where('assigned_qa_id', $authUser->id)
-                        ->where('stage', 'qa');
+                $leadsQuery->where('assigned_qa_id', $authUser->id);
             }
 
             // MANAGER → only manager assigned leads
             elseif ($roleName === 'account manager') {
 
-                $leadsQuery->where('assigned_manager_id', $authUser->id)
-                        ->where('stage', 'manager');
+                $leadsQuery->where('assigned_manager_id', $authUser->id);
             }
 
             // MIS / ADMIN (agency level restriction)
@@ -229,7 +226,9 @@ class LeadController extends Controller
         $lead = Lead::findOrFail($id);
         $lead->delete();
 
-        return response()->json(['success' => 'Lead deleted successfully']);
+        return response()->json([
+            'success' => 'Lead deleted successfully'
+        ]);
     }
     public function downloadTemplate()
     {
@@ -301,7 +300,7 @@ class LeadController extends Controller
             ]);
         }
 
-        foreach ($lead->leadDocuments as $doc) {
+        foreach ($lead->leadDocuments->whereNull('note_id') as $doc) {
             $activities->push([
                 'type' => 'document',
                 'data' => $doc,
