@@ -330,9 +330,6 @@
                                         <?php echo e($lead->name ?? 'Lead Name'); ?>
 
                                     </div>
-
-
-
                                 </div>
 
                                 <div class="card-body">
@@ -452,8 +449,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- RIGHT: Users —  -->
-                   <!-- RIGHT: Users — Lead Overview -->
+                        <!--  Users — Lead Overview -->
                     <div class="col-md-4 mb-4">
                         <div class="card custom-card h-100">
 
@@ -720,7 +716,15 @@
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                                 <hr>
-
+                                <?php if($errors->any()): ?>
+                                    <div class="alert alert-danger">
+                                        <ul class="mb-0">
+                                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <li><?php echo e($error); ?></li>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </ul>
+                                    </div>
+                                <?php endif; ?>
                                 <!-- COMMENT FORM -->
                                 <form id="comment-form" method="POST"
                                     action="<?php echo e(route('notes.store')); ?>"
@@ -732,10 +736,36 @@
                                     <div id="create-editor" style="height:150px; background:#fff;"></div>
                                     <input type="hidden" name="content" id="create-content">
                                     <input type="hidden" id="edit-note-id" value="">
-                                    <input type="file"
-                                        name="files[]"
-                                        multiple
-                                        class="form-control mb-2">
+                                    <!-- FILE UPLOAD (COMMENT FORM STYLE LIKE PROFILE) -->
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <!-- hidden real file input -->
+                                            <input type="file" id="commentFiles" name="files[]" multiple style="display: none;">
+                                            <?php $__errorArgs = ['files'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                <small class="text-danger"><?php echo e($message); ?></small>
+                                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                            <!-- readonly text box showing selected file names -->
+                                            <input type="text"
+                                                class="form-control file-upload-info"
+                                                id="commentFileName"
+                                                placeholder="Choose files"
+                                                readonly>
+
+                                            <span class="input-group-append">
+                                                <button class="file-upload-browse btn btn-primary" type="button"
+                                                    onclick="document.getElementById('commentFiles').click();">
+                                                    Upload
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
 
                                     <button class="btn btn-primary">
                                         Sent
@@ -952,7 +982,10 @@ function initEditor(id) {
         }
     });
 }
-
+document.getElementById('commentFiles').addEventListener('change', function () {
+    let files = Array.from(this.files).map(f => f.name).join(', ');
+    document.getElementById('commentFileName').value = files;
+});
 function editNote(id, content) {
 
     const quill = editors['create'];

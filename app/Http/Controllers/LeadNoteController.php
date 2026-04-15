@@ -61,33 +61,33 @@ class LeadNoteController extends Controller
             );
         return back();
     }
-        public function update(Request $request, $id)
-        {
-            $note = LeadNote::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $note = LeadNote::findOrFail($id);
 
-            if ($note->user_id !== auth()->id()) {
-                abort(403);
-            }
-
-            $note->update([
-                'content' => $request->content,
-                'is_edited' => true
-            ]);
-
-            return back();
+        if ($note->user_id !== auth()->id()) {
+            abort(403);
         }
 
-        public function destroy($id)
-        {
-            $doc = LeadDocument::findOrFail($id);
+        $note->update([
+            'content' => $request->content,
+            'is_edited' => true
+        ]);
 
-            if (strtolower(auth()->user()->role->name) === 'super admin') {
-                abort(403, 'Only Super Admin can delete');
-            }
+        return back();
+    }
 
-            Storage::disk('public')->delete($doc->file);
-            $doc->delete();
+    public function destroy($id)
+    {
+        $doc = LeadDocument::findOrFail($id);
 
-            return back();
+        if (strtolower(auth()->user()->role->name) === 'super admin') {
+            abort(403, 'Only Super Admin can delete');
         }
+
+        Storage::disk('public')->delete($doc->file);
+        $doc->delete();
+
+        return back();
+    }
 }

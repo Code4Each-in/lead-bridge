@@ -7,15 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::table('lead_reminders', function (Blueprint $table) {
-            $table->dropColumn('dismissed_at');
-        });
+        if (Schema::hasColumn('lead_reminders', 'dismissed_at')) {
+            Schema::table('lead_reminders', function (Blueprint $table) {
+                $table->dropColumn('dismissed_at');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('lead_reminders', function (Blueprint $table) {
-            $table->timestamp('dismissed_at')->nullable();
-        });
+        if (!Schema::hasColumn('lead_reminders', 'dismissed_at')) {
+            Schema::table('lead_reminders', function (Blueprint $table) {
+                $table->timestamp('dismissed_at')->nullable();
+            });
+        }
     }
 };

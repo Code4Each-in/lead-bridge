@@ -330,9 +330,6 @@
                                         <i class="mdi mdi-chart-bar menu-icon icon-head me-2"></i>
                                         {{ $lead->name ?? 'Lead Name' }}
                                     </div>
-
-
-
                                 </div>
 
                                 <div class="card-body">
@@ -451,8 +448,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- RIGHT: Users —  -->
-                   <!-- RIGHT: Users — Lead Overview -->
+                        <!--  Users — Lead Overview -->
                     <div class="col-md-4 mb-4">
                         <div class="card custom-card h-100">
 
@@ -707,7 +703,15 @@
                                 @endforeach
 
                                 <hr>
-
+                                @if ($errors->any())
+                                    <div class="alert alert-danger">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
                                 <!-- COMMENT FORM -->
                                 <form id="comment-form" method="POST"
                                     action="{{ route('notes.store') }}"
@@ -719,10 +723,29 @@
                                     <div id="create-editor" style="height:150px; background:#fff;"></div>
                                     <input type="hidden" name="content" id="create-content">
                                     <input type="hidden" id="edit-note-id" value="">
-                                    <input type="file"
-                                        name="files[]"
-                                        multiple
-                                        class="form-control mb-2">
+                                    <!-- FILE UPLOAD (COMMENT FORM STYLE LIKE PROFILE) -->
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <!-- hidden real file input -->
+                                            <input type="file" id="commentFiles" name="files[]" multiple style="display: none;">
+                                            @error('files')
+                                                <small class="text-danger">{{ $message }}</small>
+                                            @enderror
+                                            <!-- readonly text box showing selected file names -->
+                                            <input type="text"
+                                                class="form-control file-upload-info"
+                                                id="commentFileName"
+                                                placeholder="Choose files"
+                                                readonly>
+
+                                            <span class="input-group-append">
+                                                <button class="file-upload-browse btn btn-primary" type="button"
+                                                    onclick="document.getElementById('commentFiles').click();">
+                                                    Upload
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
 
                                     <button class="btn btn-primary">
                                         Sent
@@ -939,7 +962,10 @@ function initEditor(id) {
         }
     });
 }
-
+document.getElementById('commentFiles').addEventListener('change', function () {
+    let files = Array.from(this.files).map(f => f.name).join(', ');
+    document.getElementById('commentFileName').value = files;
+});
 function editNote(id, content) {
 
     const quill = editors['create'];

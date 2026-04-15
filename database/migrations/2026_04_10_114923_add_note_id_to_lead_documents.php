@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->foreign('note_id')
                 ->references('id')
-                ->on('notes')
+                ->on('lead_notes')
                 ->cascadeOnDelete();
         });
     }
