@@ -254,46 +254,67 @@
         <div class="card">
             <div class="card-body">
                     <!-- RIGHT SIDE BUTTONS -->
-                    <div class="d-flex gap-2 mb-3">
+                    <!-- RIGHT SIDE BUTTONS -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
 
                         @php
                             $role = strtolower(auth()->user()->role->name ?? '');
                             $isAdmin = in_array($role, ['super admin', 'admin']);
                         @endphp
 
-                        {{-- AE --}}
-                        @if( $role == 'account executive')
-                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
-                                Move to QA
-                            </button>
-                        @endif
+                        <!-- LEFT: Role-based buttons -->
+                        <div class="d-flex gap-2">
 
-                        {{-- QA --}}
-                        @if( $role == 'qa user')
-                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
-                                Move to Manager
-                            </button>
-
-                            <form method="POST" action="{{ route('lead.return-ae', $lead->id) }}" class="d-inline">
-                                @csrf
-                                <button class="btn btn-secondary btn-sm">
-                                    Return to AE
+                            {{-- AE --}}
+                            @if($role == 'account executive' && ($lead->stage == 'ae' || $lead->stage == 'returned'))
+                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
+                                    Move to QA
                                 </button>
-                            </form>
-                        @endif
+                            @endif
 
-                        {{-- MANAGER --}}
-                        @if( $role == 'account manager')
-                            <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline">
-                                @csrf
-                                <button class="btn btn-success btn-sm">Complete</button>
-                            </form>
+                            {{-- QA --}}
+                            @if($role == 'qa user' && $lead->stage == 'qa')
+                                <button class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#managerModal">
+                                    Move to Manager
+                                </button>
 
-                            <form method="POST" action="{{ route('lead.lost', $lead->id) }}" class="d-inline">
-                                @csrf
-                                <button class="btn btn-danger btn-sm">Lost</button>
-                            </form>
-                        @endif
+                                <form method="POST" action="{{ route('lead.return-ae', $lead->id) }}" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-secondary btn-sm">
+                                        Return to AE
+                                    </button>
+                                </form>
+                            @endif
+
+                            {{-- MANAGER --}}
+                            @if($role == 'account manager' && $lead->stage == 'manager')
+                                <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm mr-2">Complete</button>
+                                </form>
+
+                                <form method="POST" action="{{ route('lead.lost', $lead->id) }}" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-danger btn-sm">Lost</button>
+                                </form>
+                            @endif
+
+                        </div>
+
+                        <!-- RIGHT: Reminder buttons -->
+                        <div class="d-flex ">
+                            <button class="btn btn-warning btn-sm mr-2"
+                                    data-toggle="modal"
+                                    data-target="#addReminderModal">
+                                <i class="mdi mdi-bell-plus"></i> Add Reminder
+                            </button>
+
+                            <button class="btn btn-info btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#viewReminderModal">
+                                <i class="mdi mdi-bell"></i> Reminders
+                            </button>
+                        </div>
 
                     </div>
                 <div class="container-fluid mt-3">

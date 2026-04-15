@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Notifications\LeadStatusNotification;
 
 class LeadController extends Controller
 {
@@ -385,7 +386,8 @@ class LeadController extends Controller
             'previous_ae_id' => auth()->id(),
             'stage' => 'qa',
         ]);
-
+        $qaUser = User::find($request->qa_user_id);
+        $qaUser->notify(new LeadStatusNotification($lead, 'to_qa'));
         // pivot table update (optional but recommended)
         // $lead->users()->sync([$request->qa_user_id]);
 
@@ -406,22 +408,35 @@ class LeadController extends Controller
         ]);
 
         // $lead->users()->sync([$request->manager_user_id]);
-
+        $manager = User::find($request->manager_user_id);
+        $manager->notify(new LeadStatusNotification($lead, 'to_manager'));
         return back()->with('success', 'Lead moved to Manager successfully');
     }
-    public function returnToAE($id)
-    {
-        $lead = Lead::findOrFail($id);
+public function returnToAE($id)
+{
+    $lead = Lead::findOrFail($id);
 
-        $lead->update([
-            'assigned_to' => $lead->previous_ae_id,
-            'stage' => 'ae',
-        ]);
-
-        $lead->users()->sync([$lead->previous_ae_id]);
-
-        return back()->with('success', 'Lead returned to Account Executive');
+    // ❗ check if previous AE exists
+    if (!$lead->previous_ae_id) {
+        return back()->with('error', 'No previous AE found for this lead');
     }
+
+    $lead->update([
+        'assigned_to' => $lead->previous_ae_id,
+        'stage' => 'ae',
+    ]);
+
+    // ✅ only sync if valid ID
+    $lead->users()->sync([$lead->previous_ae_id]);
+
+    // ✅ send notification
+    $ae = User::find($lead->previous_ae_id);
+    if ($ae) {
+        $ae->notify(new LeadStatusNotification($lead, 'return_ae'));
+    }
+
+    return back()->with('success', 'Lead returned to Account Executive');
+}
     public function markComplete($id)
     {
         $lead = Lead::findOrFail($id);

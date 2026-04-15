@@ -114,7 +114,7 @@
 <!-- Create User Modal -->
 <div class="modal fade" id="createModal">
     <div class="modal-dialog modal-lg">
-        <form  id="createUserForm" method="POST" class="forms-sample" action="<?php echo e(route('users.store')); ?>" enctype="multipart/form-data">
+        <form  id="createUserForm" method="POST" class="forms-sample" action="<?php echo e(route('users.store')); ?>" enctype="multipart/form-data" novalidate>
             <?php echo csrf_field(); ?>
             <div class="modal-content">
                 <div class="modal-header">
@@ -130,7 +130,7 @@
 
                     <div class="form-group">
                         <label class="required-label">Email address</label>
-                        <input type="email" name="email" class="form-control" placeholder="Email" >
+                        <input  name="email" class="form-control" placeholder="Email" >
                     </div>
 
                     <div class="form-group">

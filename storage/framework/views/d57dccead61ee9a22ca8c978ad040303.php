@@ -253,46 +253,67 @@
         <div class="card">
             <div class="card-body">
                     <!-- RIGHT SIDE BUTTONS -->
-                    <div class="d-flex gap-2 mb-3">
+                    <!-- RIGHT SIDE BUTTONS -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
 
                         <?php
                             $role = strtolower(auth()->user()->role->name ?? '');
                             $isAdmin = in_array($role, ['super admin', 'admin']);
                         ?>
 
-                        
-                        <?php if( $role == 'account executive'): ?>
-                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
-                                Move to QA
-                            </button>
-                        <?php endif; ?>
+                        <!-- LEFT: Role-based buttons -->
+                        <div class="d-flex gap-2">
 
-                        
-                        <?php if( $role == 'qa user'): ?>
-                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#managerModal">
-                                Move to Manager
-                            </button>
-
-                            <form method="POST" action="<?php echo e(route('lead.return-ae', $lead->id)); ?>" class="d-inline">
-                                <?php echo csrf_field(); ?>
-                                <button class="btn btn-secondary btn-sm">
-                                    Return to AE
+                            
+                            <?php if($role == 'account executive' && ($lead->stage == 'ae' || $lead->stage == 'returned')): ?>
+                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
+                                    Move to QA
                                 </button>
-                            </form>
-                        <?php endif; ?>
+                            <?php endif; ?>
 
-                        
-                        <?php if( $role == 'account manager'): ?>
-                            <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline">
-                                <?php echo csrf_field(); ?>
-                                <button class="btn btn-success btn-sm">Complete</button>
-                            </form>
+                            
+                            <?php if($role == 'qa user' && $lead->stage == 'qa'): ?>
+                                <button class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#managerModal">
+                                    Move to Manager
+                                </button>
 
-                            <form method="POST" action="<?php echo e(route('lead.lost', $lead->id)); ?>" class="d-inline">
-                                <?php echo csrf_field(); ?>
-                                <button class="btn btn-danger btn-sm">Lost</button>
-                            </form>
-                        <?php endif; ?>
+                                <form method="POST" action="<?php echo e(route('lead.return-ae', $lead->id)); ?>" class="d-inline">
+                                    <?php echo csrf_field(); ?>
+                                    <button class="btn btn-secondary btn-sm">
+                                        Return to AE
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+
+                            
+                            <?php if($role == 'account manager' && $lead->stage == 'manager'): ?>
+                                <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline">
+                                    <?php echo csrf_field(); ?>
+                                    <button class="btn btn-success btn-sm mr-2">Complete</button>
+                                </form>
+
+                                <form method="POST" action="<?php echo e(route('lead.lost', $lead->id)); ?>" class="d-inline">
+                                    <?php echo csrf_field(); ?>
+                                    <button class="btn btn-danger btn-sm">Lost</button>
+                                </form>
+                            <?php endif; ?>
+
+                        </div>
+
+                        <!-- RIGHT: Reminder buttons -->
+                        <div class="d-flex ">
+                            <button class="btn btn-warning btn-sm mr-2"
+                                    data-toggle="modal"
+                                    data-target="#addReminderModal">
+                                <i class="mdi mdi-bell-plus"></i> Add Reminder
+                            </button>
+
+                            <button class="btn btn-info btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#viewReminderModal">
+                                <i class="mdi mdi-bell"></i> Reminders
+                            </button>
+                        </div>
 
                     </div>
                 <div class="container-fluid mt-3">
