@@ -79,9 +79,10 @@
                         </thead>
                         <tbody>
                             @forelse($leads as $lead)
-                            <tr class="clickable-row"
+                            <!-- <tr class="clickable-row"
                                 data-href="{{ url('/leads/'.$lead->id) }}"
-                                style="cursor:pointer;">
+                                style="cursor:pointer;"> -->
+                                <tr class="pointer" onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');">
 
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
@@ -100,31 +101,33 @@
                                 <td>{{ $lead->status }}</td>
                                 <td>{{ $lead->source }}</td>
 
-                                <td onclick="event.stopPropagation();">
-
+                                <td class="actions-cell">
                                     @if(in_array($role, ['super admin','admin','account executive','qa user','account manager']))
                                         <a href="{{ url('/leads/'.$lead->id) }}"
                                         target="_blank"
-                                        class="btn btn-sm btn-primary">
+                                        class="btn btn-sm btn-primary pointer"
+                                        >
                                             <i class="mdi mdi-eye"></i> View
                                         </a>
                                     @endif
                                     @if(in_array($role, ['super admin','admin','mis user']))
-                                       <button type="button"
-                                            class="btn btn-sm btn-primary edit-lead-btn"
-                                            data-id="{{ $lead->id }}">
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary edit-lead-btn pointer"
+                                            data-id="{{ $lead->id }}"
+                                            >
                                             <i class="mdi mdi-pencil-box"></i> Edit
                                         </button>
                                     @endif
                                     @if(in_array($role, ['super admin','admin']))
-                                      <a href="{{ route('leads.delete', $lead->id) }}"
-                                            class="btn btn-sm btn-danger btn-delete"
-                                            data-id="{{ $lead->id }}">
+
+                                        <a href="{{ route('leads.delete', $lead->id) }}"
+                                            class="btn btn-sm btn-danger btn-delete pointer"
+                                            data-id="{{ $lead->id }}"
+                                           >
                                             <i class="mdi mdi-delete"></i> Delete
                                         </a>
-
-
                                     @endif
+
                                 </td>
                             </tr>
                             @empty
@@ -484,6 +487,7 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 </script>
 
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excelFileInput');
     const selectBtn = document.getElementById('selectExcelBtn');
@@ -505,6 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 });
+
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
@@ -679,23 +684,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     });
-        // $('.modal').on('shown.bs.modal', function () {
-        //     $(this).find('.select2').css('width', '100%');
-        // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');
         $form.find('.invalid-feedback').remove();
     }
 
-function showErrors($form, errors) {
-    $.each(errors, function (field, messages) {
-        const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
-        $input.addClass('is-invalid');
-        $input.closest('.form-group')
-              .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
-    });
-}
+    function showErrors($form, errors) {
+        $.each(errors, function (field, messages) {
+            const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
+            $input.addClass('is-invalid');
+            $input.closest('.form-group')
+                .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+        });
+    }
 
     $(document).on('submit', '#createLeadForm', function(e) {
 
@@ -779,50 +781,48 @@ function showErrors($form, errors) {
             },
         });
     });
-
-$(document).ready(function () {
-
     $(document).on('click', '.btn-delete', function (e) {
-
         e.preventDefault();
-
         const url = $(this).attr('href');
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'This lead will be permanently deleted!',
+            text: 'This Lead will be permanently deleted!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, delete it!',
-        }).then((result) => {
-
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
             if (result.isConfirmed) {
-
                 $.ajax({
                     url: url,
                     method: 'GET',
                     success: function (res) {
-
-                        Swal.fire('Deleted!', res.success, 'success')
-                            .then(() => location.reload());
-
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: res.success,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(function () {
+                                location.reload();
+                            });
+                        }
                     },
                     error: function () {
-                        Swal.fire('Error', 'Something went wrong', 'error');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.'
+                        });
                     }
-
                 });
-
             }
-
         });
-
     });
-
-});
-
     $(document).on('change', 'input[type="file"]', function () {
         const id = this.id.replace('documentInput_', 'documentName_');
         const nameField = document.getElementById(id);
@@ -830,14 +830,7 @@ $(document).ready(function () {
             nameField.value = this.files[0].name;
         }
     });
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".clickable-row").forEach(function (row) {
-            row.addEventListener("click", function (e) {
-                const url = this.getAttribute("data-href");
-                window.open(url, "_blank"); // opens in new tab
-            });
-        });
-    });
+
 })();
 
 </script>

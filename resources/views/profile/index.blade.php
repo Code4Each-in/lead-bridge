@@ -65,7 +65,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column">
+                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column" novalidate>
                     @csrf
                     @method('PUT')
 

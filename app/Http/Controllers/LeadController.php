@@ -218,14 +218,12 @@ class LeadController extends Controller
 
         $lead->update($data);
 
-        $lead->users()->attach($request->assigned_user_id);
-
+        $lead->users()->sync($request->assigned_user_id);
         return response()->json(['success' => 'Lead updated successfully']);
     }
     public function destroy($id)
     {
-        $lead = Lead::findOrFail($id);
-        $lead->delete();
+        Lead::findOrFail($id)->delete();;
 
         return response()->json([
             'success' => 'Lead deleted successfully'
@@ -412,31 +410,28 @@ class LeadController extends Controller
         $manager->notify(new LeadStatusNotification($lead, 'to_manager'));
         return back()->with('success', 'Lead moved to Manager successfully');
     }
-public function returnToAE($id)
-{
-    $lead = Lead::findOrFail($id);
+    public function returnToAE($id)
+    {
+        $lead = Lead::findOrFail($id);
 
-    // ❗ check if previous AE exists
-    if (!$lead->previous_ae_id) {
-        return back()->with('error', 'No previous AE found for this lead');
+        if (!$lead->previous_ae_id) {
+            return back()->with('error', 'No previous AE found for this lead');
+        }
+
+        $lead->update([
+            'assigned_to' => $lead->previous_ae_id,
+            'stage' => 'ae',
+        ]);
+
+        $lead->users()->sync([$lead->previous_ae_id]);
+
+        $ae = User::find($lead->previous_ae_id);
+        if ($ae) {
+            $ae->notify(new LeadStatusNotification($lead, 'return_ae'));
+        }
+
+        return back()->with('success', 'Lead returned to Account Executive');
     }
-
-    $lead->update([
-        'assigned_to' => $lead->previous_ae_id,
-        'stage' => 'ae',
-    ]);
-
-    // ✅ only sync if valid ID
-    $lead->users()->sync([$lead->previous_ae_id]);
-
-    // ✅ send notification
-    $ae = User::find($lead->previous_ae_id);
-    if ($ae) {
-        $ae->notify(new LeadStatusNotification($lead, 'return_ae'));
-    }
-
-    return back()->with('success', 'Lead returned to Account Executive');
-}
     public function markComplete($id)
     {
         $lead = Lead::findOrFail($id);
