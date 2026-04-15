@@ -98,7 +98,18 @@
                                     @endforelse
                                 </td>
 
-                                <td>{{ $lead->status }}</td>
+                                <td>
+                                    <span class="px-2 py-1 rounded text-white
+                                        @if($lead->status == 'Not Started') bg-secondary 
+                                        @elseif($lead->status == 'In Progress') bg-primary
+                                        @elseif($lead->status == 'Hold') bg-warning
+                                        @elseif($lead->status == 'Lost') bg-danger
+                                        @elseif($lead->status == 'Complete') bg-success
+                                        @endif
+                                    ">
+                                        {{ $lead->status }}
+                                    </span>
+                                </td>
                                 <td>{{ $lead->source }}</td>
 
                                 <td class="actions-cell">

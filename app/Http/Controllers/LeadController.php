@@ -368,8 +368,7 @@ class LeadController extends Controller
         }
 
         $reminder->delete();
-
-        return back()->with('success', 'Reminder deleted successfully');
+        return response()->json(['success' => 'Reminder deleted successfully']);
     }
     public function moveToQA(Request $request, $id)
     {

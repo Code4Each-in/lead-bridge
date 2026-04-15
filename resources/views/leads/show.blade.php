@@ -459,7 +459,7 @@
 
                             <div class="card-body px-3 py-2">
 
-                                <!-- ================= CREATED BY ================= -->
+                                <!-- created by-->
                                 @if($lead->creator)
                                     @php
                                         $words = explode(' ', trim($lead->creator->name));
@@ -488,7 +488,7 @@
                                 @endif
 
 
-                                <!-- ================= ACCOUNT EXECUTIVE (pivot users) ================= -->
+                                <!-- acc ex user -->
                                 @if($lead->users->count())
                                     <div class="rp-section">Account Executive</div>
 
@@ -519,7 +519,7 @@
                                 @endif
 
 
-                                <!-- ================= QA USER ================= -->
+                                <!-- qa user -->
                                 @if($lead->qaUser)
                                     <div class="rp-section">Quality Assurance</div>
 
@@ -549,7 +549,7 @@
                                 @endif
 
 
-                                <!-- ================= MANAGER ================= -->
+                                <!-- manager-->
                                 @if($lead->manager)
                                     <div class="rp-section">Account Manager</div>
 
@@ -763,7 +763,7 @@
 <!-- add reminder modal -->
 <div class="modal fade" id="addReminderModal" tabindex="-1">
     <div class="modal-dialog">
-        <form action="{{ route('reminders.store') }}" method="POST" class="modal-content">
+        <form id="reminderForm" action="{{ route('reminders.store') }}" method="POST" class="modal-content" novalidate>
             @csrf
        <input type="hidden" name="lead_id" value="{{ $lead->id }}">
             <div class="modal-header">
@@ -773,26 +773,29 @@
 
             <div class="modal-body">
 
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" class="form-control" min="{{ date('Y-m-d') }}" required>
-                </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date"  min="{{ date('Y-m-d') }}" class="form-control">
+                <div class="invalid-feedback"></div>
+            </div>
 
-                <div class="form-group">
-                    <label>Time</label>
-                    <input type="time" name="time" class="form-control" required>
-                </div>
+            <div class="form-group">
+                <label>Time</label>
+                <input type="time" name="time" class="form-control">
+                <div class="invalid-feedback"></div>
+            </div>
 
-                <!-- OPTIONAL NOTE -->
-                <div class="form-group">
-                    <label>Note (Optional)</label>
-                    <textarea name="notes" class="form-control" rows="3" placeholder="Add a note..."></textarea>
-                </div>
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea name="notes" class="form-control" rows="3"></textarea>
+                <div class="invalid-feedback"></div>
+            </div>
 
             </div>
 
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Save Reminder</button>
+                <button type="submit" class="btn btn-primary" id="reminderBtn">Save Reminder</button>
+
             </div>
 
         </form>
@@ -816,7 +819,6 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Time</th>
                                 <th>Note</th>
                                 <th>Action</th>
                             </tr>
@@ -825,19 +827,16 @@
                         <tbody>
                             @foreach($reminders as $reminder)
                                 <tr>
-                                    <td>{{ $reminder->date }}</td>
-                                    <td>{{ $reminder->time }}</td>
+                                    <td>{{ $reminder->date_time->format('M d, Y h:i A')  }}</td>
                                     <td>{{ $reminder->notes ?? 'N/A' }}</td>
 
                                     <td>
-                                    <form action="{{ route('reminders.delete', $reminder->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
+                                        <a href="{{ route('reminders.delete', $reminder->id) }}"
+                                            class="btn btn-sm btn-danger btn-delete "
+                                            data-id="{{ $reminder->id }}"
+                                           >
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -856,7 +855,7 @@
 <!-- qa selection -->
  <div class="modal fade" id="qaModal">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('lead.move-to-qa', $lead->id) }}">
+        <form method="POST" action="{{ route('lead.move-to-qa', $lead->id) }}" novalidate>
             @csrf
 
             <div class="modal-content">
@@ -865,7 +864,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <select name="qa_user_id" class="form-control" required>
+                    <select name="qa_user_id" class="form-control" >
                         <option value="">Select QA</option>
                         @foreach($qaUsers as $qa)
                             <option value="{{ $qa->id }}">{{ $qa->name }}</option>
@@ -882,9 +881,9 @@
     </div>
 </div>
 <!-- manager selection -->
- <div class="modal fade" id="managerModal">
+<div class="modal fade" id="managerModal">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('lead.move-to-manager', $lead->id) }}">
+        <form method="POST" action="{{ route('lead.move-to-manager', $lead->id) }}" novalidate>
             @csrf
 
             <div class="modal-content">
@@ -893,7 +892,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <select name="manager_user_id" class="form-control" required>
+                    <select name="manager_user_id" class="form-control">
                         <option value="">Select Manager</option>
                         @foreach($managers as $manager)
                             <option value="{{ $manager->id }}">{{ $manager->name }}</option>
@@ -962,6 +961,60 @@ function initEditor(id) {
         }
     });
 }
+    function clearErrors($form) {
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
+    }
+
+    function showErrors($form, errors) {
+        $.each(errors, function (field, messages) {
+            const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
+            $input.addClass('is-invalid');
+            $input.closest('.form-group')
+                .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+        });
+    }
+    $(document).on('submit', '#reminderForm', function(e) {
+
+        e.preventDefault();
+
+        const $form = $(this);
+        const $btn  = $('#reminderBtn');
+        console.log("btn clicked");
+        clearErrors($form);
+
+        $btn.prop('disabled', true).text('Saving…');
+
+        $.ajax({
+            url        : '{{ route("reminders.store") }}',
+            method     : 'POST',
+            data       : new FormData($form[0]),
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    $('#addReminderModal').modal('hide');
+                    Swal.fire({
+                        icon : 'success',
+                        title: 'Created!',
+                        text : res.success,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    }).then(() => location.reload());
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors($form, xhr.responseJSON.errors);
+                } else {
+                    Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                }
+            },
+            complete: function () {
+                $btn.prop('disabled', false).text('Save Reminder');
+            },
+        });
+    });
 document.getElementById('commentFiles').addEventListener('change', function () {
     let files = Array.from(this.files).map(f => f.name).join(', ');
     document.getElementById('commentFileName').value = files;
@@ -1035,7 +1088,7 @@ function resetEditor() {
     document.querySelector('#comment-form button').innerText = 'Comment';
 }
 
-    document.querySelectorAll('.status-container').forEach(container => {
+document.querySelectorAll('.status-container').forEach(container => {
     const badge    = container.querySelector('.status-badge');
     const dropdown = container.querySelector('.status-dropdown');
     const leadId   = container.dataset.leadId;
@@ -1090,7 +1143,48 @@ function resetEditor() {
         });
     });
 });
+$(document).on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
 
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This Reminder will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: res.success,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(function () {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.'
+                        });
+                    }
+                });
+            }
+        });
+});
 document.addEventListener('click', function(e){
     document.querySelectorAll('.status-dropdown').forEach(drop => {
         if (!drop.closest('.status-container').contains(e.target)) {

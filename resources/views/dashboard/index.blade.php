@@ -91,7 +91,7 @@
         <div class="reminders-header">
             <div class="reminders-title">
                 <span class="badge-dot"></span>
-                Today's Reminders
+                Today's Reminders for Leads
             </div>
         </div>
         <div id="reminders-list">
@@ -106,7 +106,7 @@
                 <div class="reminder-body">
                     <div class="reminder-name">{{ $reminder->lead->name ?? 'Lead' }}</div>
                     <div class="reminder-note">{{ $reminder->notes }}</div>
-                    <span class="reminder-time">{{ $reminder->time }}</span>
+                    <span class="reminder-time">{{ $reminder->date_time->format('M d, Y h:i A') }}</span>
                 </div>
                 <button class="close-btn" onclick="removeReminder({{ $reminder->id }})" title="Dismiss">
                     <i class="mdi mdi-close"></i>
