@@ -9,7 +9,7 @@
 
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_settings-panel.html -->
-      <div class="theme-setting-wrapper">
+      <!-- <div class="theme-setting-wrapper">
         <div id="settings-trigger"><i class="ti-settings"></i></div>
         <div id="theme-settings" class="settings-panel">
           <i class="settings-close ti-close"></i>
@@ -26,7 +26,7 @@
             <div class="tiles default"></div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       @include('includes.rightsidebar')
       @include('includes.sidebar')
@@ -48,7 +48,43 @@
             width: '100%'
         });
     });
+
+
 </script>
+@if(session('success'))
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Success!',
+    text: @json(session('success')),
+    timer: 2500,
+    showConfirmButton: false,
+    background: '#ffffff',
+    color: '#2c3e50',
+    iconColor: '#28a745',
+    customClass: {
+        popup: 'swal-rounded'
+    }
+});
+</script>
+@endif
+@if(session('error'))
+<script>
+Swal.fire({
+    icon: 'error',
+    title: 'Access Denied',
+    text: @json(session('error')),
+    confirmButtonText: 'Okay',
+    confirmButtonColor: '#e74c3c',
+    background: '#fff',
+    color: '#2c3e50',
+    iconColor: '#e74c3c',
+    customClass: {
+        popup: 'swal-rounded'
+    }
+});
+</script>
+@endif
 </body>
 
 </html>

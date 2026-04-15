@@ -9,7 +9,7 @@
 
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_settings-panel.html -->
-      <div class="theme-setting-wrapper">
+      <!-- <div class="theme-setting-wrapper">
         <div id="settings-trigger"><i class="ti-settings"></i></div>
         <div id="theme-settings" class="settings-panel">
           <i class="settings-close ti-close"></i>
@@ -26,7 +26,7 @@
             <div class="tiles default"></div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <?php echo $__env->make('includes.rightsidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
       <?php echo $__env->make('includes.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
@@ -48,7 +48,43 @@
             width: '100%'
         });
     });
+
+
 </script>
+<?php if(session('success')): ?>
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Success!',
+    text: <?php echo json_encode(session('success'), 15, 512) ?>,
+    timer: 2500,
+    showConfirmButton: false,
+    background: '#ffffff',
+    color: '#2c3e50',
+    iconColor: '#28a745',
+    customClass: {
+        popup: 'swal-rounded'
+    }
+});
+</script>
+<?php endif; ?>
+<?php if(session('error')): ?>
+<script>
+Swal.fire({
+    icon: 'error',
+    title: 'Access Denied',
+    text: <?php echo json_encode(session('error'), 15, 512) ?>,
+    confirmButtonText: 'Okay',
+    confirmButtonColor: '#e74c3c',
+    background: '#fff',
+    color: '#2c3e50',
+    iconColor: '#e74c3c',
+    customClass: {
+        popup: 'swal-rounded'
+    }
+});
+</script>
+<?php endif; ?>
 </body>
 
 </html>

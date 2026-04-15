@@ -66,7 +66,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?php echo e(route('profile.update')); ?>" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column">
+                <form method="POST" action="<?php echo e(route('profile.update')); ?>" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column" novalidate>
                     <?php echo csrf_field(); ?>
                     <?php echo method_field('PUT'); ?>
 

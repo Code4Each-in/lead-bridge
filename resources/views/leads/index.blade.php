@@ -8,30 +8,12 @@
         content: ' *';
         color: red;
     }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    font-size: 13px !important;
-    padding: 4px 4px !important;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    padding: 5px !important;
-    padding-left: 20px !important;
-
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
-        font-size: 12px !important;
-    }
-    .select2-container--default.select2-container--disabled .select2-selection--multiple {
-        background-color: #ffffff !important;
-        padding: 11px !important;
-        border: 1px solid #ced4da   !important;
-    }
-    .select2-container--default .select2-search--inline .select2-search__field {
-        font-size: 14px !important;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__clear{
-        margin-top: 1px !important;
-        color: #ced4da;
-    }
+    .select2-container .select2-selection--single {
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: 45px !important;
+     }
     .lead-status-simple {
         padding: 4px 8px;
         font-size: 13px;
@@ -51,6 +33,7 @@
     $isSuperAdmin   = in_array(strtolower($authUser->role->name), ['super admin']);
     $isAdminOrMIS   = in_array(strtolower($authUser->role->name), ['admin', 'mis user']);
     $isAdminOrSuper = $isSuperAdmin || $isAdminOrMIS;
+    $role = strtolower(optional(auth()->user()->role)->name);
 @endphp
 
 
@@ -64,25 +47,20 @@
                     <h4 class="card-title mb-0">Leads</h4>
 
                     <div class="d-flex">
-                         @if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin' || strtolower(auth()->user()->role->name) == 'mis user')
-                        <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
-                            Add Lead
-                        </button>
-                        @endif
-                        @if($isAdminOrMIS)
-                        <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
-                            @csrf
-                            <input
-                                type="file"
-                                name="file"
-                                accept=".xls,.xlsx"
-                                style="display: none;"
-                                id="excelFileInput"
-                            >
-                            <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
-                        </form>
 
-                        <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
+                        @if(in_array($role, ['super admin','admin','mis user']))
+                            <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
+                                Add Lead
+                            </button>
+                        @endif
+                        @if(in_array($role, ['admin','mis user']))
+                            <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
+                                @csrf
+                                <input type="file" name="file" accept=".xls,.xlsx" style="display: none;" id="excelFileInput">
+                                <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
+                            </form>
+
+                            <a href="{{ route('leads.template') }}" class="btn btn-info">Download Template</a>
                         @endif
                     </div>
                 </div>
@@ -93,7 +71,6 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Company</th>
-                                <th>Agency</th>
                                 <th>Assigned To</th>
                                 <th>Status</th>
                                 <th>Source</th>
@@ -101,51 +78,65 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leads as $lead)
-                            <tr>
+                            @forelse($leads as $lead)
+                            <!-- <tr class="clickable-row"
+                                data-href="{{ url('/leads/'.$lead->id) }}"
+                                style="cursor:pointer;"> -->
+                                <tr class="pointer" onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');">
+
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
-                                <td>{{ $lead->agency->agency_name ?? '-' }}</td>
+
                                 <td>
                                     @forelse($lead->users as $user)
-                                        <span class="badge badge-light border" style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
+                                        <span class="badge badge-light border"
+                                            style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
                                             {{ $user->name }}
                                         </span>
                                     @empty
                                         <span class="text-muted">-</span>
                                     @endforelse
                                 </td>
-                                <td>
-                                    @if($isSuperAdmin)
-                                    <select class="lead-status-simple" data-lead-id="{{ $lead->id }}">
-                                        @php
-                                            $statuses = ['Not Started', 'In Progress', 'Hold', 'Lost', 'Complete'];
-                                        @endphp
-                                        @foreach($statuses as $status)
-                                            <option value="{{ $status }}" {{ $lead->status == $status ? 'selected' : '' }}>
-                                                {{ $status }}
-                                            </option>
-                                        @endforeach
-                                    </select>
 
-                                        @else
-                                            {{ $lead->status }}
-                                        @endif
-                                </td>
+                                <td>{{ $lead->status }}</td>
                                 <td>{{ $lead->source }}</td>
-                                <td>
-                                    <!-- <button class="btn btn-sm btn-primary edit-lead-btn"
-                                            data-toggle="modal"
-                                            data-target="#editModal{{ $lead->id }}">
-                                        <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button> -->
-                                    <a href="{{ route('leads.delete', $lead->id) }}"
-                                       class="btn btn-sm btn-danger btn-delete">
-                                        <i class="mdi mdi-trash-can"></i> Delete
-                                    </a>
+
+                                <td class="actions-cell">
+                                    @if(in_array($role, ['super admin','admin','account executive','qa user','account manager']))
+                                        <a href="{{ url('/leads/'.$lead->id) }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary pointer"
+                                        >
+                                            <i class="mdi mdi-eye"></i> View
+                                        </a>
+                                    @endif
+                                    @if(in_array($role, ['super admin','admin','mis user']))
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary edit-lead-btn pointer"
+                                            data-id="{{ $lead->id }}"
+                                            >
+                                            <i class="mdi mdi-pencil-box"></i> Edit
+                                        </button>
+                                    @endif
+                                    @if(in_array($role, ['super admin','admin']))
+
+                                        <a href="{{ route('leads.delete', $lead->id) }}"
+                                            class="btn btn-sm btn-danger btn-delete pointer"
+                                            data-id="{{ $lead->id }}"
+                                           >
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </a>
+                                    @endif
+
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No leads found
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -230,13 +221,24 @@
                             </div>
 
                             {{-- Assign User (populated by agency change) --}}
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
                                     <select name="assigned_user_id[]"
                                             id="create_user_select"
                                             class="form-control user-select"
                                             multiple>
+                                        <option value="">-- Select Agency First --</option>
+                                    </select>
+                                </div>
+                            </div> -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Assign User</label>
+                                    <select name="assigned_user_id"
+                                            id="create_user_select"
+                                            class="form-control"
+                                            >
                                         <option value="">-- Select Agency First --</option>
                                     </select>
                                 </div>
@@ -248,11 +250,11 @@
                             {{-- Assign User: pre-loaded with same-agency users --}}
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label >Assign User</label>
-                                    <select name="assigned_user_id[]"
+                                    <label>Assign User</label>
+                                    <select name="assigned_user_id"
                                             id="create_user_select"
-                                            class="form-control user-select"
-                                            multiple>
+                                            class="form-control">
+                                        <option value="">-- Select User --</option>
                                         @foreach($users as $user)
                                             <option value="{{ $user->id }}">{{ $user->name }}</option>
                                         @endforeach
@@ -267,7 +269,7 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes"></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Document</label>
                         <div class="input-group">
                             <input type="file" id="documentInput_create" name="documents" style="display: none;">
@@ -280,7 +282,7 @@
                                 </button>
                             </span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -294,7 +296,7 @@
 
 <!--  EDIT MODALS = -->
 @foreach($leads as $lead)
-<div class="modal fade" id="editModal{{ $lead->id }}" tabindex="-1">
+<div class="modal fade" id="editModal{{ $lead->id }}" >
     <div class="modal-dialog modal-lg">
         <form class="editLeadForm"
                 method="POST"
@@ -397,17 +399,17 @@
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
                                     @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
-                                    <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
-                                            class="form-control user-select"
-                                            multiple>
-                                        @foreach($users->where('agency_id', $lead->agency_id) as $user)
-                                            <option value="{{ $user->id }}"
+                                        <select name="assigned_user_id"
+                                                id="edit_user_{{ $lead->id }}"
+                                                class="form-control">
+                                            <option value="">-- Select User --</option>
+                                            @foreach($users->where('agency_id', $lead->agency_id) as $user)
+                                                <option value="{{ $user->id }}"
                                                     {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                                    {{ $user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                 </div>
                             </div>
                         @else
@@ -416,17 +418,17 @@
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
                                     @php $selectedUserIds = $lead->users->pluck('id')->toArray(); @endphp
-                                    <select name="assigned_user_id[]"
-                                            id="edit_user_{{ $lead->id }}"
-                                            class="form-control user-select"
-                                            multiple>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}"
+                                        <select name="assigned_user_id"
+                                                id="edit_user_{{ $lead->id }}"
+                                                class="form-control">
+                                            <option value="">-- Select User --</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}"
                                                     {{ in_array($user->id, $selectedUserIds) ? 'selected' : '' }}>
-                                                {{ $user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                                    {{ $user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                 </div>
                             </div>
                         @endif
@@ -437,7 +439,7 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes">{{ $lead->notes }}</textarea>
                     </div>
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label>Document</label>
                         @if($lead->documents)
                             <div class="mb-1">
@@ -458,7 +460,7 @@
                                 </button>
                             </span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -485,46 +487,31 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('excelFileInput');
-        const selectBtn = document.getElementById('selectExcelBtn');
-        const form = document.getElementById('uploadExcelForm');
 
-        // When the user clicks the button, open file select
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('excelFileInput');
+    const selectBtn = document.getElementById('selectExcelBtn');
+    const form = document.getElementById('uploadExcelForm');
+
+    if (selectBtn && fileInput && form) {
+
+        // Open file picker
         selectBtn.addEventListener('click', function() {
             fileInput.click();
         });
 
-        // When a file is selected, auto-submit the form
+        // Auto-submit on file select
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
                 form.submit();
             }
         });
-    });
+
+    }
+});
+
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
-
-    // Initialize Select2 on all user selects for user-role (no agency dependency)
-    if (!IS_ADMIN_OR_SUPER) {
-        $('#create_user_select').select2({
-            width: '100%',
-            dropdownParent: $('#createModal'),
-            placeholder: 'Select users...',
-            allowClear: true
-        });
-
-        $('.user-select').each(function () {
-            const $sel    = $(this);
-            const $modal  = $sel.closest('.modal');
-            $sel.select2({
-                width: '100%',
-                dropdownParent: $modal.length ? $modal : $(document.body),
-                placeholder: 'Select users...',
-                allowClear: true
-            });
-        });
-    }
 
     function populateUsers(targetId, agencyId, selectedIds) {
         const $sel    = $('#' + targetId);
@@ -640,59 +627,62 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
     });
 
     // Create modal open
-  $('#createModal').on('show.bs.modal', function () {
-    const $form = $(this).find('#createLeadForm');
-    $form[0].reset();
+    $('#createModal').on('show.bs.modal', function () {
+        const $form = $(this).find('#createLeadForm');
+        $form[0].reset();
 
-    if (IS_SUPER_ADMIN) {
-        // Super admin — reset agency + user selects
-        $('#create_agency_select').val('').trigger('change');
-        $('#create_user_select')
-            .empty()
-            .append('<option value="">-- Select Agency First --</option>')
-            .prop('disabled', true)
-            .trigger('change');
+        if (IS_SUPER_ADMIN) {
+            // Super admin — reset agency + user selects
+            $('#create_agency_select').val('').trigger('change');
+            $('#create_user_select')
+                .empty()
+                .append('<option value="">-- Select Agency First --</option>')
+                .prop('disabled', true)
+                .trigger('change');
 
-    } else if (IS_ADMIN_OR_MIS) {
-        // ✅ Admin/MIS — no agency select, just reset user select
-        const $userSel = $('#create_user_select');
-        if ($userSel.hasClass('select2-hidden-accessible')) {
-            $userSel.select2('destroy');
+        } else if (IS_ADMIN_OR_MIS) {
+            // Admin/MIS — no agency select, just reset user select
+            const $userSel = $('#create_user_select');
+            if ($userSel.hasClass('select2-hidden-accessible')) {
+                $userSel.select2('destroy');
+            }
+            $userSel.val(null).select2({
+                width         : '100%',
+                dropdownParent: $('#createModal'),
+                placeholder   : 'Select users...',
+                allowClear    : true,
+            });
         }
-        $userSel.val(null).select2({
-            width         : '100%',
-            dropdownParent: $('#createModal'),
-            placeholder   : 'Select users...',
-            allowClear    : true,
+
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
+    });
+
+    // Edit modal
+    $(document).on('show.bs.modal', '[id^="editModal"]', function () {
+        const $modal = $(this);
+        const $form = $modal.find('.editLeadForm');
+        if (!$form.length) return;
+
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
+
+        if (IS_SUPER_ADMIN) {
+            $modal.find('.agency-select').each(function () {
+                if ($(this).val()) $(this).trigger('change');
+            });
+        }
+    });
+    $(document).ready(function () {
+
+        $('.edit-lead-btn').click(function () {
+            let id = $(this).data('id');
+
+            // console.log('clicked direct', id);
+
+            $('#editModal' + id).modal('show');
         });
-    }
 
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').remove();
-});
-
-// Edit modal
-$('.modal').on('show.bs.modal', function () {
-    const $modal = $(this);
-    if ($modal.attr('id') === 'createModal') return;
-
-    const $form = $modal.find('.editLeadForm');
-    if (!$form.length) return;
-
-    $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').remove();
-
-    if (IS_SUPER_ADMIN) {
-        // Super admin — trigger agency change to reload users
-        $modal.find('.agency-select').each(function () {
-            if ($(this).val()) $(this).trigger('change');
-        });
-    }
-    // ✅ Admin/MIS — users already pre-rendered with selected, do nothing
-});
-
-    $('.modal').on('shown.bs.modal', function () {
-        $(this).find('.select2').css('width', '100%');
     });
 
     function clearErrors($form) {
@@ -700,15 +690,14 @@ $('.modal').on('show.bs.modal', function () {
         $form.find('.invalid-feedback').remove();
     }
 
-function showErrors($form, errors) {
-    $.each(errors, function (field, messages) {
-        // ✅ handles both field and field[]
-        const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
-        $input.addClass('is-invalid');
-        $input.closest('.form-group')
-              .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
-    });
-}
+    function showErrors($form, errors) {
+        $.each(errors, function (field, messages) {
+            const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
+            $input.addClass('is-invalid');
+            $input.closest('.form-group')
+                .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+        });
+    }
 
     $(document).on('submit', '#createLeadForm', function(e) {
 
@@ -792,43 +781,48 @@ function showErrors($form, errors) {
             },
         });
     });
-
     $(document).on('click', '.btn-delete', function (e) {
         e.preventDefault();
         const url = $(this).attr('href');
 
         Swal.fire({
-            title             : 'Are you sure?',
-            text              : 'This lead will be permanently deleted!',
-            icon              : 'warning',
-            showCancelButton  : true,
+            title: 'Are you sure?',
+            text: 'This Lead will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor : '#6c757d',
-            confirmButtonText : 'Yes, delete it!',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
         }).then(function (result) {
             if (result.isConfirmed) {
                 $.ajax({
-                    url    : url,
-                    method : 'GET',
+                    url: url,
+                    method: 'GET',
                     success: function (res) {
                         if (res.success) {
                             Swal.fire({
-                                icon : 'success',
+                                icon: 'success',
                                 title: 'Deleted!',
-                                text : res.success,
+                                text: res.success,
                                 timer: 1500,
-                                showConfirmButton: false,
-                            }).then(() => location.reload());
+                                showConfirmButton: false
+                            }).then(function () {
+                                location.reload();
+                            });
                         }
                     },
                     error: function () {
-                        Swal.fire('Error', 'Could not delete this lead.', 'error');
-                    },
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.'
+                        });
+                    }
                 });
             }
         });
     });
-
     $(document).on('change', 'input[type="file"]', function () {
         const id = this.id.replace('documentInput_', 'documentName_');
         const nameField = document.getElementById(id);
@@ -845,7 +839,6 @@ function showErrors($form, errors) {
 document.addEventListener('DOMContentLoaded', function() {
     let htmlContent = '';
 
-    // 1️⃣ Laravel validation errors
     @if ($errors->any())
         htmlContent += '<b>Validation Errors:</b><ul>';
         @foreach ($errors->all() as $error)
@@ -854,12 +847,10 @@ document.addEventListener('DOMContentLoaded', function() {
         htmlContent += '</ul><br>';
     @endif
 
-    // 2️⃣ Session error
     @if (session('error'))
         htmlContent += `<b>Error:</b> {{ session('error') }}<br><br>`;
     @endif
 
-    // 3️⃣ Success message + failed rows
     @if(session('success'))
         htmlContent += `<b>{{ session('success') }}</b><br><br>`;
         const failedRows = @json(session('failedRows', []));
@@ -872,7 +863,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     @endif
 
-    // 4️⃣ Show Swal only if there is content
     if(htmlContent.length > 0) {
         Swal.fire({
             icon: htmlContent.includes('Validation Errors') || htmlContent.includes('Error') ? 'error' : 'success',

@@ -111,7 +111,7 @@
 <!-- Create User Modal -->
 <div class="modal fade" id="createModal">
     <div class="modal-dialog modal-lg">
-        <form  id="createUserForm" method="POST" class="forms-sample" action="{{ route('users.store') }}" enctype="multipart/form-data">
+        <form  id="createUserForm" method="POST" class="forms-sample" action="{{ route('users.store') }}" enctype="multipart/form-data" novalidate>
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
@@ -127,7 +127,7 @@
 
                     <div class="form-group">
                         <label class="required-label">Email address</label>
-                        <input type="email" name="email" class="form-control" placeholder="Email" >
+                        <input  name="email" class="form-control" placeholder="Email" >
                     </div>
 
                     <div class="form-group">
@@ -151,13 +151,13 @@
                     </div>
 
                     @if($isSuperAdmin)
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label class="required-label">Status</label>
                         <select name="status" class="form-control">
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
                         </select>
-                    </div>
+                    </div> -->
                     @endif
 
                     <div class="form-group">

@@ -1,7 +1,5 @@
 <!--  -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
 <!-- plugins:js -->
 <script src="<?php echo e(asset('assets/js/vendor.bundle.base.js')); ?>"></script>
 <!-- endinject -->

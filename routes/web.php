@@ -5,10 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadDocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeadImportController;
+use App\Http\Controllers\LeadNoteController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -49,6 +51,7 @@ Route::middleware(['auth','active'])->group(function () {
     Route::post('/leads',[LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/{id}/update',[LeadController::class, 'update'])->name('leads.update');
     Route::get('/leads/{id}/delete',[LeadController::class, 'destroy'])->name('leads.delete');
+    Route::get('/leads/{leadId}', [LeadController::class, 'showLead'])->name('leads.show');
 
 });
 // Route::get('/upload', function () {
@@ -59,3 +62,41 @@ Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
 Route::post('/set-agency', [AgencyController::class, 'setAgency'])
     ->name('set.agency');
+/*
+| NOTES
+*/
+Route::post('/notes', [LeadNoteController::class, 'store'])
+    ->name('notes.store');
+
+Route::put('/notes/{id}', [LeadNoteController::class, 'update'])
+    ->name('notes.update');
+
+/*
+| DOCUMENTS
+*/
+Route::post('/documents', [LeadDocumentController::class, 'store'])
+    ->name('documents.store');
+
+Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
+    ->name('documents.destroy');
+
+
+Route::post('/reminders', [LeadController::class, 'storeReminder'])->name('reminders.store');
+Route::delete('/reminder/delete/{id}', [LeadController::class, 'destroyReminder'])
+    ->name('reminders.delete');
+    Route::post('/lead/{id}/move-to-qa', [LeadController::class, 'moveToQA'])
+    ->name('lead.move-to-qa');
+
+Route::post('/lead/{id}/move-to-manager', [LeadController::class, 'moveToManager'])
+    ->name('lead.move-to-manager');
+
+Route::post('/lead/{id}/return-ae', [LeadController::class, 'returnToAE'])
+    ->name('lead.return-ae');
+
+Route::post('/lead/{id}/complete', [LeadController::class, 'markComplete'])
+    ->name('lead.complete');
+
+Route::post('/lead/{id}/lost', [LeadController::class, 'markLost'])
+    ->name('lead.lost');
+    // routes/web.php
+Route::post('/reminders/{reminder}/dismiss', [DashboardController::class, 'dismissReminder']);
