@@ -309,7 +309,7 @@
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" id="profileDropdown">
 
                 <img src="<?php echo e(auth()->user()->profile
-                        ? asset('storage/' . auth()->user()->profile)
+                        ? asset(auth()->user()->profile)
                         : asset('assets/images/default-profile.png')); ?>"
                     alt="profile"
                     class="rounded-circle"

@@ -475,7 +475,7 @@
 
 
                                             <?php if($lead->creator->profile): ?>
-                                                <img src="<?php echo e(asset('storage/' . $lead->creator->profile)); ?>" alt="<?php echo e($lead->creator->name); ?>">
+                                                <img src="<?php echo e(asset($lead->creator->profile)); ?>" alt="<?php echo e($lead->creator->name); ?>">
                                             <?php endif; ?>
                                         </div>
 
@@ -507,7 +507,7 @@
 
 
                                                 <?php if($user->profile): ?>
-                                                    <img src="<?php echo e(asset('storage/' . $user->profile)); ?>" alt="<?php echo e($user->name); ?>">
+                                                    <img src="<?php echo e(asset($user->profile)); ?>" alt="<?php echo e($user->name); ?>">
                                                 <?php endif; ?>
                                             </div>
 
@@ -540,7 +540,8 @@
 
 
                                             <?php if($qa->profile): ?>
-                                                <img src="<?php echo e(asset('storage/' . $qa->profile)); ?>">
+                                                <img src="<?php echo e(asset($qa->profile)); ?>" >
+
                                             <?php endif; ?>
                                         </div>
 
@@ -571,7 +572,7 @@
 
 
                                             <?php if($lead->manager->profile): ?>
-                                                <img src="<?php echo e(asset('storage/' . $lead->manager->profile)); ?>" alt="<?php echo e($lead->manager->name); ?>">
+                                                <img src="<?php echo e(asset($lead->manager->profile)); ?>" alt="<?php echo e($lead->manager->name); ?>">
                                             <?php endif; ?>
                                         </div>
 
@@ -636,7 +637,7 @@
 
                                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
 
-                                                                <a href="<?php echo e(Storage::url($doc->file)); ?>" target="_blank">
+                                                                <a href="<?php echo e(asset($doc->file)); ?>" target="_blank">
                                                                     <?php echo e($doc->file_name); ?>
 
                                                                 </a>
@@ -656,7 +657,7 @@
                                             <?php if($activity['type'] === 'document'): ?>
 
                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
-                                                <a href="<?php echo e(Storage::url($activity['data']->file)); ?>" target="_blank">
+                                                <a href="<?php echo e(asset($activity['data']->file)); ?>" target="_blank">
                                                     <?php echo e($activity['data']->file_name); ?>
 
                                                 </a>
