@@ -21,7 +21,17 @@ class LeadDocumentController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
 
-                $filePath = $file->store('lead_documents', 'public');
+                $destinationPath = public_path('assets/lead_documents');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                $file->move($destinationPath, $fileName);
+
+                $filePath = 'assets/lead_documents/' . $fileName;
 
                 LeadDocument::create([
                     'lead_id' => $request->lead_id,
@@ -57,7 +67,9 @@ class LeadDocumentController extends Controller
             abort(403, 'Only Super Admin can delete');
         }
 
-        Storage::disk('public')->delete($doc->file);
+        if ($doc->file && file_exists(public_path($doc->file))) {
+            unlink(public_path($doc->file));
+        }
         $doc->delete();
 
         return back();

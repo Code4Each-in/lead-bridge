@@ -473,7 +473,7 @@
                                             {{ $initials }}
 
                                             @if($lead->creator->profile)
-                                                <img src="{{ asset('storage/' . $lead->creator->profile) }}" alt="{{ $lead->creator->name }}">
+                                                <img src="{{ asset($lead->creator->profile) }}" alt="{{ $lead->creator->name }}">
                                             @endif
                                         </div>
 
@@ -503,7 +503,7 @@
                                                 {{ $initials }}
 
                                                 @if($user->profile)
-                                                    <img src="{{ asset('storage/' . $user->profile) }}" alt="{{ $user->name }}">
+                                                    <img src="{{ asset($user->profile) }}" alt="{{ $user->name }}">
                                                 @endif
                                             </div>
 
@@ -534,7 +534,8 @@
                                             {{ $initials }}
 
                                             @if($qa->profile)
-                                                <img src="{{ asset('storage/' . $qa->profile) }}">
+                                                <img src="{{ asset($qa->profile) }}" >
+
                                             @endif
                                         </div>
 
@@ -563,7 +564,7 @@
                                             {{ $initials }}
 
                                             @if($lead->manager->profile)
-                                                <img src="{{ asset('storage/' . $lead->manager->profile) }}" alt="{{ $lead->manager->name }}">
+                                                <img src="{{ asset($lead->manager->profile) }}" alt="{{ $lead->manager->name }}">
                                             @endif
                                         </div>
 
@@ -625,7 +626,7 @@
 
                                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
 
-                                                                <a href="{{ Storage::url($doc->file) }}" target="_blank">
+                                                                <a href="{{ asset($doc->file) }}" target="_blank">
                                                                     {{ $doc->file_name }}
                                                                 </a>
 
@@ -644,7 +645,7 @@
                                             @if($activity['type'] === 'document')
 
                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
-                                                <a href="{{ Storage::url($activity['data']->file) }}" target="_blank">
+                                                <a href="{{ asset($activity['data']->file) }}" target="_blank">
                                                     {{ $activity['data']->file_name }}
                                                 </a>
 

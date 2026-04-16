@@ -34,7 +34,17 @@ class LeadNoteController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
 
-                $filePath = $file->store('lead_documents', 'public');
+                $destinationPath = public_path('assets/lead_documents');
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                $file->move($destinationPath, $fileName);
+
+                $filePath = 'assets/lead_documents/' . $fileName;
 
                 LeadDocument::create([
                     'lead_id' => $request->lead_id,
@@ -43,7 +53,9 @@ class LeadNoteController extends Controller
                     'file' => $filePath,
                     'file_name' => $file->getClientOriginalName(),
                     'file_type' => $file->getClientMimeType(),
-                    'file_size' => $file->getSize(),
+                    'file_size' => file_exists(public_path($filePath))
+                        ? filesize(public_path($filePath))
+                        : 0,
                 ]);
             }
         }
@@ -81,11 +93,14 @@ class LeadNoteController extends Controller
     {
         $doc = LeadDocument::findOrFail($id);
 
-        if (strtolower(auth()->user()->role->name) === 'super admin') {
+        if (strtolower(auth()->user()->role->name) !== 'super admin') {
             abort(403, 'Only Super Admin can delete');
         }
 
-        Storage::disk('public')->delete($doc->file);
+        if ($doc->file && file_exists(public_path($doc->file))) {
+            unlink(public_path($doc->file));
+        }
+
         $doc->delete();
 
         return back();

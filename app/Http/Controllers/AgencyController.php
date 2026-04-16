@@ -49,11 +49,23 @@ class AgencyController extends Controller
         try {
             // Upload logo
             $logoPath = null;
-            if ($request->hasFile('logo')) {
-                $filename = time() . '_' . $request->file('logo')->getClientOriginalName();
-                $request->file('logo')->move(public_path('assets/images'), $filename);
 
-                $logoPath = 'assets/images/' . $filename;
+            if ($request->hasFile('logo')) {
+
+                $file = $request->file('logo');
+
+                $filename = time() . '_' . $file->getClientOriginalName();
+
+                $destinationPath = public_path('assets/logos');
+
+                // create folder if not exists
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $file->move($destinationPath, $filename);
+
+                $logoPath = 'assets/logos/' . $filename;
             }
 
             // Create agency
