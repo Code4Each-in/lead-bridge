@@ -59,35 +59,29 @@ class LeadController extends Controller
 
         $leadsQuery = Lead::with(['agency', 'users'])->latest();
 
-        // ADMIN / SUPER ADMIN → SEE ALL
-        if (($roleName === 'admin')) {
-            if ($roleName === 'admin') {
+        // ADMIN → can see only their agency (if required)
+        if ($roleName === 'admin') {
+            $leadsQuery->where('agency_id', $authUser->agency_id);
+        }
 
-                $leadsQuery->where('agency_id', $authUser->agency_id);
-            }
-            // ACCOUNT EXECUTIVE → only his leads
-            if ($roleName === 'account executive') {
+        // ACCOUNT EXECUTIVE → only his leads
+        elseif ($roleName === 'account executive') {
+            $leadsQuery->where('assigned_to', $authUser->id);
+        }
 
-                $leadsQuery->where('assigned_to', $authUser->id);
-            }
+        // QA USER → only QA assigned leads
+        elseif ($roleName === 'qa user') {
+            $leadsQuery->where('assigned_qa_id', $authUser->id);
+        }
 
-            // QA USER → only QA assigned leads
-            elseif ($roleName === 'qa user') {
+        // ACCOUNT MANAGER → only manager assigned leads
+        elseif ($roleName === 'account manager') {
+            $leadsQuery->where('assigned_manager_id', $authUser->id);
+        }
 
-                $leadsQuery->where('assigned_qa_id', $authUser->id);
-            }
-
-            // MANAGER → only manager assigned leads
-            elseif ($roleName === 'account manager') {
-
-                $leadsQuery->where('assigned_manager_id', $authUser->id);
-            }
-
-            // MIS / ADMIN (agency level restriction)
-            elseif ($roleName === 'mis user') {
-
-                $leadsQuery->where('agency_id', $authUser->agency_id);
-            }
+        // MIS USER → agency level restriction
+        elseif ($roleName === 'mis user') {
+            $leadsQuery->where('agency_id', $authUser->agency_id);
         }
 
         $leads = $leadsQuery->get();
@@ -95,14 +89,12 @@ class LeadController extends Controller
 
         // users dropdown logic
         if (in_array($roleName, ['mis user', 'admin'])) {
-
             $users = User::where('agency_id', $authUser->agency_id)
                 ->whereHas('role', function ($q) {
                     $q->whereRaw('LOWER(name) = ?', ['account executive']);
                 })
                 ->where('id', '!=', $authUser->id)
                 ->get();
-
         } else {
             $users = User::all();
         }

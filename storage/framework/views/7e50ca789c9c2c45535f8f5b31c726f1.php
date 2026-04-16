@@ -139,7 +139,7 @@
             color: #fff !important;
         }
         .nav-link.lead-active:hover, .nav-link.lead-active:focus {
-            text-decoration: none !important;
+            text-decoration: none ;
             }
       </style>
       <!-- partial -->

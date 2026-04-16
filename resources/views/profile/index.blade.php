@@ -14,7 +14,7 @@
             <div class="text-center profile-avatar-wrap">
                 <img
                     src="{{ auth()->user()->profile
-                        ? asset('storage/' . auth()->user()->profile)
+                        ? asset(auth()->user()->profile)
                         : asset('assets/images/default-profile.png') }}"
                     class="profile-avatar rounded-circle"
                     alt="{{ auth()->user()->name }}">

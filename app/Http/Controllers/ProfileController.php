@@ -68,7 +68,29 @@ class ProfileController extends Controller
             $profilePath = $request->file('profile')->store('profiles', 'public');
             $user->profile = $profilePath;
         }
+        if ($request->hasFile('profile')) {
 
+            // delete old file (if exists)
+            if ($user->profile && file_exists(public_path($user->profile))) {
+                unlink(public_path($user->profile));
+            }
+
+            $file = $request->file('profile');
+
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $destinationPath = public_path('assets/profiles');
+
+            // create folder if not exists
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            // store relative path in DB
+            $user->profile = 'assets/profiles/' . $filename;
+        }
         $user->name          = $request->name;
         $user->email         = $request->email;
         $user->date_of_birth = $request->date_of_birth;
