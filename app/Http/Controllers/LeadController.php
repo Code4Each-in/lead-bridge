@@ -290,7 +290,6 @@ class LeadController extends Controller
 
         $activities = collect();
 
-
         foreach ($lead->leadNotes as $note) {
             $activities->push([
                 'type' => 'note',
@@ -307,32 +306,40 @@ class LeadController extends Controller
             ]);
         }
 
-
         $activities = $activities->sortBy('created_at')->values();
+
         $authUser = auth()->user();
-        $roleName = $authUser->role->name ?? null;
 
-        $query = LeadReminder::where('lead_id', $id);
+        $reminders = LeadReminder::where('lead_id', $id)
+            ->where('agency_id', $authUser->agency_id)
+            ->latest()
+            ->get();
 
-        if ($roleName !== 'super admin') {
-            $query->where('agency_id', $authUser->agency_id);
-        }
 
-        $reminders = LeadReminder::where('lead_id', $id)->latest()->get();
         $qaUsers = User::whereHas('role', function ($q) {
-            $q->where('name', 'qa user');
-        })->get();
+                $q->where('name', 'QA User');
+            })
+            ->where('agency_id', $authUser->agency_id)
+            ->get();
 
         $managers = User::whereHas('role', function ($q) {
-            $q->where('name', 'account manager');
-        })->get();
-        return view('leads.show', compact('lead', 'activities','reminders', 'qaUsers', 'managers'));
+                $q->where('name', 'Account Manager');
+            })
+            ->where('agency_id', $authUser->agency_id)
+            ->get();
+
+        return view('leads.show', compact(
+            'lead',
+            'activities',
+            'reminders',
+            'qaUsers',
+            'managers'
+        ));
     }
     public function storeReminder(Request $request)
     {
         $authUser = auth()->user();
         $roleName = strtolower($authUser->role->name ?? '');
-
 
         $request->validate([
             'lead_id' => 'required|exists:leads,id',
@@ -357,7 +364,9 @@ class LeadController extends Controller
             'is_triggered' => 0
         ]);
 
-        return back()->with('success', 'Reminder added successfully');
+        return response()->json([
+            'success' => 'Reminder added successfully'
+        ]);
     }
     public function destroyReminder($id)
     {
@@ -383,13 +392,13 @@ class LeadController extends Controller
             'previous_ae_id' => auth()->id(),
             'stage' => 'qa',
         ]);
+
         $qaUser = User::find($request->qa_user_id);
         $qaUser->notify(new LeadStatusNotification($lead, 'to_qa'));
-        // pivot table update (optional but recommended)
-        // $lead->users()->sync([$request->qa_user_id]);
 
-        return back()->with('success', 'Lead moved to QA successfully');
-
+        return response()->json([
+            'success' => 'Lead moved to QA successfully'
+        ]);
     }
     public function moveToManager(Request $request, $id)
     {
@@ -404,10 +413,12 @@ class LeadController extends Controller
             'stage' => 'manager',
         ]);
 
-        // $lead->users()->sync([$request->manager_user_id]);
         $manager = User::find($request->manager_user_id);
         $manager->notify(new LeadStatusNotification($lead, 'to_manager'));
-        return back()->with('success', 'Lead moved to Manager successfully');
+
+        return response()->json([
+            'success' => 'Lead moved to Manager successfully'
+        ]);
     }
     public function returnToAE($id)
     {
@@ -437,6 +448,7 @@ class LeadController extends Controller
 
         $lead->update([
             'stage' => 'completed',
+            'status' => 'Complete',
             'assigned_to' => null,
         ]);
 
@@ -448,6 +460,7 @@ class LeadController extends Controller
 
         $lead->update([
             'stage' => 'lost',
+            'status' => 'Lost',
             'assigned_to' => null,
         ]);
 

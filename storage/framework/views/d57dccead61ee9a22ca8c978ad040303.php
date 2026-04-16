@@ -287,14 +287,14 @@
 
                             
                             <?php if($role == 'account manager' && $lead->stage == 'manager'): ?>
-                                <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline">
+                                <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline" id="completeForm">
                                     <?php echo csrf_field(); ?>
-                                    <button class="btn btn-success btn-sm mr-2">Complete</button>
+                                    <button class="btn btn-success btn-sm mr-2" type="submit">Complete</button>
                                 </form>
 
-                                <form method="POST" action="<?php echo e(route('lead.lost', $lead->id)); ?>" class="d-inline">
+                                <form method="POST" action="<?php echo e(route('lead.lost', $lead->id)); ?>" class="d-inline" id="lostForm">
                                     <?php echo csrf_field(); ?>
-                                    <button class="btn btn-danger btn-sm">Lost</button>
+                                    <button class="btn btn-danger btn-sm" type="submit">Lost</button>
                                 </form>
                             <?php endif; ?>
 
@@ -875,7 +875,7 @@ unset($__errorArgs, $__bag); ?>
 <!-- qa selection -->
  <div class="modal fade" id="qaModal">
     <div class="modal-dialog">
-        <form method="POST" action="<?php echo e(route('lead.move-to-qa', $lead->id)); ?>" novalidate>
+        <form id="qaForm" method="POST" action="<?php echo e(route('lead.move-to-qa', $lead->id)); ?>">
             <?php echo csrf_field(); ?>
 
             <div class="modal-content">
@@ -884,12 +884,13 @@ unset($__errorArgs, $__bag); ?>
                 </div>
 
                 <div class="modal-body">
-                    <select name="qa_user_id" class="form-control" >
+                    <select name="qa_user_id" class="form-control">
                         <option value="">Select QA</option>
                         <?php $__currentLoopData = $qaUsers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $qa): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($qa->id); ?>"><?php echo e($qa->name); ?></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -903,7 +904,7 @@ unset($__errorArgs, $__bag); ?>
 <!-- manager selection -->
 <div class="modal fade" id="managerModal">
     <div class="modal-dialog">
-        <form method="POST" action="<?php echo e(route('lead.move-to-manager', $lead->id)); ?>" novalidate>
+        <form id="managerForm" method="POST" action="<?php echo e(route('lead.move-to-manager', $lead->id)); ?>">
             <?php echo csrf_field(); ?>
 
             <div class="modal-content">
@@ -918,6 +919,7 @@ unset($__errorArgs, $__bag); ?>
                             <option value="<?php echo e($manager->id); ?>"><?php echo e($manager->name); ?></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -963,24 +965,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 // EDIT editors
-function initEditor(id) {
+    function initEditor(id) {
 
-    const container = document.getElementById('editor-' + id);
+        const container = document.getElementById('editor-' + id);
 
-    if (editors[id]) return;
+        if (editors[id]) return;
 
-    editors[id] = new Quill(container, {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link'],
-                ['clean']
-            ]
-        }
-    });
-}
+        editors[id] = new Quill(container, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+    }
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');
         $form.find('.invalid-feedback').remove();
@@ -1035,183 +1037,330 @@ function initEditor(id) {
             },
         });
     });
-document.getElementById('commentFiles').addEventListener('change', function () {
-    let files = Array.from(this.files).map(f => f.name).join(', ');
-    document.getElementById('commentFileName').value = files;
-});
-function editNote(id, content) {
+    $(document).on('submit', '#qaForm', function(e) {
+        e.preventDefault();
 
-    const quill = editors['create'];
+        const $form = $(this);
+        clearErrors($form);
 
-    quill.setContents([]);
-    quill.clipboard.dangerouslyPasteHTML(content);
+        let qaUser = $form.find('[name="qa_user_id"]').val();
 
-    document.getElementById('edit-note-id').value = id;
-
-    document.getElementById('create-content').value = content;
-
-    document.querySelector('#comment-form button').innerText = 'Update';
-
-    document.getElementById('create-editor').scrollIntoView({
-        behavior: 'smooth'
-    });
-}
-function cancelEdit(id) {
-
-    const view = document.getElementById('view-' + id);
-    const form = document.getElementById('edit-form-' + id);
-
-    view.classList.remove('d-none');
-    form.classList.add('d-none');
-}
-function confirmDelete(id) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This document will be deleted permanently!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('delete-form-' + id).submit();
+        // ✅ JS validation (inline, not popup)
+        if (!qaUser) {
+            showErrors($form, {
+                qa_user_id: ['Please select a QA user']
+            });
+            return;
         }
-    });
-}
-document.getElementById('comment-form').addEventListener('submit', function(e) {
 
-    const editId = document.getElementById('edit-note-id').value;
+        // ✅ Confirmation AFTER validation
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Move this lead to QA?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, move it!'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-    document.getElementById('create-content').value =
-        editors['create'].root.innerHTML;
-
-    if (editId) {
-
-        this.action = `/notes/${editId}`;
-        this.method = 'POST';
-
-        // remove old _method if exists
-        let old = this.querySelector('input[name="_method"]');
-        if (old) old.remove();
-
-        let methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'PUT';
-        this.appendChild(methodInput);
-    }
-});
-function resetEditor() {
-    editors['create'].setContents([]);
-    document.getElementById('edit-note-id').value = '';
-    document.querySelector('#comment-form button').innerText = 'Comment';
-}
-
-document.querySelectorAll('.status-container').forEach(container => {
-    const badge    = container.querySelector('.status-badge');
-    const dropdown = container.querySelector('.status-dropdown');
-    const leadId   = container.dataset.leadId;
-
-    function setColor(status) {
-        badge.classList.remove(
-            'status-not','status-progress','status-hold','status-lost','status-complete'
-        );
-        switch(status){
-            case 'Not Started': badge.classList.add('status-not');      break;
-            case 'In Progress': badge.classList.add('status-progress'); break;
-            case 'Hold':        badge.classList.add('status-hold');     break;
-            case 'Lost':        badge.classList.add('status-lost');     break;
-            case 'Complete':    badge.classList.add('status-complete'); break;
-        }
-    }
-
-    setColor(badge.innerText.replace(' ▼','').trim());
-
-    badge.addEventListener('click', () => {
-        dropdown.classList.toggle('d-none');
-    });
-
-    dropdown.querySelectorAll('.status-option').forEach(option => {
-        option.addEventListener('click', () => {
-            const status = option.dataset.value;
-            badge.innerText = status + ' ▼';
-            setColor(status);
-            dropdown.classList.add('d-none');
-
-            fetch(`/leads/${leadId}/status`, {
+            $.ajax({
+                url: $form.attr('action'),
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
+                data: new FormData($form[0]),
+                processData: false,
+                contentType: false,
+
+                success: function(res) {
+                    $('#qaModal').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
                 },
-                body: JSON.stringify({ status })
-            })
-            .then(res => res.json())
-            .then(data => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated',
-                    text: data.success,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            })
-            .catch(() => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Update failed' });
+
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        showErrors($form, xhr.responseJSON.errors);
+                    } else {
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
+                }
             });
         });
     });
-});
-$(document).on('click', '.btn-delete', function (e) {
+    $(document).on('submit', '#managerForm', function(e) {
         e.preventDefault();
-        const url = $(this).attr('href');
+
+        const $form = $(this);
+        clearErrors($form);
+
+        let managerUser = $form.find('[name="manager_user_id"]').val();
+
+        if (!managerUser) {
+            showErrors($form, {
+                manager_user_id: ['Please select a Manager']
+            });
+            return;
+        }
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'This Reminder will be permanently deleted!',
+            text: "Move this lead to Manager?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: url,
-                    method: 'GET',
-                    success: function (res) {
-                        if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: res.success,
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(function () {
-                                location.reload();
-                            });
-                        }
-                    },
-                    error: function () {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'Something went wrong. Please try again.'
-                        });
+            confirmButtonText: 'Yes, move it!'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: new FormData($form[0]),
+                processData: false,
+                contentType: false,
+
+                success: function(res) {
+                    $('#managerModal').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                },
+
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        showErrors($form, xhr.responseJSON.errors);
+                    } else {
+                        Swal.fire('Error', 'Something went wrong', 'error');
                     }
-                });
+                }
+            });
+        });
+    });
+    $(document).on('submit', '#completeForm', function(e) {
+        e.preventDefault();
+
+        let form = this;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Mark this lead as Completed?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Complete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
             }
         });
-});
-document.addEventListener('click', function(e){
-    document.querySelectorAll('.status-dropdown').forEach(drop => {
-        if (!drop.closest('.status-container').contains(e.target)) {
-            drop.classList.add('d-none');
+    });
+
+    $(document).on('submit', '#lostForm', function(e) {
+        e.preventDefault();
+
+        let form = this;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Mark this lead as Lost?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Mark Lost'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+    document.getElementById('commentFiles').addEventListener('change', function () {
+        let files = Array.from(this.files).map(f => f.name).join(', ');
+        document.getElementById('commentFileName').value = files;
+    });
+    function editNote(id, content) {
+
+        const quill = editors['create'];
+
+        quill.setContents([]);
+        quill.clipboard.dangerouslyPasteHTML(content);
+
+        document.getElementById('edit-note-id').value = id;
+
+        document.getElementById('create-content').value = content;
+
+        document.querySelector('#comment-form button').innerText = 'Update';
+
+        document.getElementById('create-editor').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+    function cancelEdit(id) {
+
+        const view = document.getElementById('view-' + id);
+        const form = document.getElementById('edit-form-' + id);
+
+        view.classList.remove('d-none');
+        form.classList.add('d-none');
+    }
+    function confirmDelete(id) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This document will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        });
+    }
+    document.getElementById('comment-form').addEventListener('submit', function(e) {
+
+        const editId = document.getElementById('edit-note-id').value;
+
+        document.getElementById('create-content').value =
+            editors['create'].root.innerHTML;
+
+        if (editId) {
+
+            this.action = `/notes/${editId}`;
+            this.method = 'POST';
+
+            // remove old _method if exists
+            let old = this.querySelector('input[name="_method"]');
+            if (old) old.remove();
+
+            let methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PUT';
+            this.appendChild(methodInput);
         }
     });
-});
+    function resetEditor() {
+        editors['create'].setContents([]);
+        document.getElementById('edit-note-id').value = '';
+        document.querySelector('#comment-form button').innerText = 'Comment';
+    }
+
+    document.querySelectorAll('.status-container').forEach(container => {
+        const badge    = container.querySelector('.status-badge');
+        const dropdown = container.querySelector('.status-dropdown');
+        const leadId   = container.dataset.leadId;
+
+        function setColor(status) {
+            badge.classList.remove(
+                'status-not','status-progress','status-hold','status-lost','status-complete'
+            );
+            switch(status){
+                case 'Not Started': badge.classList.add('status-not');      break;
+                case 'In Progress': badge.classList.add('status-progress'); break;
+                case 'Hold':        badge.classList.add('status-hold');     break;
+                case 'Lost':        badge.classList.add('status-lost');     break;
+                case 'Complete':    badge.classList.add('status-complete'); break;
+            }
+        }
+
+        setColor(badge.innerText.replace(' ▼','').trim());
+
+        badge.addEventListener('click', () => {
+            dropdown.classList.toggle('d-none');
+        });
+
+        dropdown.querySelectorAll('.status-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const status = option.dataset.value;
+                badge.innerText = status + ' ▼';
+                setColor(status);
+                dropdown.classList.add('d-none');
+
+                fetch(`/leads/${leadId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
+                    },
+                    body: JSON.stringify({ status })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated',
+                        text: data.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(() => {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Update failed' });
+                });
+            });
+        });
+    });
+    $(document).on('click', '.btn-delete', function (e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This Reminder will be permanently deleted!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: res.success,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Something went wrong. Please try again.'
+                            });
+                        }
+                    });
+                }
+            });
+    });
+    document.addEventListener('click', function(e){
+        document.querySelectorAll('.status-dropdown').forEach(drop => {
+            if (!drop.closest('.status-container').contains(e.target)) {
+                drop.classList.add('d-none');
+            }
+        });
+    });
 </script>
 <?php $__env->stopSection(); ?>
 
