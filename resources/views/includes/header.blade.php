@@ -165,11 +165,15 @@
     color: #3f3cbb !important;
     font-weight: 600 !important;
 }
+.nav-profile .nav-link:hover {
+    background: rgba(0,0,0,0.05);
+    border-radius: 8px;
+}
 </style>
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
   <!-- Logo -->
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    <!-- <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
         <a class="navbar-brand brand-logo mr-5" href="#">
             <img src="{{ $currentAgency && $currentAgency->logo
                 ? asset($currentAgency->logo)
@@ -182,9 +186,45 @@
                 : asset('assets/images/logo-mini.svg') }}"
                 alt="logo"/>
         </a>
-    </div>
+    </div> -->
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
-  <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        {{-- Large logo / name --}}
+        <a class="navbar-brand brand-logo mr-5" href="#">
+
+            @if(auth()->check() && auth()->user()->agency_id)
+
+                @php
+                    $agency = $currentAgency ?? null;
+                @endphp
+
+                @if($agency && $agency->logo)
+                    <img src="{{ asset($agency->logo) }}" class="mr-2" alt="logo"/>
+                @else
+                    <span class="navbar-brand-text">
+                        {{ $agency->agency_name ?? 'Agency' }}
+                    </span>
+                @endif
+
+            @else
+                <img src="{{ asset('assets/images/leadbridge_logo.svg') }}" class="mr-2" alt="logo"/>
+            @endif
+
+        </a>
+
+        {{-- Mini logo --}}
+        <a class="navbar-brand brand-logo-mini" href="#">
+
+            @if(auth()->check() && auth()->user()->agency_id && $currentAgency && $currentAgency->logo)
+                <img src="{{ asset($currentAgency->logo) }}" alt="logo"/>
+            @else
+                <img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo"/>
+            @endif
+
+        </a>
+
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 
     <!-- Navbar toggler -->
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -263,21 +303,43 @@
               </a>
             </div> -->
           </li>
-      <li class="nav-item nav-profile dropdown">
-        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-          <img src="{{ auth()->user()->profile
-                                ? asset('storage/' . auth()->user()->profile)
-                                : asset('assets/images/default-profile.png') }}" alt="profile"/>
-        </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-          <a class="dropdown-item" href="{{ route('profile.index') }}">
-            <i class="ti-user text-primary"></i> Profile
-          </a>
-          <a class="dropdown-item" href="{{ route('logout')}}">
-            <i class="ti-power-off text-primary"></i> Logout
-          </a>
-        </div>
-      </li>
+        <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" id="profileDropdown">
+
+                <img src="{{ auth()->user()->profile
+                        ? asset('storage/' . auth()->user()->profile)
+                        : asset('assets/images/default-profile.png') }}"
+                    alt="profile"
+                    class="rounded-circle"
+                    width="35"
+                    height="35">
+
+                <div class="ml-2 text-left">
+                    <div class="font-weight-bold text-dark" style="line-height: 1;">
+                        {{ auth()->user()->name }}
+                    </div>
+                    <small class="text-muted">
+                        {{ auth()->user()->role->name }}
+                    </small>
+                </div>
+
+            </a>
+
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown shadow-sm"
+                aria-labelledby="profileDropdown">
+
+                <a class="dropdown-item" href="{{ route('profile.index') }}">
+                    <i class="ti-user text-primary mr-2"></i> Profile
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <a class="dropdown-item text-danger" href="{{ route('logout') }}">
+                    <i class="ti-power-off mr-2"></i> Logout
+                </a>
+
+            </div>
+        </li>
         <!-- <li class="nav-item nav-settings d-none d-lg-flex">
             <a class="nav-link" href="#">
               <i class="icon-ellipsis"></i>

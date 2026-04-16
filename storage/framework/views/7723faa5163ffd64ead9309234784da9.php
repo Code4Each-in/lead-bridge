@@ -81,8 +81,15 @@
                             <!-- <tr class="clickable-row"
                                 data-href="<?php echo e(url('/leads/'.$lead->id)); ?>"
                                 style="cursor:pointer;"> -->
-                                <tr class="pointer" onclick="if (!event.target.closest('.actions-cell')) window.open('<?php echo e(url('/leads/'.$lead->id)); ?>', '_blank');">
+                                <?php
+                                    $canView = in_array($role, ['super admin','admin','account executive','qa user','account manager']);
+                                ?>
 
+                                <tr class="pointer <?php echo e($canView ? '' : 'no-click'); ?>"
+                                    <?php if($canView): ?>
+                                        onclick="if (!event.target.closest('.actions-cell')) window.open('<?php echo e(url('/leads/'.$lead->id)); ?>', '_blank');"
+                                    <?php endif; ?>
+                                >
                                 <td><?php echo e($lead->name); ?></td>
                                 <td><?php echo e($lead->company); ?></td>
 
@@ -98,7 +105,19 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <td><?php echo e($lead->status); ?></td>
+                                <td>
+                                    <span class="px-2 py-1 rounded text-white
+                                        <?php if($lead->status == 'Not Started'): ?> bg-secondary
+                                        <?php elseif($lead->status == 'In Progress'): ?> bg-primary
+                                        <?php elseif($lead->status == 'Hold'): ?> bg-warning
+                                        <?php elseif($lead->status == 'Lost'): ?> bg-danger
+                                        <?php elseif($lead->status == 'Complete'): ?> bg-success
+                                        <?php endif; ?>
+                                    ">
+                                        <?php echo e($lead->status); ?>
+
+                                    </span>
+                                </td>
                                 <td><?php echo e($lead->source); ?></td>
 
                                 <td class="actions-cell">

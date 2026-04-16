@@ -90,7 +90,7 @@
         <div class="reminders-header">
             <div class="reminders-title">
                 <span class="badge-dot"></span>
-                Today's Reminders
+                Today's Reminders for Leads
             </div>
         </div>
         <div id="reminders-list">
@@ -105,7 +105,7 @@
                 <div class="reminder-body">
                     <div class="reminder-name"><?php echo e($reminder->lead->name ?? 'Lead'); ?></div>
                     <div class="reminder-note"><?php echo e($reminder->notes); ?></div>
-                    <span class="reminder-time"><?php echo e($reminder->time); ?></span>
+                    <span class="reminder-time"><?php echo e($reminder->date_time->format('M d, Y h:i A')); ?></span>
                 </div>
                 <button class="close-btn" onclick="removeReminder(<?php echo e($reminder->id); ?>)" title="Dismiss">
                     <i class="mdi mdi-close"></i>

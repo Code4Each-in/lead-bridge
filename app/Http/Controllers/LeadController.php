@@ -60,8 +60,11 @@ class LeadController extends Controller
         $leadsQuery = Lead::with(['agency', 'users'])->latest();
 
         // ADMIN / SUPER ADMIN → SEE ALL
-        if (!in_array($roleName, ['super admin', 'admin'])) {
+        if (($roleName === 'admin')) {
+            if ($roleName === 'admin') {
 
+                $leadsQuery->where('agency_id', $authUser->agency_id);
+            }
             // ACCOUNT EXECUTIVE → only his leads
             if ($roleName === 'account executive') {
 
@@ -109,15 +112,14 @@ class LeadController extends Controller
     public function store(Request $request)
     {
         $authUser = Auth::user();
-
         $roleName = strtolower($authUser->role->name);
 
-        // Force agency for restricted roles
         if (in_array($roleName, ['mis user', 'admin'])) {
             $request->merge([
                 'agency_id' => $authUser->agency_id
             ]);
         }
+
         $validator = Validator::make($request->all(), [
             'name'               => 'required|string|max:255',
             'phone'              => 'required|string|max:20',
@@ -126,7 +128,7 @@ class LeadController extends Controller
             'city'               => 'required|string|max:100',
             'source'             => 'required|string|max:100',
             'agency_id'          => 'nullable|exists:agencies,id',
-            'assigned_user_id'   => 'nullable|min:1',
+            'assigned_user_id'   => 'nullable',
             'assigned_user_id.*' => 'exists:users,id',
             'notes'              => 'required|string',
             'documents'          => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -142,27 +144,46 @@ class LeadController extends Controller
         }
 
         $lead = Lead::create([
-
-            'name'      => $request->name,
-            'phone'     => $request->phone,
-            'email'     => $request->email,
-            'company'   => $request->company,
-            'city'      => $request->city,
-            'source'    => $request->source,
-            'status'    => 'Not Started',
-            'agency_id' => $request->agency_id,
-            'notes'     => $request->notes,
-            'documents' => $file,
+            'name'        => $request->name,
+            'phone'       => $request->phone,
+            'email'       => $request->email,
+            'company'     => $request->company,
+            'city'        => $request->city,
+            'source'      => $request->source,
+            'status'      => 'Not Started',
+            'agency_id'   => $request->agency_id,
+            'notes'       => $request->notes,
+            'documents'   => $file,
             'created_by'  => $authUser->id,
-            'assigned_to' => $request->assigned_user_id,
+            'assigned_to' => is_array($request->assigned_user_id)
+                                ? $request->assigned_user_id[0]
+                                : $request->assigned_user_id,
         ]);
 
-        $lead->users()->attach($request->assigned_user_id);
+        // Handle multiple assigned users safely
+        $assignedUsers = is_array($request->assigned_user_id)
+            ? $request->assigned_user_id
+            : [$request->assigned_user_id];
+
+        $assignedUsers = array_filter($assignedUsers);
+
+        if (!empty($assignedUsers)) {
+
+            // attach to pivot table
+            $lead->users()->attach($assignedUsers);
+
+            //  notify assigned users
+            foreach ($assignedUsers as $userId) {
+                $user = User::find($userId);
+
+                if ($user) {
+                    $user->notify(new LeadStatusNotification($lead, 'to_ae'));
+                }
+            }
+        }
 
         return response()->json(['success' => 'Lead created successfully']);
     }
-
-
     public function update(Request $request, $id)
     {
         $authUser = Auth::user();
@@ -290,7 +311,6 @@ class LeadController extends Controller
 
         $activities = collect();
 
-
         foreach ($lead->leadNotes as $note) {
             $activities->push([
                 'type' => 'note',
@@ -307,32 +327,40 @@ class LeadController extends Controller
             ]);
         }
 
-
         $activities = $activities->sortBy('created_at')->values();
+
         $authUser = auth()->user();
-        $roleName = $authUser->role->name ?? null;
 
-        $query = LeadReminder::where('lead_id', $id);
+        $reminders = LeadReminder::where('lead_id', $id)
+            ->where('agency_id', $authUser->agency_id)
+            ->latest()
+            ->get();
 
-        if ($roleName !== 'super admin') {
-            $query->where('agency_id', $authUser->agency_id);
-        }
 
-        $reminders = LeadReminder::where('lead_id', $id)->latest()->get();
         $qaUsers = User::whereHas('role', function ($q) {
-            $q->where('name', 'qa user');
-        })->get();
+                $q->where('name', 'QA User');
+            })
+            ->where('agency_id', $authUser->agency_id)
+            ->get();
 
         $managers = User::whereHas('role', function ($q) {
-            $q->where('name', 'account manager');
-        })->get();
-        return view('leads.show', compact('lead', 'activities','reminders', 'qaUsers', 'managers'));
+                $q->where('name', 'Account Manager');
+            })
+            ->where('agency_id', $authUser->agency_id)
+            ->get();
+
+        return view('leads.show', compact(
+            'lead',
+            'activities',
+            'reminders',
+            'qaUsers',
+            'managers'
+        ));
     }
     public function storeReminder(Request $request)
     {
         $authUser = auth()->user();
         $roleName = strtolower($authUser->role->name ?? '');
-
 
         $request->validate([
             'lead_id' => 'required|exists:leads,id',
@@ -357,7 +385,9 @@ class LeadController extends Controller
             'is_triggered' => 0
         ]);
 
-        return back()->with('success', 'Reminder added successfully');
+        return response()->json([
+            'success' => 'Reminder added successfully'
+        ]);
     }
     public function destroyReminder($id)
     {
@@ -368,8 +398,7 @@ class LeadController extends Controller
         }
 
         $reminder->delete();
-
-        return back()->with('success', 'Reminder deleted successfully');
+        return response()->json(['success' => 'Reminder deleted successfully']);
     }
     public function moveToQA(Request $request, $id)
     {
@@ -384,13 +413,13 @@ class LeadController extends Controller
             'previous_ae_id' => auth()->id(),
             'stage' => 'qa',
         ]);
+
         $qaUser = User::find($request->qa_user_id);
         $qaUser->notify(new LeadStatusNotification($lead, 'to_qa'));
-        // pivot table update (optional but recommended)
-        // $lead->users()->sync([$request->qa_user_id]);
 
-        return back()->with('success', 'Lead moved to QA successfully');
-
+        return response()->json([
+            'success' => 'Lead moved to QA successfully'
+        ]);
     }
     public function moveToManager(Request $request, $id)
     {
@@ -405,10 +434,12 @@ class LeadController extends Controller
             'stage' => 'manager',
         ]);
 
-        // $lead->users()->sync([$request->manager_user_id]);
         $manager = User::find($request->manager_user_id);
         $manager->notify(new LeadStatusNotification($lead, 'to_manager'));
-        return back()->with('success', 'Lead moved to Manager successfully');
+
+        return response()->json([
+            'success' => 'Lead moved to Manager successfully'
+        ]);
     }
     public function returnToAE($id)
     {
@@ -438,8 +469,14 @@ class LeadController extends Controller
 
         $lead->update([
             'stage' => 'completed',
+            'status' => 'Complete',
             'assigned_to' => null,
         ]);
+
+        // notify ALL involved users
+        foreach ($lead->involvedUsers() as $user) {
+            $user->notify(new LeadStatusNotification($lead, 'completed'));
+        }
 
         return back()->with('success', 'Lead marked as Completed');
     }
@@ -449,8 +486,14 @@ class LeadController extends Controller
 
         $lead->update([
             'stage' => 'lost',
+            'status' => 'Lost',
             'assigned_to' => null,
         ]);
+
+        // notify ALL involved users
+        foreach ($lead->involvedUsers() as $user) {
+            $user->notify(new LeadStatusNotification($lead, 'lost'));
+        }
 
         return back()->with('success', 'Lead marked as Lost');
     }

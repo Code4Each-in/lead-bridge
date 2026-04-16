@@ -2,7 +2,7 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="<?php echo e(url('/dashboard')); ?>">
+            <a class="nav-link <?php echo e(Request::is('dashboard') ? 'active' : ''); ?>" href="/dashboard">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Dashboard</span>
             </a>
@@ -112,14 +112,20 @@
         <?php endif; ?>
         <?php if(strtolower(auth()->user()->role->name) == 'super admin' || strtolower(auth()->user()->role->name) == 'admin'): ?>
             <li class="nav-item">
-                <a class="nav-link" href="/users">
+                <a class="nav-link <?php echo e(Request::is('users*') ? 'active' : ''); ?>" href="/users">
                     <i class="mdi mdi-account menu-icon icon-head"></i>
                     <span class="menu-title">Users</span>
                 </a>
             </li>
         <?php endif; ?>
+       <?php
+            $isLeads = request()->routeIs('leads.*');
+        ?>
+
+
             <li class="nav-item">
-                <a class="nav-link" href="/leads">
+                <a class="nav-link <?php echo e($isLeads ? 'active lead-active' : ''); ?>"
+                 href="<?php echo e(route('leads.index')); ?>">
                     <i class="mdi mdi-chart-bar menu-icon icon-head"></i>
                     <span class="menu-title">Leads</span>
                 </a>
@@ -127,5 +133,14 @@
 
         </ul>
       </nav>
+      <style>
+        .nav-link.lead-active {
+            background: #4b49ac !important;
+            color: #fff !important;
+        }
+        .nav-link.lead-active:hover, .nav-link.lead-active:focus {
+            text-decoration: none !important;
+            }
+      </style>
       <!-- partial -->
 <?php /**PATH C:\xampp\htdocs\lead-bridge\resources\views/includes/sidebar.blade.php ENDPATH**/ ?>

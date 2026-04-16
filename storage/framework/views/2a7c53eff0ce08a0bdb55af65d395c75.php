@@ -165,11 +165,15 @@
     color: #3f3cbb !important;
     font-weight: 600 !important;
 }
+.nav-profile .nav-link:hover {
+    background: rgba(0,0,0,0.05);
+    border-radius: 8px;
+}
 </style>
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
   <!-- Logo -->
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    <!-- <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
         <a class="navbar-brand brand-logo mr-5" href="#">
             <img src="<?php echo e($currentAgency && $currentAgency->logo
                 ? asset($currentAgency->logo)
@@ -182,9 +186,46 @@
                 : asset('assets/images/logo-mini.svg')); ?>"
                 alt="logo"/>
         </a>
-    </div>
+    </div> -->
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
-  <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        
+        <a class="navbar-brand brand-logo mr-5" href="#">
+
+            <?php if(auth()->check() && auth()->user()->agency_id): ?>
+
+                <?php
+                    $agency = $currentAgency ?? null;
+                ?>
+
+                <?php if($agency && $agency->logo): ?>
+                    <img src="<?php echo e(asset($agency->logo)); ?>" class="mr-2" alt="logo"/>
+                <?php else: ?>
+                    <span class="navbar-brand-text">
+                        <?php echo e($agency->agency_name ?? 'Agency'); ?>
+
+                    </span>
+                <?php endif; ?>
+
+            <?php else: ?>
+                <img src="<?php echo e(asset('assets/images/leadbridge_logo.svg')); ?>" class="mr-2" alt="logo"/>
+            <?php endif; ?>
+
+        </a>
+
+        
+        <a class="navbar-brand brand-logo-mini" href="#">
+
+            <?php if(auth()->check() && auth()->user()->agency_id && $currentAgency && $currentAgency->logo): ?>
+                <img src="<?php echo e(asset($currentAgency->logo)); ?>" alt="logo"/>
+            <?php else: ?>
+                <img src="<?php echo e(asset('assets/images/logo-mini.svg')); ?>" alt="logo"/>
+            <?php endif; ?>
+
+        </a>
+
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 
     <!-- Navbar toggler -->
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -264,21 +305,45 @@
               </a>
             </div> -->
           </li>
-      <li class="nav-item nav-profile dropdown">
-        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-          <img src="<?php echo e(auth()->user()->profile
-                                ? asset('storage/' . auth()->user()->profile)
-                                : asset('assets/images/default-profile.png')); ?>" alt="profile"/>
-        </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-          <a class="dropdown-item" href="<?php echo e(route('profile.index')); ?>">
-            <i class="ti-user text-primary"></i> Profile
-          </a>
-          <a class="dropdown-item" href="<?php echo e(route('logout')); ?>">
-            <i class="ti-power-off text-primary"></i> Logout
-          </a>
-        </div>
-      </li>
+        <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" id="profileDropdown">
+
+                <img src="<?php echo e(auth()->user()->profile
+                        ? asset('storage/' . auth()->user()->profile)
+                        : asset('assets/images/default-profile.png')); ?>"
+                    alt="profile"
+                    class="rounded-circle"
+                    width="35"
+                    height="35">
+
+                <div class="ml-2 text-left">
+                    <div class="font-weight-bold text-dark" style="line-height: 1;">
+                        <?php echo e(auth()->user()->name); ?>
+
+                    </div>
+                    <small class="text-muted">
+                        <?php echo e(auth()->user()->role->name); ?>
+
+                    </small>
+                </div>
+
+            </a>
+
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown shadow-sm"
+                aria-labelledby="profileDropdown">
+
+                <a class="dropdown-item" href="<?php echo e(route('profile.index')); ?>">
+                    <i class="ti-user text-primary mr-2"></i> Profile
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <a class="dropdown-item text-danger" href="<?php echo e(route('logout')); ?>">
+                    <i class="ti-power-off mr-2"></i> Logout
+                </a>
+
+            </div>
+        </li>
         <!-- <li class="nav-item nav-settings d-none d-lg-flex">
             <a class="nav-link" href="#">
               <i class="icon-ellipsis"></i>

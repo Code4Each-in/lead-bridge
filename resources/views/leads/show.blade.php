@@ -288,14 +288,14 @@
 
                             {{-- MANAGER --}}
                             @if($role == 'account manager' && $lead->stage == 'manager')
-                                <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline">
+                                <form method="POST" action="{{ route('lead.complete', $lead->id) }}" class="d-inline" id="completeForm">
                                     @csrf
-                                    <button class="btn btn-success btn-sm mr-2">Complete</button>
+                                    <button class="btn btn-success btn-sm mr-2" type="submit">Complete</button>
                                 </form>
 
-                                <form method="POST" action="{{ route('lead.lost', $lead->id) }}" class="d-inline">
+                                <form method="POST" action="{{ route('lead.lost', $lead->id) }}" class="d-inline" id="lostForm">
                                     @csrf
-                                    <button class="btn btn-danger btn-sm">Lost</button>
+                                    <button class="btn btn-danger btn-sm" type="submit">Lost</button>
                                 </form>
                             @endif
 
@@ -459,7 +459,7 @@
 
                             <div class="card-body px-3 py-2">
 
-                                <!-- ================= CREATED BY ================= -->
+                                <!-- created by-->
                                 @if($lead->creator)
                                     @php
                                         $words = explode(' ', trim($lead->creator->name));
@@ -488,7 +488,7 @@
                                 @endif
 
 
-                                <!-- ================= ACCOUNT EXECUTIVE (pivot users) ================= -->
+                                <!-- acc ex user -->
                                 @if($lead->users->count())
                                     <div class="rp-section">Account Executive</div>
 
@@ -519,7 +519,7 @@
                                 @endif
 
 
-                                <!-- ================= QA USER ================= -->
+                                <!-- qa user -->
                                 @if($lead->qaUser)
                                     <div class="rp-section">Quality Assurance</div>
 
@@ -549,7 +549,7 @@
                                 @endif
 
 
-                                <!-- ================= MANAGER ================= -->
+                                <!-- manager-->
                                 @if($lead->manager)
                                     <div class="rp-section">Account Manager</div>
 
@@ -763,7 +763,7 @@
 <!-- add reminder modal -->
 <div class="modal fade" id="addReminderModal" tabindex="-1">
     <div class="modal-dialog">
-        <form action="{{ route('reminders.store') }}" method="POST" class="modal-content">
+        <form id="reminderForm" action="{{ route('reminders.store') }}" method="POST" class="modal-content" novalidate>
             @csrf
        <input type="hidden" name="lead_id" value="{{ $lead->id }}">
             <div class="modal-header">
@@ -773,26 +773,29 @@
 
             <div class="modal-body">
 
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" class="form-control" min="{{ date('Y-m-d') }}" required>
-                </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date"  min="{{ date('Y-m-d') }}" class="form-control">
+                <div class="invalid-feedback"></div>
+            </div>
 
-                <div class="form-group">
-                    <label>Time</label>
-                    <input type="time" name="time" class="form-control" required>
-                </div>
+            <div class="form-group">
+                <label>Time</label>
+                <input type="time" name="time" class="form-control">
+                <div class="invalid-feedback"></div>
+            </div>
 
-                <!-- OPTIONAL NOTE -->
-                <div class="form-group">
-                    <label>Note (Optional)</label>
-                    <textarea name="notes" class="form-control" rows="3" placeholder="Add a note..."></textarea>
-                </div>
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea name="notes" class="form-control" rows="3"></textarea>
+                <div class="invalid-feedback"></div>
+            </div>
 
             </div>
 
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Save Reminder</button>
+                <button type="submit" class="btn btn-primary" id="reminderBtn">Save Reminder</button>
+
             </div>
 
         </form>
@@ -816,7 +819,6 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Time</th>
                                 <th>Note</th>
                                 <th>Action</th>
                             </tr>
@@ -825,19 +827,16 @@
                         <tbody>
                             @foreach($reminders as $reminder)
                                 <tr>
-                                    <td>{{ $reminder->date }}</td>
-                                    <td>{{ $reminder->time }}</td>
+                                    <td>{{ $reminder->date_time->format('M d, Y h:i A')  }}</td>
                                     <td>{{ $reminder->notes ?? 'N/A' }}</td>
 
                                     <td>
-                                    <form action="{{ route('reminders.delete', $reminder->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
+                                        <a href="{{ route('reminders.delete', $reminder->id) }}"
+                                            class="btn btn-sm btn-danger btn-delete "
+                                            data-id="{{ $reminder->id }}"
+                                           >
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -856,7 +855,7 @@
 <!-- qa selection -->
  <div class="modal fade" id="qaModal">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('lead.move-to-qa', $lead->id) }}">
+        <form id="qaForm" method="POST" action="{{ route('lead.move-to-qa', $lead->id) }}">
             @csrf
 
             <div class="modal-content">
@@ -865,12 +864,13 @@
                 </div>
 
                 <div class="modal-body">
-                    <select name="qa_user_id" class="form-control" required>
+                    <select name="qa_user_id" class="form-control">
                         <option value="">Select QA</option>
                         @foreach($qaUsers as $qa)
                             <option value="{{ $qa->id }}">{{ $qa->name }}</option>
                         @endforeach
                     </select>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -882,9 +882,9 @@
     </div>
 </div>
 <!-- manager selection -->
- <div class="modal fade" id="managerModal">
+<div class="modal fade" id="managerModal">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('lead.move-to-manager', $lead->id) }}">
+        <form id="managerForm" method="POST" action="{{ route('lead.move-to-manager', $lead->id) }}">
             @csrf
 
             <div class="modal-content">
@@ -893,12 +893,13 @@
                 </div>
 
                 <div class="modal-body">
-                    <select name="manager_user_id" class="form-control" required>
+                    <select name="manager_user_id" class="form-control">
                         <option value="">Select Manager</option>
                         @foreach($managers as $manager)
                             <option value="{{ $manager->id }}">{{ $manager->name }}</option>
                         @endforeach
                     </select>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -944,159 +945,400 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 // EDIT editors
-function initEditor(id) {
+    function initEditor(id) {
 
-    const container = document.getElementById('editor-' + id);
+        const container = document.getElementById('editor-' + id);
 
-    if (editors[id]) return;
+        if (editors[id]) return;
 
-    editors[id] = new Quill(container, {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link'],
-                ['clean']
-            ]
-        }
-    });
-}
-document.getElementById('commentFiles').addEventListener('change', function () {
-    let files = Array.from(this.files).map(f => f.name).join(', ');
-    document.getElementById('commentFileName').value = files;
-});
-function editNote(id, content) {
-
-    const quill = editors['create'];
-
-    quill.setContents([]);
-    quill.clipboard.dangerouslyPasteHTML(content);
-
-    document.getElementById('edit-note-id').value = id;
-
-    document.getElementById('create-content').value = content;
-
-    document.querySelector('#comment-form button').innerText = 'Update';
-
-    document.getElementById('create-editor').scrollIntoView({
-        behavior: 'smooth'
-    });
-}
-function cancelEdit(id) {
-
-    const view = document.getElementById('view-' + id);
-    const form = document.getElementById('edit-form-' + id);
-
-    view.classList.remove('d-none');
-    form.classList.add('d-none');
-}
-function confirmDelete(id) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This document will be deleted permanently!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('delete-form-' + id).submit();
-        }
-    });
-}
-document.getElementById('comment-form').addEventListener('submit', function(e) {
-
-    const editId = document.getElementById('edit-note-id').value;
-
-    document.getElementById('create-content').value =
-        editors['create'].root.innerHTML;
-
-    if (editId) {
-
-        this.action = `/notes/${editId}`;
-        this.method = 'POST';
-
-        // remove old _method if exists
-        let old = this.querySelector('input[name="_method"]');
-        if (old) old.remove();
-
-        let methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'PUT';
-        this.appendChild(methodInput);
+        editors[id] = new Quill(container, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
     }
-});
-function resetEditor() {
-    editors['create'].setContents([]);
-    document.getElementById('edit-note-id').value = '';
-    document.querySelector('#comment-form button').innerText = 'Comment';
-}
-
-    document.querySelectorAll('.status-container').forEach(container => {
-    const badge    = container.querySelector('.status-badge');
-    const dropdown = container.querySelector('.status-dropdown');
-    const leadId   = container.dataset.leadId;
-
-    function setColor(status) {
-        badge.classList.remove(
-            'status-not','status-progress','status-hold','status-lost','status-complete'
-        );
-        switch(status){
-            case 'Not Started': badge.classList.add('status-not');      break;
-            case 'In Progress': badge.classList.add('status-progress'); break;
-            case 'Hold':        badge.classList.add('status-hold');     break;
-            case 'Lost':        badge.classList.add('status-lost');     break;
-            case 'Complete':    badge.classList.add('status-complete'); break;
-        }
+    function clearErrors($form) {
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.invalid-feedback').remove();
     }
 
-    setColor(badge.innerText.replace(' ▼','').trim());
+    function showErrors($form, errors) {
+        $.each(errors, function (field, messages) {
+            const $input = $form.find(`[name="${field}[]"], [name="${field}"]`).first();
+            $input.addClass('is-invalid');
+            $input.closest('.form-group')
+                .append(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+        });
+    }
+    $(document).on('submit', '#reminderForm', function(e) {
 
-    badge.addEventListener('click', () => {
-        dropdown.classList.toggle('d-none');
+        e.preventDefault();
+
+        const $form = $(this);
+        const $btn  = $('#reminderBtn');
+        console.log("btn clicked");
+        clearErrors($form);
+
+        $btn.prop('disabled', true).text('Saving…');
+
+        $.ajax({
+            url        : '{{ route("reminders.store") }}',
+            method     : 'POST',
+            data       : new FormData($form[0]),
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    $('#addReminderModal').modal('hide');
+                    Swal.fire({
+                        icon : 'success',
+                        title: 'Created!',
+                        text : res.success,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    }).then(() => location.reload());
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showErrors($form, xhr.responseJSON.errors);
+                } else {
+                    Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                }
+            },
+            complete: function () {
+                $btn.prop('disabled', false).text('Save Reminder');
+            },
+        });
     });
+    $(document).on('submit', '#qaForm', function(e) {
+        e.preventDefault();
 
-    dropdown.querySelectorAll('.status-option').forEach(option => {
-        option.addEventListener('click', () => {
-            const status = option.dataset.value;
-            badge.innerText = status + ' ▼';
-            setColor(status);
-            dropdown.classList.add('d-none');
+        const $form = $(this);
+        clearErrors($form);
 
-            fetch(`/leads/${leadId}/status`, {
+        let qaUser = $form.find('[name="qa_user_id"]').val();
+
+        // ✅ JS validation (inline, not popup)
+        if (!qaUser) {
+            showErrors($form, {
+                qa_user_id: ['Please select a QA user']
+            });
+            return;
+        }
+
+        // ✅ Confirmation AFTER validation
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Move this lead to QA?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, move it!'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: $form.attr('action'),
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                data: new FormData($form[0]),
+                processData: false,
+                contentType: false,
+
+                success: function(res) {
+                    $('#qaModal').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
                 },
-                body: JSON.stringify({ status })
-            })
-            .then(res => res.json())
-            .then(data => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated',
-                    text: data.success,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            })
-            .catch(() => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Update failed' });
+
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        showErrors($form, xhr.responseJSON.errors);
+                    } else {
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
+                }
             });
         });
     });
-});
+    $(document).on('submit', '#managerForm', function(e) {
+        e.preventDefault();
 
-document.addEventListener('click', function(e){
-    document.querySelectorAll('.status-dropdown').forEach(drop => {
-        if (!drop.closest('.status-container').contains(e.target)) {
-            drop.classList.add('d-none');
+        const $form = $(this);
+        clearErrors($form);
+
+        let managerUser = $form.find('[name="manager_user_id"]').val();
+
+        if (!managerUser) {
+            showErrors($form, {
+                manager_user_id: ['Please select a Manager']
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Move this lead to Manager?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, move it!'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: new FormData($form[0]),
+                processData: false,
+                contentType: false,
+
+                success: function(res) {
+                    $('#managerModal').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                },
+
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        showErrors($form, xhr.responseJSON.errors);
+                    } else {
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
+                }
+            });
+        });
+    });
+    $(document).on('submit', '#completeForm', function(e) {
+        e.preventDefault();
+
+        let form = this;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Mark this lead as Completed?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Complete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+    $(document).on('submit', '#lostForm', function(e) {
+        e.preventDefault();
+
+        let form = this;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Mark this lead as Lost?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Mark Lost'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+    document.getElementById('commentFiles').addEventListener('change', function () {
+        let files = Array.from(this.files).map(f => f.name).join(', ');
+        document.getElementById('commentFileName').value = files;
+    });
+    function editNote(id, content) {
+
+        const quill = editors['create'];
+
+        quill.setContents([]);
+        quill.clipboard.dangerouslyPasteHTML(content);
+
+        document.getElementById('edit-note-id').value = id;
+
+        document.getElementById('create-content').value = content;
+
+        document.querySelector('#comment-form button').innerText = 'Update';
+
+        document.getElementById('create-editor').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+    function cancelEdit(id) {
+
+        const view = document.getElementById('view-' + id);
+        const form = document.getElementById('edit-form-' + id);
+
+        view.classList.remove('d-none');
+        form.classList.add('d-none');
+    }
+    function confirmDelete(id) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This document will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        });
+    }
+    document.getElementById('comment-form').addEventListener('submit', function(e) {
+
+        const editId = document.getElementById('edit-note-id').value;
+
+        document.getElementById('create-content').value =
+            editors['create'].root.innerHTML;
+
+        if (editId) {
+
+            this.action = `/notes/${editId}`;
+            this.method = 'POST';
+
+            // remove old _method if exists
+            let old = this.querySelector('input[name="_method"]');
+            if (old) old.remove();
+
+            let methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PUT';
+            this.appendChild(methodInput);
         }
     });
-});
+    function resetEditor() {
+        editors['create'].setContents([]);
+        document.getElementById('edit-note-id').value = '';
+        document.querySelector('#comment-form button').innerText = 'Comment';
+    }
+
+    document.querySelectorAll('.status-container').forEach(container => {
+        const badge    = container.querySelector('.status-badge');
+        const dropdown = container.querySelector('.status-dropdown');
+        const leadId   = container.dataset.leadId;
+
+        function setColor(status) {
+            badge.classList.remove(
+                'status-not','status-progress','status-hold','status-lost','status-complete'
+            );
+            switch(status){
+                case 'Not Started': badge.classList.add('status-not');      break;
+                case 'In Progress': badge.classList.add('status-progress'); break;
+                case 'Hold':        badge.classList.add('status-hold');     break;
+                case 'Lost':        badge.classList.add('status-lost');     break;
+                case 'Complete':    badge.classList.add('status-complete'); break;
+            }
+        }
+
+        setColor(badge.innerText.replace(' ▼','').trim());
+
+        badge.addEventListener('click', () => {
+            dropdown.classList.toggle('d-none');
+        });
+
+        dropdown.querySelectorAll('.status-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const status = option.dataset.value;
+                badge.innerText = status + ' ▼';
+                setColor(status);
+                dropdown.classList.add('d-none');
+
+                fetch(`/leads/${leadId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated',
+                        text: data.success,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(() => {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Update failed' });
+                });
+            });
+        });
+    });
+    $(document).on('click', '.btn-delete', function (e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This Reminder will be permanently deleted!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: res.success,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Something went wrong. Please try again.'
+                            });
+                        }
+                    });
+                }
+            });
+    });
+    document.addEventListener('click', function(e){
+        document.querySelectorAll('.status-dropdown').forEach(drop => {
+            if (!drop.closest('.status-container').contains(e.target)) {
+                drop.classList.add('d-none');
+            }
+        });
+    });
 </script>
 @endsection

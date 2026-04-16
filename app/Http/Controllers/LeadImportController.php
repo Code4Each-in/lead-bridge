@@ -14,7 +14,7 @@ class LeadImportController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xls,xlsx'
+            'file' => 'required'
         ]);
 
         $authUser = Auth::user();
@@ -42,7 +42,7 @@ class LeadImportController extends Controller
             return back()->with('error', 'File is empty or missing data.');
         }
 
-        $expectedHeader = ['name','phone','email','company','city','source','status','agency_id','notes'];
+        $expectedHeader = ['name','phone','email','company','city','source','status','notes'];
         $header = array_map('strtolower', $rows[0]);
         if ($header !== $expectedHeader) {
             return back()->with('error', 'Invalid template.');
@@ -107,7 +107,8 @@ class LeadImportController extends Controller
                     'source'     => $row[5] ?? null,
                     'status'     => $row[6] ?? 'New',
                     'agency_id'  => $authAgencyId,
-                    'notes'      => $row[8] ?? null,
+                    'created_by' => $authUser->id,
+                    'notes'      => $row[7] ?? null, 
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

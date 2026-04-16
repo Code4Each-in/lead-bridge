@@ -51,6 +51,8 @@ Route::middleware(['auth','active'])->group(function () {
     Route::post('/leads',[LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/{id}/update',[LeadController::class, 'update'])->name('leads.update');
     Route::get('/leads/{id}/delete',[LeadController::class, 'destroy'])->name('leads.delete');
+    Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
+
     Route::get('/leads/{leadId}', [LeadController::class, 'showLead'])->name('leads.show');
 
 });
@@ -59,7 +61,6 @@ Route::middleware(['auth','active'])->group(function () {
 // })->name('upload.form');
 Route::post('/leads/{id}/status', [LeadController::class, 'updateStatus'])->name('leads.updateStatus');
 Route::post('/import', [LeadImportController::class, 'import'])->name('import');
-Route::get('/leads/template', [LeadController::class, 'downloadTemplate'])->name('leads.template');
 Route::post('/set-agency', [AgencyController::class, 'setAgency'])
     ->name('set.agency');
 /*
@@ -82,7 +83,7 @@ Route::delete('/documents/{id}', [LeadDocumentController::class, 'destroy'])
 
 
 Route::post('/reminders', [LeadController::class, 'storeReminder'])->name('reminders.store');
-Route::delete('/reminder/delete/{id}', [LeadController::class, 'destroyReminder'])
+Route::get('/reminder/delete/{id}', [LeadController::class, 'destroyReminder'])
     ->name('reminders.delete');
     Route::post('/lead/{id}/move-to-qa', [LeadController::class, 'moveToQA'])
     ->name('lead.move-to-qa');

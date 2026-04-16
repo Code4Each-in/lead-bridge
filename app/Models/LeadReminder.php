@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class LeadReminder extends Model
 {
@@ -51,4 +52,10 @@ class LeadReminder extends Model
         'time' => 'string',
         'is_triggered' => 'boolean',
     ];
+    public function getDateTimeAttribute()
+    {
+        return Carbon::parse(
+            $this->date->format('Y-m-d') . ' ' . $this->time
+        );
+    }
 }

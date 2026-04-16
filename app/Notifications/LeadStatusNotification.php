@@ -60,6 +60,12 @@ class LeadStatusNotification extends Notification
                     'messageText' => 'Lead marked as lost.',
                 ];
                 break;
+            case 'to_ae':
+                $data = [
+                    'title' => 'New Lead Assigned',
+                    'messageText' => 'A new lead has been assigned to you.',
+                ];
+                break;
         }
 
         return (new MailMessage)
