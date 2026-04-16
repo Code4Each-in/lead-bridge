@@ -7,9 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LeadActivityNotification extends Notification implements ShouldQueue
+class LeadActivityNotification extends Notification
 {
-    use Queueable;
+    // use Queueable;
 
     public $lead;
     public $type;
