@@ -13,7 +13,7 @@
             <div class="text-center profile-avatar-wrap">
                 <img
                     src="<?php echo e(auth()->user()->profile
-                        ? asset('storage/' . auth()->user()->profile)
+                        ? asset(auth()->user()->profile)
                         : asset('assets/images/default-profile.png')); ?>"
                     class="profile-avatar rounded-circle"
                     alt="<?php echo e(auth()->user()->name); ?>">
