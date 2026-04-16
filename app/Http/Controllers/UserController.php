@@ -126,8 +126,23 @@ class UserController extends Controller
 
         // store profile image
         $profilePath = null;
+
         if ($request->hasFile('profile')) {
-            $profilePath = $request->file('profile')->store('profiles', 'public');
+
+            $file = $request->file('profile');
+
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $destinationPath = public_path('assets/profiles');
+
+            // create folder if not exists
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            $profilePath = 'assets/profiles/' . $filename;
         }
 
         // agency logic
@@ -245,7 +260,25 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('profile')) {
-            $data['profile'] = $request->file('profile')->store('profiles', 'public');
+
+            // delete old file
+            if (!empty($user->profile) && file_exists(public_path($user->profile))) {
+                unlink(public_path($user->profile));
+            }
+
+            $file = $request->file('profile');
+
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $destinationPath = public_path('assets/profiles');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            $data['profile'] = 'assets/profiles/' . $filename;
         }
 
         $user->update($data);
