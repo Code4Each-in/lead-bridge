@@ -71,30 +71,26 @@ class Lead extends Model
     {
         $users = collect();
 
-        // 1. pivot users
+        // pivot users (already loaded relationship recommended)
         $users = $users->merge($this->users);
 
-        // 2. assigned AE
+        // direct relations (no extra find calls if eager loaded)
+        if ($this->relationLoaded('creator') || $this->created_by) {
+            $users->push($this->creator);
+        }
+
+        if ($this->relationLoaded('qaUser') || $this->assigned_qa_id) {
+            $users->push($this->qaUser);
+        }
+
+        if ($this->relationLoaded('manager') || $this->assigned_manager_id) {
+            $users->push($this->manager);
+        }
+
         if ($this->assigned_to) {
             $users->push(User::find($this->assigned_to));
         }
 
-        // 3. QA
-        if ($this->assigned_qa_id) {
-            $users->push(User::find($this->assigned_qa_id));
-        }
-
-        // 4. Manager
-        if ($this->assigned_manager_id) {
-            $users->push(User::find($this->assigned_manager_id));
-        }
-
-        // 5. creator
-        if ($this->created_by) {
-            $users->push(User::find($this->created_by));
-        }
-
-        // remove null + duplicates
         return $users->filter()->unique('id');
     }
 }

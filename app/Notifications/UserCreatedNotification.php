@@ -7,9 +7,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class UserCreatedNotification extends Notification implements ShouldQueue
+class UserCreatedNotification extends Notification
 {
-    use Queueable;
+    // use Queueable;
 
     protected $user;
     protected $password;

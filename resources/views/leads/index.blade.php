@@ -82,8 +82,15 @@
                             <!-- <tr class="clickable-row"
                                 data-href="{{ url('/leads/'.$lead->id) }}"
                                 style="cursor:pointer;"> -->
-                                <tr class="pointer" onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');">
+                                @php
+                                    $canView = in_array($role, ['super admin','admin','account executive','qa user','account manager']);
+                                @endphp
 
+                                <tr class="pointer {{ $canView ? '' : 'no-click' }}"
+                                    @if($canView)
+                                        onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');"
+                                    @endif
+                                >
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
 
@@ -100,7 +107,7 @@
 
                                 <td>
                                     <span class="px-2 py-1 rounded text-white
-                                        @if($lead->status == 'Not Started') bg-secondary 
+                                        @if($lead->status == 'Not Started') bg-secondary
                                         @elseif($lead->status == 'In Progress') bg-primary
                                         @elseif($lead->status == 'Hold') bg-warning
                                         @elseif($lead->status == 'Lost') bg-danger

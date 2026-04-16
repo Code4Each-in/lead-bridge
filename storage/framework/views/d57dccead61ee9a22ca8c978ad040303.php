@@ -1164,7 +1164,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
-
     $(document).on('submit', '#lostForm', function(e) {
         e.preventDefault();
 

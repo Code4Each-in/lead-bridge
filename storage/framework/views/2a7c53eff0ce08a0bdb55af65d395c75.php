@@ -173,7 +173,7 @@
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
   <!-- Logo -->
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    <!-- <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
         <a class="navbar-brand brand-logo mr-5" href="#">
             <img src="<?php echo e($currentAgency && $currentAgency->logo
                 ? asset($currentAgency->logo)
@@ -186,9 +186,46 @@
                 : asset('assets/images/logo-mini.svg')); ?>"
                 alt="logo"/>
         </a>
-    </div>
+    </div> -->
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
-  <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        
+        <a class="navbar-brand brand-logo mr-5" href="#">
+
+            <?php if(auth()->check() && auth()->user()->agency_id): ?>
+
+                <?php
+                    $agency = $currentAgency ?? null;
+                ?>
+
+                <?php if($agency && $agency->logo): ?>
+                    <img src="<?php echo e(asset($agency->logo)); ?>" class="mr-2" alt="logo"/>
+                <?php else: ?>
+                    <span class="navbar-brand-text">
+                        <?php echo e($agency->agency_name ?? 'Agency'); ?>
+
+                    </span>
+                <?php endif; ?>
+
+            <?php else: ?>
+                <img src="<?php echo e(asset('assets/images/leadbridge_logo.svg')); ?>" class="mr-2" alt="logo"/>
+            <?php endif; ?>
+
+        </a>
+
+        
+        <a class="navbar-brand brand-logo-mini" href="#">
+
+            <?php if(auth()->check() && auth()->user()->agency_id && $currentAgency && $currentAgency->logo): ?>
+                <img src="<?php echo e(asset($currentAgency->logo)); ?>" alt="logo"/>
+            <?php else: ?>
+                <img src="<?php echo e(asset('assets/images/logo-mini.svg')); ?>" alt="logo"/>
+            <?php endif; ?>
+
+        </a>
+
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 
     <!-- Navbar toggler -->
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">

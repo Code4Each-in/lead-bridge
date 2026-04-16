@@ -173,7 +173,7 @@
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
   <!-- Logo -->
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    <!-- <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
         <a class="navbar-brand brand-logo mr-5" href="#">
             <img src="{{ $currentAgency && $currentAgency->logo
                 ? asset($currentAgency->logo)
@@ -186,9 +186,45 @@
                 : asset('assets/images/logo-mini.svg') }}"
                 alt="logo"/>
         </a>
-    </div>
+    </div> -->
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
-  <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        {{-- Large logo / name --}}
+        <a class="navbar-brand brand-logo mr-5" href="#">
+
+            @if(auth()->check() && auth()->user()->agency_id)
+
+                @php
+                    $agency = $currentAgency ?? null;
+                @endphp
+
+                @if($agency && $agency->logo)
+                    <img src="{{ asset($agency->logo) }}" class="mr-2" alt="logo"/>
+                @else
+                    <span class="navbar-brand-text">
+                        {{ $agency->agency_name ?? 'Agency' }}
+                    </span>
+                @endif
+
+            @else
+                <img src="{{ asset('assets/images/leadbridge_logo.svg') }}" class="mr-2" alt="logo"/>
+            @endif
+
+        </a>
+
+        {{-- Mini logo --}}
+        <a class="navbar-brand brand-logo-mini" href="#">
+
+            @if(auth()->check() && auth()->user()->agency_id && $currentAgency && $currentAgency->logo)
+                <img src="{{ asset($currentAgency->logo) }}" alt="logo"/>
+            @else
+                <img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo"/>
+            @endif
+
+        </a>
+
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 
     <!-- Navbar toggler -->
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
