@@ -149,7 +149,7 @@
                         {{-- Image preview --}}
                         <div class="mb-2 d-flex align-items-center gap-2">
                             <img id="profilePreview"
-                                src="{{ auth()->user()->profile ? asset('storage/' . auth()->user()->profile) : asset('assets/images/default-profile.png') }}"
+                                src="{{ auth()->user()->profile ? asset(auth()->user()->profile) : asset('assets/images/default-profile.png') }}"
                                 class="rounded-circle current-thumb"
                                 alt="Profile Preview">
                         </div>
