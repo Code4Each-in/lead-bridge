@@ -13,19 +13,31 @@
 
         <hr>
 
-        <p><strong>Lead Name:</strong> {{ $lead->name }}</p>
-        <p><strong>Email:</strong> {{ $lead->email }}</p>
-        <p><strong>Phone:</strong> {{ $lead->phone }}</p>
+ 
+        @if(isset($count))
+            <p>
+                <strong>Total Leads Assigned:</strong> {{ $count }}
+            </p>
+        @endif
 
-        <br>
 
-        <p style="font-size:12px; color:#888;">
-            you can view your lead here-
-        </p>
-        <a href="{{ url('/leads/'.$lead->id) }}"
-        style="background:#007bff; color:#fff; padding:10px 15px; text-decoration:none; border-radius:5px;">
-        View Lead
-        </a>
+        @if($lead)
+            <p><strong>Lead Name:</strong> {{ $lead->name }}</p>
+            <p><strong>Email:</strong> {{ $lead->email }}</p>
+            <p><strong>Phone:</strong> {{ $lead->phone }}</p>
+
+            <br>
+
+            <p style="font-size:12px; color:#888;">
+                You can view your lead here:
+            </p>
+
+            <a href="{{ url('/leads/'.$lead->id) }}"
+               style="background:#007bff; color:#fff; padding:10px 15px; text-decoration:none; border-radius:5px;">
+               View Lead
+            </a>
+        @endif
+
     </div>
 
 </body>

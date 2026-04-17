@@ -331,12 +331,19 @@
                 <a class="dropdown-item" href="{{ route('profile.index') }}">
                     <i class="ti-user text-primary mr-2"></i> Profile
                 </a>
+                <div class="dropdown-divider"></div>
+               @if( strtolower(auth()->user()->role->name) == 'admin')
 
+                    <a class="dropdown-item" href="{{ route('agency.show') }}">
+                        <i class="ti-user text-primary mr-2"></i> Agency
+                    </a>
+                @endif
                 <div class="dropdown-divider"></div>
 
                 <a class="dropdown-item text-danger" href="{{ route('logout') }}">
                     <i class="ti-power-off mr-2"></i> Logout
                 </a>
+
 
             </div>
         </li>

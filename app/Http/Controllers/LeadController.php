@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Notifications\LeadStatusNotification;
 
 class LeadController extends Controller
@@ -57,7 +58,7 @@ class LeadController extends Controller
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
 
-        $leadsQuery = Lead::with(['agency', 'users'])->latest();
+        $leadsQuery = Lead::with(['agency', 'assignedUser'])->latest();
 
         // ADMIN → can see only their agency (if required)
         if ($roleName === 'admin') {
@@ -244,27 +245,26 @@ class LeadController extends Controller
     }
     public function downloadTemplate()
     {
-        $filename = 'leads_template.csv';
+        $filename = 'leads_template.xlsx';
 
-        // Header row
-        $header = ['name','phone','email','company','city','source','status','notes'];
+        $data = [
+            ['name','phone','email','company','city','source','status','notes'],
+            ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note']
+        ];
 
-        // Example row (just a single row to show layout)
-        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note'];
+        return Excel::download(new class($data) implements \Maatwebsite\Excel\Concerns\FromArray {
+            protected $data;
 
-        // Open output stream
-        $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, $header);
-        fputcsv($handle, $exampleRow);
-        rewind($handle);
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
 
-        $contents = stream_get_contents($handle);
-        fclose($handle);
-
-        return Response::make($contents, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ]);
+            public function array(): array
+            {
+                return $this->data;
+            }
+        }, $filename);
     }
     public function updateStatus(Request $request, $id)
     {

@@ -183,4 +183,66 @@ class AgencyController extends Controller
 
         return response()->json(['success' => true]);
     }
+    public function showAgency()
+    {
+          $user = auth()->user();
+
+        $agency = \App\Models\Agency::find($user->agency_id);
+
+        $leadCount = 0; // your logic
+        $teamCount = 0; // your logic
+
+        return view('agency.show', compact('leadCount', 'teamCount', 'agency'));
+    }
+    public function detailUpdate(Request $request)
+    {
+        $agency = \App\Models\Agency::find(auth()->user()->agency_id);
+
+        if (!$agency) {
+            return back()->with('error', 'Agency not found');
+        }
+
+
+        $request->validate([
+            'agency_name' => 'required',
+            'primary_contact_name' => 'required',
+            'primary_email' => 'required|email|unique:agencies,primary_email,' . $agency->id,
+            'phone' => 'required',
+            'address' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'zip' => 'required',
+            'logo' => 'nullable|mimes:jpg,jpeg,png,svg|max:2048',
+        ]);
+
+
+        if ($request->hasFile('logo')) {
+
+            $file = $request->file('logo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $destinationPath = public_path('assets/logos');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            $agency->logo = 'assets/logos/' . $filename;
+        }
+
+
+        $agency->update([
+            'agency_name' => $request->agency_name,
+            'primary_contact_name' => $request->primary_contact_name,
+            'primary_email' => $request->primary_email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'city' => $request->city,
+            'state' => $request->state,
+            'zip' => $request->zip,
+        ]);
+
+        return back()->with('success', 'Agency updated successfully');
+    }
 }

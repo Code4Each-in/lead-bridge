@@ -67,6 +67,10 @@ class Lead extends Model
     {
         return $this->belongsTo(User::class, 'assigned_manager_id');
     }
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
     public function involvedUsers()
     {
         $users = collect();

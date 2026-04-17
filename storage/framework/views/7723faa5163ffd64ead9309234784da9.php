@@ -81,26 +81,18 @@
                             <!-- <tr class="clickable-row"
                                 data-href="<?php echo e(url('/leads/'.$lead->id)); ?>"
                                 style="cursor:pointer;"> -->
-                                <?php
-                                    $canView = in_array($role, ['super admin','admin','account executive','qa user','account manager']);
-                                ?>
 
-                                <tr class="pointer <?php echo e($canView ? '' : 'no-click'); ?>"
-                                    <?php if($canView): ?>
-                                        onclick="if (!event.target.closest('.actions-cell')) window.open('<?php echo e(url('/leads/'.$lead->id)); ?>', '_blank');"
-                                    <?php endif; ?>
-                                >
+                                <tr>
                                 <td><?php echo e($lead->name); ?></td>
                                 <td><?php echo e($lead->company); ?></td>
-
                                 <td>
-                                    <?php $__empty_2 = true; $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_2 = false; ?>
+                                    <?php if($lead->assignedUser): ?>
                                         <span class="badge badge-light border"
                                             style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
-                                            <?php echo e($user->name); ?>
+                                            <?php echo e($lead->assignedUser->name); ?>
 
                                         </span>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_2): ?>
+                                    <?php else: ?>
                                         <span class="text-muted">-</span>
                                     <?php endif; ?>
                                 </td>
@@ -124,14 +116,14 @@
                                     <?php if(in_array($role, ['super admin','admin','account executive','qa user','account manager'])): ?>
                                         <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
                                         target="_blank"
-                                        class="btn btn-sm btn-primary pointer"
+                                        class="btn btn-sm btn-primary "
                                         >
                                             <i class="mdi mdi-eye"></i> View
                                         </a>
                                     <?php endif; ?>
                                     <?php if(in_array($role, ['super admin','admin','mis user'])): ?>
                                         <button type="button"
-                                            class="btn btn-sm btn-primary edit-lead-btn pointer"
+                                            class="btn btn-sm btn-primary edit-lead-btn "
                                             data-id="<?php echo e($lead->id); ?>"
                                             >
                                             <i class="mdi mdi-pencil-box"></i> Edit
@@ -140,7 +132,7 @@
                                     <?php if(in_array($role, ['super admin','admin'])): ?>
 
                                         <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
-                                            class="btn btn-sm btn-danger btn-delete pointer"
+                                            class="btn btn-sm btn-danger btn-delete "
                                             data-id="<?php echo e($lead->id); ?>"
                                            >
                                             <i class="mdi mdi-delete"></i> Delete

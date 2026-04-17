@@ -82,27 +82,19 @@
                             <!-- <tr class="clickable-row"
                                 data-href="{{ url('/leads/'.$lead->id) }}"
                                 style="cursor:pointer;"> -->
-                                @php
-                                    $canView = in_array($role, ['super admin','admin','account executive','qa user','account manager']);
-                                @endphp
 
-                                <tr class="pointer {{ $canView ? '' : 'no-click' }}"
-                                    @if($canView)
-                                        onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');"
-                                    @endif
-                                >
+                                <tr>
                                 <td>{{ $lead->name }}</td>
                                 <td>{{ $lead->company }}</td>
-
                                 <td>
-                                    @forelse($lead->users as $user)
+                                    @if($lead->assignedUser)
                                         <span class="badge badge-light border"
                                             style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
-                                            {{ $user->name }}
+                                            {{ $lead->assignedUser->name }}
                                         </span>
-                                    @empty
+                                    @else
                                         <span class="text-muted">-</span>
-                                    @endforelse
+                                    @endif
                                 </td>
 
                                 <td>
@@ -123,14 +115,14 @@
                                     @if(in_array($role, ['super admin','admin','account executive','qa user','account manager']))
                                         <a href="{{ url('/leads/'.$lead->id) }}"
                                         target="_blank"
-                                        class="btn btn-sm btn-primary pointer"
+                                        class="btn btn-sm btn-primary "
                                         >
                                             <i class="mdi mdi-eye"></i> View
                                         </a>
                                     @endif
                                     @if(in_array($role, ['super admin','admin','mis user']))
                                         <button type="button"
-                                            class="btn btn-sm btn-primary edit-lead-btn pointer"
+                                            class="btn btn-sm btn-primary edit-lead-btn "
                                             data-id="{{ $lead->id }}"
                                             >
                                             <i class="mdi mdi-pencil-box"></i> Edit
@@ -139,7 +131,7 @@
                                     @if(in_array($role, ['super admin','admin']))
 
                                         <a href="{{ route('leads.delete', $lead->id) }}"
-                                            class="btn btn-sm btn-danger btn-delete pointer"
+                                            class="btn btn-sm btn-danger btn-delete "
                                             data-id="{{ $lead->id }}"
                                            >
                                             <i class="mdi mdi-delete"></i> Delete
