@@ -74,8 +74,7 @@
                     background:rgba(255,255,255,0.7);
                     z-index:9999;
                     text-align:center;
-                    padding-top:20%;
-                ">
+                    padding-top:20%; ">
                     <div class="spinner-border text-primary"></div>
                     <p>Uploading Excel, please wait...</p>
                 </div>
@@ -511,7 +510,6 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 </script>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excelFileInput');
     const selectBtn = document.getElementById('selectExcelBtn');

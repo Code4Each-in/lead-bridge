@@ -65,21 +65,20 @@
                         <?php endif; ?>
                     </div>
                 </div>
-<div id="loader" style="
-    display:none;
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:rgba(255,255,255,0.7);
-    z-index:9999;
-    text-align:center;
-    padding-top:20%;
-">
-    <div class="spinner-border text-primary"></div>
-    <p>Uploading Excel, please wait...</p>
-</div>
+                <div id="loader" style="
+                    display:none;
+                    position:fixed;
+                    top:0; left:0;
+                    width:100%; height:100%;
+                    background:rgba(255,255,255,0.7);
+                    z-index:9999;
+                    text-align:center;
+                    padding-top:20%; ">
+                    <div class="spinner-border text-primary"></div>
+                    <p>Uploading Excel, please wait...</p>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table id="leadsTable" class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -90,79 +89,6 @@
                                 <th width="150">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php $__empty_1 = true; $__currentLoopData = $leads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                            <!-- <tr class="clickable-row"
-                                data-href="<?php echo e(url('/leads/'.$lead->id)); ?>"
-                                style="cursor:pointer;"> -->
-
-                                <tr>
-                                <td><?php echo e($lead->name); ?></td>
-                                <td><?php echo e($lead->company); ?></td>
-                                <td>
-                                    <?php if($lead->assignedUser): ?>
-                                        <span class="badge badge-light border"
-                                            style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
-                                            <?php echo e($lead->assignedUser->name); ?>
-
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-muted">-</span>
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <span class="px-2 py-1 rounded text-white
-                                        <?php if($lead->status == 'Not Started'): ?> bg-secondary
-                                        <?php elseif($lead->status == 'In Progress'): ?> bg-primary
-                                        <?php elseif($lead->status == 'Hold'): ?> bg-warning
-                                        <?php elseif($lead->status == 'Lost'): ?> bg-danger
-                                        <?php elseif($lead->status == 'Complete'): ?> bg-success
-                                        <?php endif; ?>
-                                    ">
-                                        <?php echo e($lead->status); ?>
-
-                                    </span>
-                                </td>
-                                <td><?php echo e($lead->source); ?></td>
-
-                                <td class="actions-cell">
-                                    <?php if(in_array($role, ['super admin','admin','account executive','qa user','account manager'])): ?>
-                                        <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
-                                        target="_blank"
-                                        class="btn btn-sm btn-primary "
-                                        >
-                                            <i class="mdi mdi-eye"></i> View
-                                        </a>
-                                    <?php endif; ?>
-                                    <?php if(in_array($role, ['super admin','admin','mis user'])): ?>
-                                        <button type="button"
-                                            class="btn btn-sm btn-primary edit-lead-btn "
-                                            data-id="<?php echo e($lead->id); ?>"
-                                            >
-                                            <i class="mdi mdi-pencil-box"></i> Edit
-                                        </button>
-                                    <?php endif; ?>
-                                    <?php if(in_array($role, ['super admin','admin'])): ?>
-
-                                        <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
-                                            class="btn btn-sm btn-danger btn-delete "
-                                            data-id="<?php echo e($lead->id); ?>"
-                                           >
-                                            <i class="mdi mdi-delete"></i> Delete
-                                        </a>
-                                    <?php endif; ?>
-
-                                </td>
-                            </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    No leads found
-                                </td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
                     </table>
                 </div>
 
@@ -516,7 +442,6 @@ const ALL_USERS = <?php echo json_encode($users->map(function($u) {
 </script>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excelFileInput');
     const selectBtn = document.getElementById('selectExcelBtn');
@@ -547,7 +472,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 });
+document.addEventListener('DOMContentLoaded', function () {
 
+    $('#leadsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 10,
+        ordering: true,
+        responsive: true,
+
+        ajax: "<?php echo e(route('leads.index')); ?>",
+
+        columns: [
+            { data: 'name' },
+            { data: 'Company' },
+
+            {
+                data: 'Assigned To',
+                render: function (data) {
+                    return data ? data.name : 'N/A';
+                }
+            },
+{
+    data:'Source'
+},
+            {
+                data: 'Status',
+
+            },
+
+            {
+                data: 'id',
+                render: function (id, type, row) {
+                    return `
+                        <button class="btn btn-sm btn-primary editBtn"
+                            data-id="${id}">
+                            Edit
+                        </button>
+ <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary "
+                                        >
+                                            <i class="mdi mdi-eye"></i> View
+                                        </a>
+                        <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
+                            class="btn btn-sm btn-danger btn-delete">
+                            Delete
+                        </a>
+                    `;
+                }
+            }
+        ]
+    });
+
+});
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 

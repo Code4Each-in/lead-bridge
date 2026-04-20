@@ -44,62 +44,11 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Address</th>
-                                    @if($isSuperAdmin)
                                     <th>Agency</th>
-                                    @endif
                                     <th>Status</th>
-                                    <th width="180">Action</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($users as $user)
-                                <tr>
-                                    <td>{{ $user->name }}</td>
-                                    <td>{{ $user->email }}</td>
-                                    <td>{{ $user->role->name ?? 'N/A' }}</td>
-                                    <td>
-                                        {{ collect([
-                                            $user->address,
-                                            $user->city,
-                                            $user->state,
-                                            $user->zip
-                                        ])->filter()->implode(', ') }}
-                                    </td>
-                                    @if($isSuperAdmin)
-                                    <td>{{ $user->agency->agency_name ?? 'N/A' }}</td>
-                                    @endif
-                                    <td>
-                                        @if($isSuperAdmin)
-                                            <div class="custom-control custom-switch">
-                                                <input
-                                                    type="checkbox"
-                                                    class="custom-control-input toggle-status"
-                                                    id="status_{{ $user->id }}"
-                                                    data-id="{{ $user->id }}"
-                                                    data-url="{{ route('users.toggleStatus', $user->id) }}"
-                                                    {{ $user->status ? 'checked' : '' }}
-                                                >
-                                                <label class="custom-control-label" for="status_{{ $user->id }}"></label>
-                                            </div>
-                                        @else
-                                            {{ $user->status ? 'Active' : 'Inactive' }}
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary"
-                                            data-toggle="modal"
-                                            data-target="#editModal{{ $user->id }}">
-                                            <i class="mdi mdi-pencil-box"></i> Edit
-                                        </button>
-                                        <a href="{{ route('users.delete', $user->id) }}"
-                                            class="btn btn-sm btn-danger btn-delete"
-                                            data-id="{{ $user->id }}">
-                                            <i class="mdi mdi-delete"></i> Delete
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
 
@@ -337,6 +286,7 @@
 @endforeach
 
 <script>
+
 function waitForJQuery(callback) {
     if (typeof $ !== 'undefined') {
         callback();
@@ -346,7 +296,82 @@ function waitForJQuery(callback) {
 }
 
 waitForJQuery(function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
+        $('#usersTable').DataTable({
+            processing: true,
+            serverSide: true,
+            pageLength: 10,
+            ordering: true,
+            responsive: true,
+
+            ajax: "{{ route('users.index') }}",
+
+            columns: [
+                { data: 'name' },
+                { data: 'email' },
+
+                {
+                    data: 'role',
+                    render: function (data) {
+                        return data ? data.name : 'N/A';
+                    }
+                },
+
+                {
+                    data: null,
+                    render: function (row) {
+                        return [
+                            row.address,
+                            row.city,
+                            row.state,
+                            row.zip
+                        ].filter(Boolean).join(', ');
+                    }
+                },
+
+                {
+                    data: 'agency',
+                    render: function (data) {
+                        return data ? data.agency_name : 'N/A';
+                    }
+                },
+                {
+                    data: 'status',
+                    render: function (data, type, row) {
+                        return `
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox"
+                                    class="custom-control-input toggle-status"
+                                    id="status_${row.id}"
+                                    data-id="${row.id}"
+                                    data-url="/users/toggle-status/${row.id}"
+                                    ${data ? 'checked' : ''}>
+                                <label class="custom-control-label" for="status_${row.id}"></label>
+                            </div>
+                        `;
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function (id, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-primary editBtn"
+                                data-id="${id}">
+                                Edit
+                            </button>
+
+                            <a href="/users/delete/${id}"
+                                class="btn btn-sm btn-danger btn-delete">
+                                Delete
+                            </a>
+                        `;
+                    }
+                }
+            ]
+        });
+
+    });
     // File input display
     $(document).on('change', 'input[type="file"]', function () {
         let id = this.id.replace('profileInput', 'fileName');
@@ -473,7 +498,11 @@ waitForJQuery(function () {
             }
         });
     });
+    $(document).on('click', '.editBtn', function () {
+        let id = $(this).data('id');
 
+        $('#editModal' + id).modal('show');
+    });
     // DELETE WITH SWAL CONFIRMATION
     $(document).on('click', '.btn-delete', function (e) {
         e.preventDefault();
@@ -519,31 +548,49 @@ waitForJQuery(function () {
     });
     // TOGGLE STATUS
     $(document).on('change', '.toggle-status', function () {
+
         const checkbox = $(this);
         const url = checkbox.data('url');
+        const isChecked = checkbox.prop('checked'); // new intended status
 
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function (res) {
-                Swal.fire({
-                    icon: 'success',
-                    title: res.status ? 'Activated!' : 'Deactivated!',
-                    text: res.message,
-                    timer: 1200,
-                    showConfirmButton: false
+        // Ask user for confirmation
+        Swal.fire({
+            title: isChecked ? 'Activate this user?' : 'Deactivate this user?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: isChecked ? 'Yes, activate' : 'Yes, deactivate',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Proceed with AJAX
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: res.status ? 'Activated' : 'Deactivated',
+                            text: res.message,
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+
+                        // Ensure toggle matches actual backend status
+                        checkbox.prop('checked', res.status);
+                    },
+                    error: function () {
+                        // revert UI if error
+                        checkbox.prop('checked', !checkbox.prop('checked'));
+                        Swal.fire('Error', 'Status not updated', 'error');
+                    }
                 });
-            },
-            error: function () {
-                checkbox.prop('checked', !checkbox.prop('checked'));
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Could not update status.'
-                });
+            } else {
+                // User canceled → revert checkbox
+                checkbox.prop('checked', !isChecked);
             }
         });
     });

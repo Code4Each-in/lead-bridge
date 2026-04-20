@@ -14,12 +14,16 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
+        $request->merge([
+            'start' => $request->start ?? 0,
+            'length' => $request->length ?? 10,
+        ]);
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
 
-          $query = User::with('role')
+        $query = User::with(['role', 'agency'])
             ->where('id', '!=', $authUser->id)
             ->latest();
 
@@ -31,7 +35,50 @@ class UserController extends Controller
             // Superadmin with session filter
             $query->whereIn('agency_id', session('agency_ids'));
         }
-        // else superadmin with no filter → sees all
+            // else superadmin with no filter → sees all
+        if ($request->ajax()) {
+
+            // Base query clone (IMPORTANT)
+            $baseQuery = clone $query;
+
+            // =========================
+            // SEARCH SAFE CHECK
+            // =========================
+            if (!empty($request->search['value'])) {
+
+                $search = $request->search['value'];
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            // =========================
+            // TOTAL COUNT (NO SEARCH)
+            // =========================
+            $total = $baseQuery->count();
+
+            // =========================
+            // FILTERED COUNT (WITH SEARCH)
+            // =========================
+            $filtered = $query->count();
+
+            // =========================
+            // PAGINATION
+            // =========================
+            $users = $query->skip($request->start ?? 0)
+                ->take($request->length ?? 10)
+                ->with(['role', 'agency'])
+                ->get();
+
+            return response()->json([
+                "draw" => intval($request->draw),
+                "recordsTotal" => $total,
+                "recordsFiltered" => $filtered,
+                "data" => $users
+            ]);
+        }
 
         $users    = $query->get();
         $roles    = Role::all();

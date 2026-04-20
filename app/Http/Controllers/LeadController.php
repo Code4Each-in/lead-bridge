@@ -16,43 +16,6 @@ use App\Notifications\LeadStatusNotification;
 
 class LeadController extends Controller
 {
-
-    // public function index()
-    // {
-    //     $authUser = Auth::user();
-    //     $roleName = strtolower($authUser->role->name);
-
-    //     // Build leads query
-    //     $leadsQuery = Lead::with(['agency', 'users'])->latest();
-
-    //     if (in_array($roleName, ['mis user', 'admin'])) {
-    //         // Only leads belonging to same agency
-    //         $leadsQuery->where('agency_id', $authUser->agency_id);
-
-    //     } elseif ($roleName === 'account executive') {
-    //         // Only leads assigned to this user
-    //         $leadsQuery->whereHas('users', function ($q) use ($authUser) {
-    //             $q->where('users.id', $authUser->id);
-    //         });
-    //     }
-    //     // superadmin → no filter, sees everything
-
-    //     $leads    = $leadsQuery->get();
-    //     $agencies = Agency::all();
-
-    //     if (in_array($roleName, ['mis user', 'admin'])) {
-    //         $users = User::where('agency_id', $authUser->agency_id)
-    //             ->whereHas('role', function ($q) {
-    //                 $q->whereRaw('LOWER(name) = ?', ['account executive']);
-    //             })
-    //             ->where('id', '!=', $authUser->id)
-    //             ->get();
-    //     } else {
-    //         $users = User::all();
-    //     }
-
-    //     return view('leads.index', compact('leads', 'users', 'agencies', 'authUser'));
-    // }
     public function index()
     {
         $authUser = Auth::user();
