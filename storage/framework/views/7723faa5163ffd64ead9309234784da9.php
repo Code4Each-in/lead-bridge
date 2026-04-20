@@ -43,7 +43,9 @@
             <div class="card-body">
 
                 <div class="d-flex justify-content-between mb-3 align-items-center">
-                    <h4 class="card-title mb-0">Leads</h4>
+                        <h4 class="card-title mb-0">
+                            Leads (<?php echo e($totalLeads); ?>)
+                        </h4>
 
                     <div class="d-flex">
 
@@ -63,7 +65,19 @@
                         <?php endif; ?>
                     </div>
                 </div>
-
+<div id="loader" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(255,255,255,0.7);
+    z-index:9999;
+    text-align:center;
+    padding-top:20%;
+">
+    <div class="spinner-border text-primary"></div>
+    <p>Uploading Excel, please wait...</p>
+</div>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -507,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excelFileInput');
     const selectBtn = document.getElementById('selectExcelBtn');
     const form = document.getElementById('uploadExcelForm');
+    const loader = document.getElementById('loader');
 
     if (selectBtn && fileInput && form) {
 
@@ -518,6 +533,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Auto-submit on file select
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
+
+                // Show loader
+                if (loader) loader.style.display = 'block';
+
+                // Disable button to prevent multiple clicks
+                selectBtn.disabled = true;
+
+                // Submit form
                 form.submit();
             }
         });

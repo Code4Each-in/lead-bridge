@@ -84,7 +84,7 @@ class LeadController extends Controller
         elseif ($roleName === 'mis user') {
             $leadsQuery->where('agency_id', $authUser->agency_id);
         }
-
+        $totalLeads = (clone $leadsQuery)->count();
         $leads = $leadsQuery->get();
         $agencies = Agency::all();
 
@@ -100,7 +100,7 @@ class LeadController extends Controller
             $users = User::all();
         }
 
-        return view('leads.index', compact('leads', 'users', 'agencies', 'authUser'));
+        return view('leads.index', compact('leads', 'users', 'agencies', 'authUser','totalLeads'));
     }
     public function store(Request $request)
     {
