@@ -20,40 +20,22 @@
                     </button>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Agency Name</th>
-                                <th>Primary Contact Name</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                                <th width="150">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <tr>
-                                <td><?php echo e($agency->agency_name); ?></td>
-                                <td><?php echo e($agency->primary_contact_name); ?></td>
-                                <td><?php echo e($agency->phone); ?></td>
-                                <td>
-                                    <?php echo e($agency->address); ?>, <?php echo e($agency->city); ?>, <?php echo e($agency->state); ?> - <?php echo e($agency->zip); ?>
-
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal<?php echo e($agency->id); ?>">
-                                       <i class="mdi mdi-pencil-box"></i> Edit
-                                    </button>
-                                    <a href="<?php echo e(route('agencies.delete', $agency->id)); ?>" class="btn btn-sm btn-danger btn-delete">
-                                        <i class="mdi mdi-trash-can"></i> Delete
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table id="agenciesTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Agency Name</th>
+                            <th>Primary Contact Name</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th width="150">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows loaded via AJAX -->
+                    </tbody>
+                </table>
+            </div>
 
             </div>
         </div>
@@ -221,6 +203,43 @@
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 <script>
+$(document).ready(function () {
+    $('#agenciesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 10,
+        ordering: true,
+        responsive: true,
+        ajax: "<?php echo e(route('agencies.index')); ?>",
+        columns: [
+            { data: 'agency_name' },
+            { data: 'primary_contact_name' },
+            { data: 'phone' },
+            { data: 'address' },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function(id){
+                    return `
+                        <button class="btn btn-sm btn-primary edit-agency-btn" data-id="${id}">
+                            <i class="mdi mdi-pencil-box"></i> Edit
+                        </button>
+                        <a href="<?php echo e(route('agencies.delete', $agency->id)); ?>" class="btn btn-sm btn-danger btn-delete">
+                            <i class="mdi mdi-delete"></i> Delete
+                        </a>
+                    `;
+                }
+            }
+        ]
+    });
+
+    // Delegated click for dynamically loaded buttons
+    $('#agenciesTable').on('click', '.edit-agency-btn', function () {
+        let id = $(this).data('id');
+        $('#editModal' + id).modal('show');
+    });
+});
 function waitForJQuery(callback) {
     if (typeof $ !== 'undefined') {
         callback();

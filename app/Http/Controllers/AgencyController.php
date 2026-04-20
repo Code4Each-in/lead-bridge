@@ -6,25 +6,82 @@ use App\Models\Agency;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 class AgencyController extends Controller
 {
-    public function index()
-    {
-        $selectedAgencyIds = session('agency_ids');
+    // public function index()
+    // {
+    //     $selectedAgencyIds = session('agency_ids');
 
-        if (!empty($selectedAgencyIds)) {
-            $agencies = Agency::whereIn('id', $selectedAgencyIds)->latest()->get();
-        } else {
-            $agencies = Agency::latest()->get();
+    //     if (!empty($selectedAgencyIds)) {
+    //         $agencies = Agency::whereIn('id', $selectedAgencyIds)->latest()->get();
+    //     } else {
+    //         $agencies = Agency::latest()->get();
+    //     }
+
+    //     return view('agency.index', compact('agencies'));
+    // }
+    public function index(Request $request)
+    {
+        $authUser = Auth::user();
+        $roleName = strtolower($authUser->role->name);
+
+        $agenciesQuery = Agency::latest();
+
+        // Example: role-based restriction if needed
+        if ($roleName === 'admin') {
+            // Only agencies assigned to this admin (if applicable)
+            $agenciesQuery->where('agency_id', $authUser->agency_id);
         }
 
-        return view('agency.index', compact('agencies'));
+        // AJAX server-side processing
+        if ($request->ajax()) {
+            $baseQuery = clone $agenciesQuery;
+
+            if (!empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $agenciesQuery->where(function ($q) use ($search) {
+                    $q->where('agency_name', 'like', "%{$search}%")
+                    ->orWhere('primary_contact_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $baseQuery->count();
+            $filtered = $agenciesQuery->count();
+
+            $agencies = $agenciesQuery->skip($request->start ?? 0)
+                                    ->take($request->length ?? 10)
+                                    ->get();
+
+            $data = $agencies->map(function ($agency) {
+                return [
+                    'agency_name' => $agency->agency_name,
+                    'primary_contact_name' => $agency->primary_contact_name,
+                    'phone' => $agency->phone,
+                    'address' => $agency->address . ', ' . $agency->city . ', ' . $agency->state . ' - ' . $agency->zip,
+                    'id' => $agency->id
+                ];
+            });
+
+            return response()->json([
+                "draw" => intval($request->draw),
+                "recordsTotal" => $total,
+                "recordsFiltered" => $filtered,
+                "data" => $data
+            ]);
+        }
+
+        // Normal page load (non-AJAX)
+        $agencies = $agenciesQuery->get(); // For pre-rendered modals
+        $totalAgencies = $agenciesQuery->count();
+
+        return view('agency.index', compact('agencies', 'authUser', 'totalAgencies'));
     }
-
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [

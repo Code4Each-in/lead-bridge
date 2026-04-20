@@ -89,6 +89,7 @@
                                 <th width="150">Action</th>
                             </tr>
                         </thead>
+
                     </table>
                 </div>
 
@@ -472,52 +473,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 });
-document.addEventListener('DOMContentLoaded', function () {
-
+$(document).ready(function () {
     $('#leadsTable').DataTable({
         processing: true,
         serverSide: true,
         pageLength: 10,
         ordering: true,
         responsive: true,
-
         ajax: "<?php echo e(route('leads.index')); ?>",
-
         columns: [
             { data: 'name' },
-            { data: 'Company' },
-
-            {
-                data: 'Assigned To',
-                render: function (data) {
-                    return data ? data.name : 'N/A';
-                }
-            },
-{
-    data:'Source'
-},
-            {
-                data: 'Status',
-
-            },
-
+            { data: 'company' },
+            { data: 'assigned_user' },
+            { data: 'status' },
+            { data: 'source' },
             {
                 data: 'id',
-                render: function (id, type, row) {
+                orderable: false,
+                searchable: false,
+                render: function(id){
                     return `
-                        <button class="btn btn-sm btn-primary editBtn"
-                            data-id="${id}">
-                            Edit
+                        <a href="/leads/${id}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="mdi mdi-eye"></i> View
+                        </a>
+                        <button class="btn btn-sm btn-primary edit-lead-btn" data-id="${id}">
+                            <i class="mdi mdi-pencil-box"></i> Edit
                         </button>
- <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
-                                        target="_blank"
-                                        class="btn btn-sm btn-primary "
-                                        >
-                                            <i class="mdi mdi-eye"></i> View
-                                        </a>
-                        <a href="<?php echo e(route('leads.delete', $lead->id)); ?>"
-                            class="btn btn-sm btn-danger btn-delete">
-                            Delete
+                        <a href="/leads/${id}/delete" class="btn btn-sm btn-danger btn-delete">
+                            <i class="mdi mdi-delete"></i> Delete
                         </a>
                     `;
                 }
@@ -525,6 +508,11 @@ document.addEventListener('DOMContentLoaded', function () {
         ]
     });
 
+    // Use delegated event for dynamically loaded buttons
+    $('#leadsTable').on('click', '.edit-lead-btn', function () {
+        let id = $(this).data('id');
+        $('#editModal' + id).modal('show');
+    });
 });
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
@@ -689,17 +677,17 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
-    $(document).ready(function () {
+    // $(document).ready(function () {
 
-        $('.edit-lead-btn').click(function () {
-            let id = $(this).data('id');
+    //     $('.edit-lead-btn').click(function () {
+    //         let id = $(this).data('id');
 
-            // console.log('clicked direct', id);
+    //         // console.log('clicked direct', id);
 
-            $('#editModal' + id).modal('show');
-        });
+    //         $('#editModal' + id).modal('show');
+    //     });
 
-    });
+    // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');
