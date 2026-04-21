@@ -8,7 +8,7 @@
         
         <div style="width:68px;height:68px;background:#ffffff;border-radius:10px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
             <?php if($agency && $agency->logo): ?>
-                <img src="<?php echo e(asset('storage/' . $agency->logo)); ?>"
+                <img src="<?php echo e(asset($agency->logo)); ?>"
                      alt="<?php echo e($agency->agency_name); ?>"
                      width="68" height="68"
                      style="object-fit:contain;padding:6px;">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agency;
+use App\Models\Lead;
 use App\Models\User;
 use App\Models\Role;
 use App\Notifications\UserCreatedNotification;
@@ -337,9 +338,38 @@ class UserController extends Controller
         User::findOrFail($id)->delete();
         return response()->json(['success' => 'User deleted successfully.']);
     }
+    // public function toggleStatus($id)
+    // {
+    //     $user = User::findOrFail($id);
+    //     $user->status = !$user->status;
+    //     $user->save();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'status' => $user->status,
+    //         'message' => $user->status ? 'User activated.' : 'User deactivated.'
+    //     ]);
+    // }
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
+
+        // Check if user is currently active and trying to be deactivated
+        if ($user->status == true) {
+
+            $hasOpenLeads = Lead::where('assigned_to', $user->id)
+                ->whereNotIn('status', ['completed', 'lost'])
+                ->exists();
+
+            if ($hasOpenLeads) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This user still has active leads assigned. Please reassign them to another user before deactivating.'
+                ], 400);
+            }
+        }
+
+        // Toggle status
         $user->status = !$user->status;
         $user->save();
 

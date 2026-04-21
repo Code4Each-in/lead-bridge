@@ -568,30 +568,46 @@ waitForJQuery(function () {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Proceed with AJAX
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function (res) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: res.status ? 'Activated' : 'Deactivated',
-                            text: res.message,
-                            timer: 1200,
-                            showConfirmButton: false
-                        });
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: res.status ? 'Activated' : 'Deactivated',
+                        text: res.message,
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
 
-                        // Ensure toggle matches actual backend status
-                        checkbox.prop('checked', res.status);
-                    },
-                    error: function () {
-                        // revert UI if error
-                        checkbox.prop('checked', !checkbox.prop('checked'));
-                        Swal.fire('Error', 'Status not updated', 'error');
+                    checkbox.prop('checked', res.status);
+                },
+                error: function (xhr) {
+                    checkbox.prop('checked', !isChecked);
+
+                    let message = 'Something went wrong';
+
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            let res = JSON.parse(xhr.responseText);
+                            message = res.message || message;
+                        }
+                    } catch (e) {
+                        console.log('Parse error:', e);
                     }
-                });
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cannot Deactivate',
+                        text: message
+                    });
+                }
+            });
             } else {
                 // User canceled → revert checkbox
                 checkbox.prop('checked', !isChecked);
