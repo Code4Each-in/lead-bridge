@@ -29087,27 +29087,36 @@ div.tagsinput span.tag a {
   }
 }
 
+/* ✅ FIXED */
 .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .count-indicator {
   position: relative;
   padding: 0;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
 .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .count-indicator i {
   font-size: 1.25rem;
-  margin-right: 0;
   vertical-align: middle;
+  line-height: 1;
 }
 
 .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .count-indicator .count {
   position: absolute;
-  left: 36%;
-  width: 12px;
-  height: 12px;
-  border-radius: 100%;
-  background: #4B49AC;
-  top: 1px;
-  border: 1px solid #ffffff;
+  top: 4px;
+  right: 4px;      
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 9px;
+  line-height: 16px;
+  text-align: center;
+  border: 2px solid #ffffff;
+  padding: 0;
 }
 
 .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .count-indicator:after {

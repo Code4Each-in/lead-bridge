@@ -20,72 +20,56 @@ class LeadStatusNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail','database'];
     }
 
     public function toMail($notifiable)
     {
-        $data = [];
-
-        switch ($this->type) {
-
-            case 'bulk_assign':
-                $data = [
-                    'title' => 'New Leads Assigned',
-                    'messageText' => "You have been assigned {$this->count} new leads.",
-                ];
-                break;
-
-            case 'to_qa':
-                $data = [
-                    'title' => 'Lead Assigned to QA',
-                    'messageText' => 'A lead has been moved to QA.',
-                ];
-                break;
-
-            case 'to_manager':
-                $data = [
-                    'title' => 'Lead Assigned to Manager',
-                    'messageText' => 'Lead moved to Manager.',
-                ];
-                break;
-
-            case 'return_ae':
-                $data = [
-                    'title' => 'Lead Returned to AE',
-                    'messageText' => 'Lead has been returned to Account Executive.',
-                ];
-                break;
-
-            case 'completed':
-                $data = [
-                    'title' => 'Lead Completed',
-                    'messageText' => 'Lead marked as completed.',
-                ];
-                break;
-
-            case 'lost':
-                $data = [
-                    'title' => 'Lead Lost',
-                    'messageText' => 'Lead marked as lost.',
-                ];
-                break;
-
-            case 'to_ae':
-                $data = [
-                    'title' => 'New Lead Assigned',
-                    'messageText' => 'A new lead has been assigned to you.',
-                ];
-                break;
-        }
-
         return (new MailMessage)
-            ->subject($data['title'])
+            ->subject($this->getTitle())
             ->view('emails.lead-status', [
                 'lead' => $this->lead,
-                'title' => $data['title'],
-                'messageText' => $data['messageText'],
+                'title' => $this->getTitle(),
+                'messageText' => $this->getMessage(),
                 'count' => $this->count
             ]);
+    }
+
+    public function toDatabase($notifiable)
+    {
+        return [
+            'lead_id' => $this->lead?->id,
+            'type' => $this->type,
+            'title' => $this->getTitle(),
+            'message' => $this->getMessage(),
+            'count' => $this->count,
+        ];
+    }
+    private function getTitle()
+    {
+        return match ($this->type) {
+            'bulk_assign' => 'New Leads Assigned',
+            'to_qa' => 'Lead Assigned to QA',
+            'to_manager' => 'Lead Assigned to Manager',
+            'return_ae' => 'Lead Returned to AE',
+            'completed' => 'Lead Completed',
+            'lost' => 'Lead Lost',
+            'to_ae' => 'New Lead Assigned',
+            default => 'Lead Update'
+        };
+    }
+
+    private function getMessage()
+    {
+        return match ($this->type) {
+            'bulk_assign' => "You have been assigned {$this->count} new leads.",
+            'to_qa' => 'A lead has been moved to you.',
+            'to_manager' => 'Lead moved to you.',
+            'return_ae' => 'Lead has been returned to you.',
+            'completed' => 'Lead marked as completed.',
+            'lost' => 'Lead marked as lost.',
+            'to_ae' => 'A new lead has been assigned to you.',
+            default => 'Lead status updated.'
+        };
     }
 }
