@@ -31,6 +31,7 @@ class LeadActivityNotification extends Notification
     {
         $title = match($this->type) {
             'note_added' => 'New Note Added',
+            'note_with_attachment' => 'New Note with Attachment',
             'document_added' => 'New Document Uploaded',
             default => 'Lead Activity'
         };

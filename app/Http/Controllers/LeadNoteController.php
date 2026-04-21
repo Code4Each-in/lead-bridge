@@ -59,18 +59,32 @@ class LeadNoteController extends Controller
                 ]);
             }
         }
-            $lead = Lead::find($request->lead_id);
+        $lead = Lead::find($request->lead_id);
 
-            $users = $lead->involvedUsers();
+        // Determine correct notification type
+        $hasNote    = !empty($request->content);
+        $hasFiles   = $request->hasFile('files');
 
-            Notification::send(
-                $lead->involvedUsers(),
-                new LeadActivityNotification(
-                    $lead,
-                    'note_added',
-                    'A new note has been added to the lead.'
-                )
-            );
+        if ($hasNote && $hasFiles) {
+            // Both note and documents
+            $type    = 'note_with_attachment';
+            $message = 'A new note with attachments has been added to the lead.';
+
+        } elseif ($hasNote) {
+            // Only note
+            $type    = 'note_added';
+            $message = 'A new note has been added to the lead.';
+
+        } else {
+            // Only files, no note text
+            $type    = 'document_added';
+            $message = 'A new document has been added to the lead.';
+        }
+
+        Notification::send(
+            $lead->involvedUsers(),
+            new LeadActivityNotification($lead, $type, $message)
+        );
         return back();
     }
     public function update(Request $request, $id)
