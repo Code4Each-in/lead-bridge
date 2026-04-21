@@ -18,37 +18,53 @@ class LeadImportController extends Controller
         ]);
 
         $authUser = Auth::user();
-        $userRole = strtolower($authUser->role->name ?? '');
         $authAgencyId = $authUser->agency_id;
 
         $file = $request->file('file');
         $fileName = $file->getClientOriginalName();
         $filePath = $file->getPathname();
 
-        // Parse XLS/XLSX
+        // Parse file
         $extension = strtolower($file->getClientOriginalExtension());
         $rows = [];
+
         if ($extension === 'xlsx') {
-            $xlsx = SimpleXLSX::parse($filePath);
+            $xlsx = \Shuchkin\SimpleXLSX::parse($filePath);
             if (!$xlsx) return back()->with('error', 'Failed to parse XLSX file.');
             $rows = $xlsx->rows();
-        } else {
-            $xls = SimpleXLS::parse($filePath);
+
+        } elseif ($extension === 'xls') {
+            $xls = \Shuchkin\SimpleXLS::parse($filePath);
             if (!$xls) return back()->with('error', 'Failed to parse XLS file.');
             $rows = $xls->rows();
+
+        } elseif ($extension === 'csv') {
+            if (($handle = fopen($filePath, 'r')) !== false) {
+                while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                    $rows[] = $data;
+                }
+                fclose($handle);
+            } else {
+                return back()->with('error', 'Failed to parse CSV file.');
+            }
+
+        } else {
+            return back()->with('error', 'Unsupported file format.');
         }
 
         if (count($rows) < 2) {
-            return back()->with('error', 'File is empty or missing data.');
+            return back()->with('error', 'File is empty.');
         }
 
+        // Validate header
         $expectedHeader = ['name','phone','email','company','city','source','status','notes'];
         $header = array_map('strtolower', $rows[0]);
+
         if ($header !== $expectedHeader) {
             return back()->with('error', 'Invalid template.');
         }
 
-        // Fetch active Account Executives for distribution
+        // Fetch AEs
         $accountExecs = DB::table('users')
             ->join('roles', 'users.role_id', '=', 'roles.id')
             ->where('users.status', 1)
@@ -57,12 +73,20 @@ class LeadImportController extends Controller
             ->select('users.*')
             ->get();
 
-        $pointer = 0; // Round-robin pointer
+        if ($accountExecs->isEmpty()) {
+            return back()->with('error', 'No Account Executives found.');
+        }
+
+        $pointer = 0;
         $insertedCount = 0;
         $failedCount = 0;
         $failedRows = [];
 
+        //  Track assignments for email batching
+        $assignmentCounts = [];
+
         foreach ($rows as $index => $row) {
+
             if ($index === 0) continue;
 
             $name  = trim($row[0] ?? '');
@@ -71,19 +95,19 @@ class LeadImportController extends Controller
             $reason = null;
 
             if (empty($name) || (empty($email) && empty($phone))) {
-                $reason = 'Missing mandatory fields (name, email/phone).';
+                $reason = 'Missing mandatory fields.';
             }
 
             if (!$reason) {
                 $exists = DB::table('leads')
                     ->where(function($q) use ($email, $phone) {
-                        if (!empty($email)) $q->orWhere('email', $email);
-                        if (!empty($phone)) $q->orWhere('phone', $phone);
+                        if ($email) $q->orWhere('email', $email);
+                        if ($phone) $q->orWhere('phone', $phone);
                     })
                     ->exists();
 
                 if ($exists) {
-                    $reason = 'Duplicate record (email or phone already exists).';
+                    $reason = 'Duplicate record.';
                 }
             }
 
@@ -98,6 +122,12 @@ class LeadImportController extends Controller
             }
 
             try {
+
+                //  Assign AE BEFORE insert
+                $assignedUser = $accountExecs[$pointer];
+                $pointer = ($pointer + 1) % $accountExecs->count();
+
+                //  Insert lead
                 $leadId = DB::table('leads')->insertGetId([
                     'name'       => $name,
                     'phone'      => $phone,
@@ -108,20 +138,20 @@ class LeadImportController extends Controller
                     'status'     => $row[6] ?? 'New',
                     'agency_id'  => $authAgencyId,
                     'created_by' => $authUser->id,
-                    'notes'      => $row[7] ?? null, 
+                    'assigned_to'=> $assignedUser->id,
+                    'notes'      => $row[7] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
-                // Assign to Account Executive if available
-                if ($accountExecs->isNotEmpty()) {
-                    $assignedUser = $accountExecs[$pointer];
-                    DB::table('lead_user')->insert([
-                        'lead_id' => $leadId,
-                        'user_id' => $assignedUser->id,
-                    ]);
-                    $pointer = ($pointer + 1) % $accountExecs->count();
+                //  Track count for email
+                $userId = $assignedUser->id;
+
+                if (!isset($assignmentCounts[$userId])) {
+                    $assignmentCounts[$userId] = 0;
                 }
+
+                $assignmentCounts[$userId]++;
 
                 $insertedCount++;
 
@@ -129,29 +159,43 @@ class LeadImportController extends Controller
                 $failedCount++;
                 $failedRows[] = [
                     'row' => $row,
-                    'reason' => 'Database error: ' . $e->getMessage(),
+                    'reason' => $e->getMessage(),
                     'row_number' => $index + 1
                 ];
-                \Log::error('Lead insert failed', ['row' => $row, 'error' => $e->getMessage()]);
+            }
+        }
+
+        //  Send ONE email per AE
+        foreach ($assignmentCounts as $userId => $count) {
+
+            $user = \App\Models\User::find($userId);
+
+            if ($user) {
+                $user->notify(new \App\Notifications\LeadStatusNotification(null, 'bulk_assign', $count));
             }
         }
 
         // Save failed CSV
         $failedFileName = null;
+
         if (!empty($failedRows)) {
-            $failedFileName = 'failed_' . Str::random(6) . '_' . time() . '.csv';
+            $failedFileName = 'failed_' . \Str::random(6) . '_' . time() . '.csv';
             $handle = fopen(storage_path('app/' . $failedFileName), 'w');
+
             $csvHeader = array_merge($rows[0], ['reason', 'row_number']);
             fputcsv($handle, $csvHeader);
+
             foreach ($failedRows as $fail) {
                 $rowData = $fail['row'];
                 $rowData[] = $fail['reason'];
                 $rowData[] = $fail['row_number'];
                 fputcsv($handle, $rowData);
             }
+
             fclose($handle);
         }
 
+        // Log upload
         DB::table('lead_upload_logs')->insert([
             'file_name'      => $fileName,
             'inserted_count' => $insertedCount,
@@ -162,8 +206,7 @@ class LeadImportController extends Controller
         ]);
 
         return back()->with([
-            'success' => "Upload completed. Inserted: $insertedCount, Failed: $failedCount",
-            'failedRows' => $failedRows
+            'success' => "Upload completed. Inserted: $insertedCount, Failed: $failedCount"
         ]);
     }
 }

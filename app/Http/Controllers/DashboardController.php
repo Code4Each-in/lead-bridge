@@ -380,9 +380,7 @@ class DashboardController extends Controller
             $totalAgencyUsers = $userQuery->count();
             $totalLeads = $leadQuery->count();
 
-            $myLeads = Lead::whereHas('users', function ($q) use ($authUser) {
-                $q->where('users.id', $authUser->id);
-            });
+            $myLeads = Lead::where('assigned_to', $authUser->id);
 
             $assignedLeads = $myLeads->count();
 

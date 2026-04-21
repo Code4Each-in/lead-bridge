@@ -44,7 +44,9 @@
             <div class="card-body">
 
                 <div class="d-flex justify-content-between mb-3 align-items-center">
-                    <h4 class="card-title mb-0">Leads</h4>
+                        <h4 class="card-title mb-0">
+                            Leads ({{ $totalLeads }})
+                        </h4>
 
                     <div class="d-flex">
 
@@ -64,9 +66,20 @@
                         @endif
                     </div>
                 </div>
-
+                <div id="loader" style="
+                    display:none;
+                    position:fixed;
+                    top:0; left:0;
+                    width:100%; height:100%;
+                    background:rgba(255,255,255,0.7);
+                    z-index:9999;
+                    text-align:center;
+                    padding-top:20%; ">
+                    <div class="spinner-border text-primary"></div>
+                    <p>Uploading Excel, please wait...</p>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table id="leadsTable" class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -77,85 +90,7 @@
                                 <th width="150">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @forelse($leads as $lead)
-                            <!-- <tr class="clickable-row"
-                                data-href="{{ url('/leads/'.$lead->id) }}"
-                                style="cursor:pointer;"> -->
-                                @php
-                                    $canView = in_array($role, ['super admin','admin','account executive','qa user','account manager']);
-                                @endphp
 
-                                <tr class="pointer {{ $canView ? '' : 'no-click' }}"
-                                    @if($canView)
-                                        onclick="if (!event.target.closest('.actions-cell')) window.open('{{ url('/leads/'.$lead->id) }}', '_blank');"
-                                    @endif
-                                >
-                                <td>{{ $lead->name }}</td>
-                                <td>{{ $lead->company }}</td>
-
-                                <td>
-                                    @forelse($lead->users as $user)
-                                        <span class="badge badge-light border"
-                                            style="font-size:12px; padding:4px 8px; margin:1px 2px; display:inline-block;">
-                                            {{ $user->name }}
-                                        </span>
-                                    @empty
-                                        <span class="text-muted">-</span>
-                                    @endforelse
-                                </td>
-
-                                <td>
-                                    <span class="px-2 py-1 rounded text-white
-                                        @if($lead->status == 'Not Started') bg-secondary
-                                        @elseif($lead->status == 'In Progress') bg-primary
-                                        @elseif($lead->status == 'Hold') bg-warning
-                                        @elseif($lead->status == 'Lost') bg-danger
-                                        @elseif($lead->status == 'Complete') bg-success
-                                        @endif
-                                    ">
-                                        {{ $lead->status }}
-                                    </span>
-                                </td>
-                                <td>{{ $lead->source }}</td>
-
-                                <td class="actions-cell">
-                                    @if(in_array($role, ['super admin','admin','account executive','qa user','account manager']))
-                                        <a href="{{ url('/leads/'.$lead->id) }}"
-                                        target="_blank"
-                                        class="btn btn-sm btn-primary pointer"
-                                        >
-                                            <i class="mdi mdi-eye"></i> View
-                                        </a>
-                                    @endif
-                                    @if(in_array($role, ['super admin','admin','mis user']))
-                                        <button type="button"
-                                            class="btn btn-sm btn-primary edit-lead-btn pointer"
-                                            data-id="{{ $lead->id }}"
-                                            >
-                                            <i class="mdi mdi-pencil-box"></i> Edit
-                                        </button>
-                                    @endif
-                                    @if(in_array($role, ['super admin','admin']))
-
-                                        <a href="{{ route('leads.delete', $lead->id) }}"
-                                            class="btn btn-sm btn-danger btn-delete pointer"
-                                            data-id="{{ $lead->id }}"
-                                           >
-                                            <i class="mdi mdi-delete"></i> Delete
-                                        </a>
-                                    @endif
-
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    No leads found
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
                     </table>
                 </div>
 
@@ -505,11 +440,11 @@ const ALL_USERS = {!! json_encode($users->map(function($u) {
 </script>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excelFileInput');
     const selectBtn = document.getElementById('selectExcelBtn');
     const form = document.getElementById('uploadExcelForm');
+    const loader = document.getElementById('loader');
 
     if (selectBtn && fileInput && form) {
 
@@ -521,13 +456,61 @@ document.addEventListener('DOMContentLoaded', function() {
         // Auto-submit on file select
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
+
+                // Show loader
+                if (loader) loader.style.display = 'block';
+
+                // Disable button to prevent multiple clicks
+                selectBtn.disabled = true;
+
+                // Submit form
                 form.submit();
             }
         });
 
     }
 });
+$(document).ready(function () {
+    $('#leadsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 10,
+        ordering: true,
+        responsive: true,
+        ajax: "{{ route('leads.index') }}",
+        columns: [
+            { data: 'name' },
+            { data: 'company' },
+            { data: 'assigned_user' },
+            { data: 'status' },
+            { data: 'source' },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function(id){
+                    return `
+                        <a href="/leads/${id}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="mdi mdi-eye"></i> View
+                        </a>
+                        <button class="btn btn-sm btn-primary edit-lead-btn" data-id="${id}">
+                            <i class="mdi mdi-pencil-box"></i> Edit
+                        </button>
+                        <a href="/leads/${id}/delete" class="btn btn-sm btn-danger btn-delete">
+                            <i class="mdi mdi-delete"></i> Delete
+                        </a>
+                    `;
+                }
+            }
+        ]
+    });
 
+    // Use delegated event for dynamically loaded buttons
+    $('#leadsTable').on('click', '.edit-lead-btn', function () {
+        let id = $(this).data('id');
+        $('#editModal' + id).modal('show');
+    });
+});
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
@@ -691,17 +674,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    $(document).ready(function () {
+    // $(document).ready(function () {
 
-        $('.edit-lead-btn').click(function () {
-            let id = $(this).data('id');
+    //     $('.edit-lead-btn').click(function () {
+    //         let id = $(this).data('id');
 
-            // console.log('clicked direct', id);
+    //         // console.log('clicked direct', id);
 
-            $('#editModal' + id).modal('show');
-        });
+    //         $('#editModal' + id).modal('show');
+    //     });
 
-    });
+    // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');

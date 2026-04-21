@@ -13,19 +13,32 @@
 
         <hr>
 
-        <p><strong>Lead Name:</strong> <?php echo e($lead->name); ?></p>
-        <p><strong>Email:</strong> <?php echo e($lead->email); ?></p>
-        <p><strong>Phone:</strong> <?php echo e($lead->phone); ?></p>
+ 
+        <?php if(isset($count)): ?>
+            <p>
+                <strong>Total Leads Assigned:</strong> <?php echo e($count); ?>
 
-        <br>
+            </p>
+        <?php endif; ?>
 
-        <p style="font-size:12px; color:#888;">
-            you can view your lead here-
-        </p>
-        <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
-        style="background:#007bff; color:#fff; padding:10px 15px; text-decoration:none; border-radius:5px;">
-        View Lead
-        </a>
+
+        <?php if($lead): ?>
+            <p><strong>Lead Name:</strong> <?php echo e($lead->name); ?></p>
+            <p><strong>Email:</strong> <?php echo e($lead->email); ?></p>
+            <p><strong>Phone:</strong> <?php echo e($lead->phone); ?></p>
+
+            <br>
+
+            <p style="font-size:12px; color:#888;">
+                You can view your lead here:
+            </p>
+
+            <a href="<?php echo e(url('/leads/'.$lead->id)); ?>"
+               style="background:#007bff; color:#fff; padding:10px 15px; text-decoration:none; border-radius:5px;">
+               View Lead
+            </a>
+        <?php endif; ?>
+
     </div>
 
 </body>

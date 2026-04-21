@@ -11,34 +11,47 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Notifications\LeadStatusNotification;
 
 class LeadController extends Controller
 {
-
     // public function index()
     // {
     //     $authUser = Auth::user();
     //     $roleName = strtolower($authUser->role->name);
 
-    //     // Build leads query
-    //     $leadsQuery = Lead::with(['agency', 'users'])->latest();
+    //     $leadsQuery = Lead::with(['agency', 'assignedUser'])->latest();
 
-    //     if (in_array($roleName, ['mis user', 'admin'])) {
-    //         // Only leads belonging to same agency
+    //     // ADMIN → can see only their agency (if required)
+    //     if ($roleName === 'admin') {
     //         $leadsQuery->where('agency_id', $authUser->agency_id);
-
-    //     } elseif ($roleName === 'account executive') {
-    //         // Only leads assigned to this user
-    //         $leadsQuery->whereHas('users', function ($q) use ($authUser) {
-    //             $q->where('users.id', $authUser->id);
-    //         });
     //     }
-    //     // superadmin → no filter, sees everything
 
-    //     $leads    = $leadsQuery->get();
+    //     // ACCOUNT EXECUTIVE → only his leads
+    //     elseif ($roleName === 'account executive') {
+    //         $leadsQuery->where('assigned_to', $authUser->id);
+    //     }
+
+    //     // QA USER → only QA assigned leads
+    //     elseif ($roleName === 'qa user') {
+    //         $leadsQuery->where('assigned_qa_id', $authUser->id);
+    //     }
+
+    //     // ACCOUNT MANAGER → only manager assigned leads
+    //     elseif ($roleName === 'account manager') {
+    //         $leadsQuery->where('assigned_manager_id', $authUser->id);
+    //     }
+
+    //     // MIS USER → agency level restriction
+    //     elseif ($roleName === 'mis user') {
+    //         $leadsQuery->where('agency_id', $authUser->agency_id);
+    //     }
+    //     $totalLeads = (clone $leadsQuery)->count();
+    //     $leads = $leadsQuery->get();
     //     $agencies = Agency::all();
 
+    //     // users dropdown logic
     //     if (in_array($roleName, ['mis user', 'admin'])) {
     //         $users = User::where('agency_id', $authUser->agency_id)
     //             ->whereHas('role', function ($q) {
@@ -50,56 +63,89 @@ class LeadController extends Controller
     //         $users = User::all();
     //     }
 
-    //     return view('leads.index', compact('leads', 'users', 'agencies', 'authUser'));
+    //     return view('leads.index', compact('leads', 'users', 'agencies', 'authUser','totalLeads'));
     // }
-    public function index()
+    public function index(Request $request)
     {
+        $request->merge([
+            'start' => $request->start ?? 0,
+            'length' => $request->length ?? 10,
+        ]);
+
         $authUser = Auth::user();
         $roleName = strtolower($authUser->role->name);
 
-        $leadsQuery = Lead::with(['agency', 'users'])->latest();
+        $query = Lead::with(['assignedUser', 'agency'])->latest();
 
-        // ADMIN → can see only their agency (if required)
+        // Role-based filtering
         if ($roleName === 'admin') {
-            $leadsQuery->where('agency_id', $authUser->agency_id);
+            $query->where('agency_id', $authUser->agency_id);
+        } elseif ($roleName === 'account executive') {
+            $query->where('assigned_to', $authUser->id);
+        } elseif ($roleName === 'qa user') {
+            $query->where('assigned_qa_id', $authUser->id);
+        } elseif ($roleName === 'account manager') {
+            $query->where('assigned_manager_id', $authUser->id);
+        } elseif ($roleName === 'mis user') {
+            $query->where('agency_id', $authUser->agency_id);
         }
 
-        // ACCOUNT EXECUTIVE → only his leads
-        elseif ($roleName === 'account executive') {
-            $leadsQuery->where('assigned_to', $authUser->id);
+        // Handle AJAX request from DataTables
+        if ($request->ajax()) {
+
+            $baseQuery = clone $query; // total count
+
+            // Search filter
+            if (!empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('company', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('source', 'like', "%{$search}%");
+                });
+            }
+
+            // Total count
+            $total = $baseQuery->count();
+
+            // Filtered count
+            $filtered = $query->count();
+
+            // Pagination
+            $leads = $query->skip($request->start)
+                        ->take($request->length)
+                        ->get();
+
+            // Transform data for DataTables
+            $data = $leads->map(function($lead){
+                return [
+                    'name' => $lead->name,
+                    'company' => $lead->company,
+                    'assigned_user' => $lead->assignedUser ? $lead->assignedUser->name : 'N/A',
+                    'status' => $lead->status,
+                    'source' => $lead->source,
+                    'id' => $lead->id, // for actions column
+                ];
+            });
+
+            return response()->json([
+                "draw" => intval($request->draw),
+                "recordsTotal" => $total,
+                "recordsFiltered" => $filtered,
+                "data" => $data
+            ]);
         }
 
-        // QA USER → only QA assigned leads
-        elseif ($roleName === 'qa user') {
-            $leadsQuery->where('assigned_qa_id', $authUser->id);
-        }
-
-        // ACCOUNT MANAGER → only manager assigned leads
-        elseif ($roleName === 'account manager') {
-            $leadsQuery->where('assigned_manager_id', $authUser->id);
-        }
-
-        // MIS USER → agency level restriction
-        elseif ($roleName === 'mis user') {
-            $leadsQuery->where('agency_id', $authUser->agency_id);
-        }
-
-        $leads = $leadsQuery->get();
+        // Regular page load (non-AJAX)
         $agencies = Agency::all();
+        $users = User::all();
+        $totalLeads = $query->count();
 
-        // users dropdown logic
-        if (in_array($roleName, ['mis user', 'admin'])) {
-            $users = User::where('agency_id', $authUser->agency_id)
-                ->whereHas('role', function ($q) {
-                    $q->whereRaw('LOWER(name) = ?', ['account executive']);
-                })
-                ->where('id', '!=', $authUser->id)
-                ->get();
-        } else {
-            $users = User::all();
-        }
+        // Make sure $leads exists for Blade
+        $leads = $query->get(); // <--- Important: fetch all leads for pre-rendered modals
 
-        return view('leads.index', compact('leads', 'users', 'agencies', 'authUser'));
+        return view('leads.index', compact('users', 'agencies', 'authUser', 'totalLeads','leads'));
     }
     public function store(Request $request)
     {
@@ -244,27 +290,26 @@ class LeadController extends Controller
     }
     public function downloadTemplate()
     {
-        $filename = 'leads_template.csv';
+        $filename = 'leads_template.xlsx';
 
-        // Header row
-        $header = ['name','phone','email','company','city','source','status','notes'];
+        $data = [
+            ['name','phone','email','company','city','source','status','notes'],
+            ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note']
+        ];
 
-        // Example row (just a single row to show layout)
-        $exampleRow = ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note'];
+        return Excel::download(new class($data) implements \Maatwebsite\Excel\Concerns\FromArray {
+            protected $data;
 
-        // Open output stream
-        $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, $header);
-        fputcsv($handle, $exampleRow);
-        rewind($handle);
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
 
-        $contents = stream_get_contents($handle);
-        fclose($handle);
-
-        return Response::make($contents, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ]);
+            public function array(): array
+            {
+                return $this->data;
+            }
+        }, $filename);
     }
     public function updateStatus(Request $request, $id)
     {

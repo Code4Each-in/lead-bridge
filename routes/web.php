@@ -23,7 +23,7 @@ Route::middleware(['auth','active'])->group(function () {
 });
 
 Route::middleware(['auth', 'active'])->group(function () {
-Route::get('/users', [UserController::class, 'index']);
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
 Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
 Route::post('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
 Route::get('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
@@ -44,6 +44,8 @@ Route::middleware(['auth','active'])->group(function () {
     Route::post('/agencies/store', [AgencyController::class, 'store'])->name('agencies.store');
     Route::post('/agencies/update/{id}', [AgencyController::class, 'update'])->name('agencies.update');
     Route::get('/agencies/delete/{id}', [AgencyController::class, 'destroy'])->name('agencies.delete');
+    Route::get('/agencies/show', [AgencyController::class, 'showAgency'])->name('agency.show');
+    Route::post('/agency/detailUpdate', [AgencyController::class, 'detailUpdate'])->name('agency.detailUpdate');
 });
 
 Route::middleware(['auth','active'])->group(function () {

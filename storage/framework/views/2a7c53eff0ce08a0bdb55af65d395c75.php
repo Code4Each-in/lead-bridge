@@ -335,12 +335,19 @@
                 <a class="dropdown-item" href="<?php echo e(route('profile.index')); ?>">
                     <i class="ti-user text-primary mr-2"></i> Profile
                 </a>
+                <div class="dropdown-divider"></div>
+               <?php if( strtolower(auth()->user()->role->name) == 'admin'): ?>
 
+                    <a class="dropdown-item" href="<?php echo e(route('agency.show')); ?>">
+                        <i class="ti-user text-primary mr-2"></i> Agency
+                    </a>
+                <?php endif; ?>
                 <div class="dropdown-divider"></div>
 
                 <a class="dropdown-item text-danger" href="<?php echo e(route('logout')); ?>">
                     <i class="ti-power-off mr-2"></i> Logout
                 </a>
+
 
             </div>
         </li>

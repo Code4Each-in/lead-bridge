@@ -9,11 +9,13 @@ class LeadStatusNotification extends Notification
 {
     protected $lead;
     protected $type;
+    protected $count;
 
-    public function __construct($lead, $type)
+    public function __construct($lead = null, $type = null, $count = null)
     {
         $this->lead = $lead;
         $this->type = $type;
+        $this->count = $count;
     }
 
     public function via($notifiable)
@@ -26,6 +28,14 @@ class LeadStatusNotification extends Notification
         $data = [];
 
         switch ($this->type) {
+
+            case 'bulk_assign':
+                $data = [
+                    'title' => 'New Leads Assigned',
+                    'messageText' => "You have been assigned {$this->count} new leads.",
+                ];
+                break;
+
             case 'to_qa':
                 $data = [
                     'title' => 'Lead Assigned to QA',
@@ -60,6 +70,7 @@ class LeadStatusNotification extends Notification
                     'messageText' => 'Lead marked as lost.',
                 ];
                 break;
+
             case 'to_ae':
                 $data = [
                     'title' => 'New Lead Assigned',
@@ -74,6 +85,7 @@ class LeadStatusNotification extends Notification
                 'lead' => $this->lead,
                 'title' => $data['title'],
                 'messageText' => $data['messageText'],
+                'count' => $this->count
             ]);
     }
 }
