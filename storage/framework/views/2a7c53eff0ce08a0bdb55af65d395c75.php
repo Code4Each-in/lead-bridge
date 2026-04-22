@@ -2,15 +2,26 @@
 
 <style>
 .navbar-menu-wrapper {
-    justify-content: center !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 
-.navbar-menu-wrapper .navbar-nav.mr-lg-2 {
+
+.navbar-menu-wrapper  {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
 }
-
+.navbar-nav.mr-lg-2 {
+    position: static !important;
+    transform: none !important;
+}
+#agency-select {
+    width: 100% !important;
+    max-width: 250px;
+}
 
 /* Keep profile on the right */
 .navbar-nav-right {
@@ -34,7 +45,7 @@
 .count-indicator .count {
   position: absolute;
   top: -6px;
-  right: -6px;       
+  right: -6px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
@@ -238,24 +249,93 @@
     background: rgba(0,0,0,0.05);
     border-radius: 8px;
 }
+@media (max-width: 576px) {
+
+    .navbar {
+        flex-wrap: wrap;
+        padding: 5px 10px;
+    }
+
+    .navbar-brand-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Stack search below */
+    .navbar-nav.mr-lg-2 {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    #agency-select {
+        width: 100% !important;
+        max-width: 100%;
+    }
+
+    /* Reduce icon size */
+    .count-indicator {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Hide username text (keep avatar) */
+    .nav-profile .ml-2 {
+        display: none;
+    }
+
+    /* Dropdown width fix */
+    .navbar-dropdown.preview-list {
+        width: 100%;
+        right: 0;
+        left: 0;
+    }
+}
+
+/* ========== SMALL DEVICES (≤768px) ========== */
+@media (max-width: 768px) {
+
+    .navbar-nav.mr-lg-2 {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navbar-nav-right {
+        margin-left: auto;
+    }
+
+    .navbar-dropdown.preview-list {
+        width: 280px;
+    }
+}
+
+/* ========== TABLETS (768px - 1024px) ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    #agency-select {
+        max-width: 200px;
+    }
+
+    .navbar-dropdown.preview-list {
+        width: 300px;
+    }
+}
+
+/* ========== LARGE SCREENS (≥1024px) ========== */
+@media (min-width: 1024px) {
+
+    .navbar-menu-wrapper {
+        justify-content: center;
+    }
+
+    .navbar-nav.mr-lg-2 {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
 </style>
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
-  <!-- Logo -->
-    <!-- <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-        <a class="navbar-brand brand-logo mr-5" href="#">
-            <img src="<?php echo e($currentAgency && $currentAgency->logo
-                ? asset($currentAgency->logo)
-                : asset('assets/images/leadbridge_logo.svg')); ?>"
-                class="mr-2" alt="logo"/>
-        </a>
-        <a class="navbar-brand brand-logo-mini" href="#">
-            <img src="<?php echo e($currentAgency && $currentAgency->logo
-                ? asset($currentAgency->logo)
-                : asset('assets/images/logo-mini.svg')); ?>"
-                alt="logo"/>
-        </a>
-    </div> -->
     <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
         

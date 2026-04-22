@@ -8,6 +8,180 @@
     }
 
 </style>
+<style>
+    /* =========================
+    GLOBAL RESPONSIVE MODAL
+    ========================= */
+
+    /* Base modal width control */
+    .modal-dialog {
+        max-width: 600px;   /* good desktop default */
+        margin: 1.75rem auto;
+    }
+
+    /* Modal content scroll fix */
+    .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    /* =========================
+    TABLET (≤768px)
+    ========================= */
+    @media (max-width: 768px) {
+
+        .modal-dialog {
+            max-width: 92%;
+            margin: 1rem auto;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+        }
+
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 12px 14px;
+        }
+    }
+
+    /* =========================
+    MOBILE (≤576px)
+    ========================= */
+    @media (max-width: 576px) {
+
+        /* Full width feel */
+        .modal-dialog {
+            max-width: 100%;
+            margin: 0;
+            height: 100%;
+        }
+
+        .modal-content {
+            height: 100%;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body {
+            flex: 1;
+            max-height: none;
+            overflow-y: auto;
+        }
+
+        /* Better spacing */
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 12px;
+        }
+
+        /* Stack buttons */
+        .modal-footer {
+            flex-direction: column;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .modal-footer .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Title smaller */
+        .modal-title,
+        .modal-header h5 {
+            font-size: 16px;
+        }
+    }
+    /* =========================
+    FORCE RESPONSIVE MODAL (WORKING 100%)
+    ========================= */
+
+    /* Desktop default */
+    .modal-dialog {
+        max-width: 600px !important;
+        margin: 1.75rem auto !important;
+    }
+
+    /* Body scroll fix */
+    .modal-body {
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+    }
+
+    /* =========================
+    MOBILE & SMALL TABLETS (≤700px)
+    ========================= */
+    @media (max-width: 700px) {
+
+        .modal {
+            padding: 0 !important;
+        }
+
+        .modal-dialog {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            display: flex !important;
+            justify-content: center;
+            align-items: stretch !important;
+            margin: 10px !important;
+        }
+
+        .modal-content {
+            width: 100% !important;
+            height: 70% !important;
+            border-radius: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .modal-header {
+            flex-shrink: 0;
+        }
+
+        .modal-body {
+            flex: 1 !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+        }
+
+        .modal-footer {
+            flex-shrink: 0;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .modal-footer .btn {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+        }
+
+        .modal-footer .btn:last-child {
+            margin-bottom: 0 !important;
+        }
+    }
+    /* Prevent table overflow issues */
+    .dataTables_wrapper {
+        width: 100% !important;
+    }
+
+    /* Make action buttons wrap on mobile */
+    @media (max-width: 768px) {
+        table.dataTable td {
+            white-space: normal !important;
+        }
+
+        .btn {
+            margin-bottom: 5px;
+        }
+    }
+</style>
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
@@ -209,7 +383,16 @@ $(document).ready(function () {
         serverSide: true,
         pageLength: 10,
         ordering: true,
-        responsive: true,
+            responsive: {
+            details: {
+                type: 'column',
+                target: 'tr'
+            }
+        },
+
+        autoWidth: false,
+        scrollX: false,
+
         ajax: "<?php echo e(route('agencies.index')); ?>",
         columns: [
             { data: 'agency_name' },

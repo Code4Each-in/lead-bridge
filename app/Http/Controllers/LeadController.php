@@ -16,55 +16,7 @@ use App\Notifications\LeadStatusNotification;
 
 class LeadController extends Controller
 {
-    // public function index()
-    // {
-    //     $authUser = Auth::user();
-    //     $roleName = strtolower($authUser->role->name);
 
-    //     $leadsQuery = Lead::with(['agency', 'assignedUser'])->latest();
-
-    //     // ADMIN → can see only their agency (if required)
-    //     if ($roleName === 'admin') {
-    //         $leadsQuery->where('agency_id', $authUser->agency_id);
-    //     }
-
-    //     // ACCOUNT EXECUTIVE → only his leads
-    //     elseif ($roleName === 'account executive') {
-    //         $leadsQuery->where('assigned_to', $authUser->id);
-    //     }
-
-    //     // QA USER → only QA assigned leads
-    //     elseif ($roleName === 'qa user') {
-    //         $leadsQuery->where('assigned_qa_id', $authUser->id);
-    //     }
-
-    //     // ACCOUNT MANAGER → only manager assigned leads
-    //     elseif ($roleName === 'account manager') {
-    //         $leadsQuery->where('assigned_manager_id', $authUser->id);
-    //     }
-
-    //     // MIS USER → agency level restriction
-    //     elseif ($roleName === 'mis user') {
-    //         $leadsQuery->where('agency_id', $authUser->agency_id);
-    //     }
-    //     $totalLeads = (clone $leadsQuery)->count();
-    //     $leads = $leadsQuery->get();
-    //     $agencies = Agency::all();
-
-    //     // users dropdown logic
-    //     if (in_array($roleName, ['mis user', 'admin'])) {
-    //         $users = User::where('agency_id', $authUser->agency_id)
-    //             ->whereHas('role', function ($q) {
-    //                 $q->whereRaw('LOWER(name) = ?', ['account executive']);
-    //             })
-    //             ->where('id', '!=', $authUser->id)
-    //             ->get();
-    //     } else {
-    //         $users = User::all();
-    //     }
-
-    //     return view('leads.index', compact('leads', 'users', 'agencies', 'authUser','totalLeads'));
-    // }
     public function index(Request $request)
     {
         $request->merge([

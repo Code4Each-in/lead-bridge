@@ -429,7 +429,7 @@
 
                                         <div class="status-container" data-lead-id="{{ $lead->id }}">
                                             <span class="status-badge">
-                                                {{ $lead->status ?? 'Not Started' }} ▼
+                                                {{ $lead->status ?? 'Not Started' }} 
                                             </span>
 
                                             <div class="status-dropdown d-none">
