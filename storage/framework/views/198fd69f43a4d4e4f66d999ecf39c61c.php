@@ -770,28 +770,7 @@
 
 <?php $__env->startSection('js_scripts'); ?>
 <script>
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(success, error);
-}
 
-function success(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    fetch(`/dashboard/weather?lat=${lat}&lon=${lon}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('temp').innerText = data.temp ?? '--';
-            document.getElementById('city').innerText = data.city ?? '--';
-            document.getElementById('country').innerText = data.country ?? '--';
-        })
-        .catch(err => console.error('Weather API error:', err));
-}
-
-function error(err) {
-    console.warn(`Geolocation error (${err.code}): ${err.message}`);
-    // fallback: default weather already shown
-}
 function removeReminder(id) {
     const el = document.getElementById('reminder-' + id);
     if (!el) return;
