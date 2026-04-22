@@ -429,7 +429,7 @@
 
                                         <div class="status-container" data-lead-id="<?php echo e($lead->id); ?>">
                                             <span class="status-badge">
-                                                <?php echo e($lead->status ?? 'Not Started'); ?> ▼
+                                                <?php echo e($lead->status ?? 'Not Started'); ?> 
                                             </span>
 
                                             <div class="status-dropdown d-none">

@@ -197,6 +197,11 @@
     transform: translateY(-4px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.08);
 }
+@media (max-width: 768px) {
+    .table-responsive-mobile {
+        overflow-x: auto;
+    }
+}
 </style>
 
 <div class="row">
@@ -541,43 +546,45 @@
                             Recent Leads
                             <span class="text-muted fw-normal small">(last 5 days)</span>
                         </p>
-                        <table id="leadsTable" class="table table-striped align-middle mb-0" style="width:100%">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Agency</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $recentLeads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <tr>
-                                    <td><?php echo e($lead->name); ?></td>
-                                    <td><?php echo e($lead->agency->agency_name ?? '—'); ?></td>
-                                    <td>
-                                        <?php
-                                            $badgeMap = [
-                                                'Not Started'        => 'primary',
-                                                'In Progress'  => 'success',
-                                                'Hold'  => 'teal',
-                                                'Lost'        => 'danger',
-                                                'Complete'       => 'success',
-                                            ];
-                                            $color = $badgeMap[strtolower($lead->status)] ?? 'secondary';
-                                        ?>
-                                        <span class="badge rounded-pill bg-<?php echo e($color); ?>-subtle text-<?php echo e($color); ?>-emphasis">
-                                            <?php echo e($lead->status); ?>
+                        <div class="table-responsive">
+                            <table id="leadsTable" class="table table-striped align-middle mb-0" style="width:100%">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Agency</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $__empty_1 = true; $__currentLoopData = $recentLeads; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lead): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <tr>
+                                        <td><?php echo e($lead->name); ?></td>
+                                        <td><?php echo e($lead->agency->agency_name ?? '—'); ?></td>
+                                        <td>
+                                            <?php
+                                                $badgeMap = [
+                                                    'Not Started'        => 'primary',
+                                                    'In Progress'  => 'success',
+                                                    'Hold'  => 'teal',
+                                                    'Lost'        => 'danger',
+                                                    'Complete'       => 'success',
+                                                ];
+                                                $color = $badgeMap[strtolower($lead->status)] ?? 'secondary';
+                                            ?>
+                                            <span class="badge rounded-pill bg-<?php echo e($color); ?>-subtle text-<?php echo e($color); ?>-emphasis">
+                                                <?php echo e($lead->status); ?>
 
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small"><?php echo e($lead->created_at->format('M d, Y')); ?></td>
-                                </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                <tr><td colspan="4" class="text-center text-muted py-3">No recent leads</td></tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small"><?php echo e($lead->created_at->format('M d, Y')); ?></td>
+                                    </tr>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr><td colspan="4" class="text-center text-muted py-3">No recent leads</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -590,26 +597,28 @@
                             Recent Agencies
                             <span class="text-muted fw-normal small">(last 5 days)</span>
                         </p>
-                        <table id="agenciesTable" class="table table-striped align-middle mb-0" style="width:100%">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Agency Name</th>
-                                    <th>Email</th>
-                                    <th>Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $recentAgencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <tr>
-                                    <td><?php echo e($agency->agency_name); ?></td>
-                                    <td class="text-muted"><?php echo e($agency->primary_email ?? '—'); ?></td>
-                                    <td class="text-muted small"><?php echo e($agency->created_at->format('M d, Y')); ?></td>
-                                </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                <tr><td colspan="3" class="text-center text-muted py-3">No recent agencies</td></tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="agenciesTable" class="table table-striped align-middle mb-0" style="width:100%">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Agency Name</th>
+                                        <th>Email</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $__empty_1 = true; $__currentLoopData = $recentAgencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <tr>
+                                        <td><?php echo e($agency->agency_name); ?></td>
+                                        <td class="text-muted"><?php echo e($agency->primary_email ?? '—'); ?></td>
+                                        <td class="text-muted small"><?php echo e($agency->created_at->format('M d, Y')); ?></td>
+                                    </tr>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr><td colspan="3" class="text-center text-muted py-3">No recent agencies</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

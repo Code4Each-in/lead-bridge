@@ -225,45 +225,6 @@ class UserController extends Controller
             'success' => 'User has been created successfully.'
         ]);
     }
-    // public function update(Request $request, $id)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name'          => 'required',
-    //         'email'         => "required|email|unique:users,email,$id",
-    //         'role_id'       => 'required',
-    //         'status'        => 'required',
-    //         'date_of_birth' => 'required|date',
-    //         'city'          => 'required',
-    //         'state'         => 'required',
-    //         'zip'           => 'required',
-    //         'address'       => 'required',
-    //         'agency_id'     => 'nullable|exists:agencies,id',
-    //         'profile'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(['errors' => $validator->errors()], 422);
-    //     }
-
-    //     $user = User::findOrFail($id);
-
-    //     $data = $request->except('_token', 'password', 'profile');
-
-
-    //     $data['agency_id'] = $request->agency_id;
-
-    //     if ($request->password) {
-    //         $data['password'] = Hash::make($request->password);
-    //     }
-
-    //     if ($request->hasFile('profile')) {
-    //         $data['profile'] = $request->file('profile')->store('profiles', 'public');
-    //     }
-
-    //     $user->update($data);
-
-    //     return response()->json(['success' => 'User has been updated successfully.']);
-    // }
     public function update(Request $request, $id)
     {
         $authUser = Auth::user();

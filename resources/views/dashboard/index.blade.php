@@ -198,6 +198,11 @@
     transform: translateY(-4px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.08);
 }
+@media (max-width: 768px) {
+    .table-responsive-mobile {
+        overflow-x: auto;
+    }
+}
 </style>
 
 <div class="row">
@@ -540,42 +545,44 @@
                             Recent Leads
                             <span class="text-muted fw-normal small">(last 5 days)</span>
                         </p>
-                        <table id="leadsTable" class="table table-striped align-middle mb-0" style="width:100%">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Agency</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($recentLeads as $lead)
-                                <tr>
-                                    <td>{{ $lead->name }}</td>
-                                    <td>{{ $lead->agency->agency_name ?? '—' }}</td>
-                                    <td>
-                                        @php
-                                            $badgeMap = [
-                                                'Not Started'        => 'primary',
-                                                'In Progress'  => 'success',
-                                                'Hold'  => 'teal',
-                                                'Lost'        => 'danger',
-                                                'Complete'       => 'success',
-                                            ];
-                                            $color = $badgeMap[strtolower($lead->status)] ?? 'secondary';
-                                        @endphp
-                                        <span class="badge rounded-pill bg-{{ $color }}-subtle text-{{ $color }}-emphasis">
-                                            {{ $lead->status }}
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small">{{ $lead->created_at->format('M d, Y') }}</td>
-                                </tr>
-                                @empty
-                                <tr><td colspan="4" class="text-center text-muted py-3">No recent leads</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="leadsTable" class="table table-striped align-middle mb-0" style="width:100%">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Agency</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($recentLeads as $lead)
+                                    <tr>
+                                        <td>{{ $lead->name }}</td>
+                                        <td>{{ $lead->agency->agency_name ?? '—' }}</td>
+                                        <td>
+                                            @php
+                                                $badgeMap = [
+                                                    'Not Started'        => 'primary',
+                                                    'In Progress'  => 'success',
+                                                    'Hold'  => 'teal',
+                                                    'Lost'        => 'danger',
+                                                    'Complete'       => 'success',
+                                                ];
+                                                $color = $badgeMap[strtolower($lead->status)] ?? 'secondary';
+                                            @endphp
+                                            <span class="badge rounded-pill bg-{{ $color }}-subtle text-{{ $color }}-emphasis">
+                                                {{ $lead->status }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">{{ $lead->created_at->format('M d, Y') }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="4" class="text-center text-muted py-3">No recent leads</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -588,26 +595,28 @@
                             Recent Agencies
                             <span class="text-muted fw-normal small">(last 5 days)</span>
                         </p>
-                        <table id="agenciesTable" class="table table-striped align-middle mb-0" style="width:100%">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Agency Name</th>
-                                    <th>Email</th>
-                                    <th>Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($recentAgencies as $agency)
-                                <tr>
-                                    <td>{{ $agency->agency_name }}</td>
-                                    <td class="text-muted">{{ $agency->primary_email ?? '—' }}</td>
-                                    <td class="text-muted small">{{ $agency->created_at->format('M d, Y') }}</td>
-                                </tr>
-                                @empty
-                                <tr><td colspan="3" class="text-center text-muted py-3">No recent agencies</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="agenciesTable" class="table table-striped align-middle mb-0" style="width:100%">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Agency Name</th>
+                                        <th>Email</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($recentAgencies as $agency)
+                                    <tr>
+                                        <td>{{ $agency->agency_name }}</td>
+                                        <td class="text-muted">{{ $agency->primary_email ?? '—' }}</td>
+                                        <td class="text-muted small">{{ $agency->created_at->format('M d, Y') }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="3" class="text-center text-muted py-3">No recent agencies</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
