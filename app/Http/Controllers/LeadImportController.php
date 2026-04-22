@@ -57,7 +57,7 @@ class LeadImportController extends Controller
         }
 
         // Validate header
-        $expectedHeader = ['name','phone','email','company','city','source','status','notes'];
+        $expectedHeader = ['name','phone','email','company','city','source','notes'];
         $header = array_map('strtolower', $rows[0]);
 
         if ($header !== $expectedHeader) {
@@ -135,7 +135,7 @@ class LeadImportController extends Controller
                     'company'    => $row[3] ?? null,
                     'city'       => $row[4] ?? null,
                     'source'     => $row[5] ?? null,
-                    'status'     => $row[6] ?? 'New',
+                    'status'     => 'In Progress',
                     'agency_id'  => $authAgencyId,
                     'created_by' => $authUser->id,
                     'assigned_to'=> $assignedUser->id,

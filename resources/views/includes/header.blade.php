@@ -16,6 +16,75 @@
 .navbar-nav-right {
     margin-left: auto !important;
 }
+/* Bell button */
+.count-indicator {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+}
+
+/* Badge — key fix */
+.count-indicator .count {
+  position: absolute;
+  top: -6px;
+  right: -6px;       
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid #f0f2f5;
+}
+
+/* Dropdown panel */
+.navbar-dropdown.preview-list {
+  width: 320px;
+  border-radius: 14px;
+  border: 1px solid #e8e8e8;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Unread row highlight */
+.preview-item.unread {
+  background: #f0f7ff;
+  border-left: 3px solid #1976d2;
+}
+
+.preview-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.preview-item:hover { background: #fafafa; }
+
+/* Icon circle */
+.notif-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e3f2fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-subject { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+.small-text      { font-size: 12px; color: #777; line-height: 1.4; }
 .select2-container--default .select2-selection--multiple {
     height: 44px !important;
     max-height: 44px !important;
@@ -255,54 +324,50 @@
 
     <!-- Profile -->
     <ul class="navbar-nav navbar-nav-right">
-            <li class="nav-item dropdown">
-            <!-- <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
-              <i class="icon-bell mx-0"></i>
-              <span class="count"></span>
+        <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle position-relative"
+            id="notificationDropdown"
+            href="#"
+            data-toggle="dropdown">
+
+                <i class="icon-bell mx-0"></i>
+
+                <span class="count badge badge-danger position-absolute">
+                    {{ $unreadCount ?? 0 }}
+                </span>
             </a>
-            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-              <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
-              <a class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-success">
-                    <i class="ti-info-alt mx-0"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <h6 class="preview-subject font-weight-normal">Application Error</h6>
-                  <p class="font-weight-light small-text mb-0 text-muted">
-                    Just now
-                  </p>
-                </div>
-              </a>
-              <a class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-warning">
-                    <i class="ti-settings mx-0"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <h6 class="preview-subject font-weight-normal">Settings</h6>
-                  <p class="font-weight-light small-text mb-0 text-muted">
-                    Private message
-                  </p>
-                </div>
-              </a>
-              <a class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <div class="preview-icon bg-info">
-                    <i class="ti-user mx-0"></i>
-                  </div>
-                </div>
-                <div class="preview-item-content">
-                  <h6 class="preview-subject font-weight-normal">New user registration</h6>
-                  <p class="font-weight-light small-text mb-0 text-muted">
-                    2 days ago
-                  </p>
-                </div>
-              </a>
-            </div> -->
-          </li>
+
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+                aria-labelledby="notificationDropdown">
+
+                <p class="mb-0 font-weight-normal float-left dropdown-header">
+                    Notifications
+                </p>
+
+                @forelse($notifications as $notification)
+
+                    <a class="dropdown-item preview-item" href="#">
+
+                        <div class="preview-item-content">
+                            <h6 class="preview-subject font-weight-normal">
+                                {{ $notification->data['title'] ?? '' }}
+                            </h6>
+
+                            <p class="font-weight-light small-text mb-0 text-muted">
+                                {{ $notification->data['message'] ?? '' }}
+                            </p>
+                        </div>
+
+                    </a>
+
+                @empty
+                    <a class="dropdown-item text-center">
+                        No notifications
+                    </a>
+                @endforelse
+
+            </div>
+        </li>
         <li class="nav-item nav-profile dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" id="profileDropdown">
 
@@ -335,7 +400,7 @@
                @if( strtolower(auth()->user()->role->name) == 'admin')
 
                     <a class="dropdown-item" href="{{ route('agency.show') }}">
-                        <i class="ti-user text-primary mr-2"></i> Agency
+                        <i class="ti-briefcase text-primary mr-2"></i> Agency
                     </a>
                 @endif
                 <div class="dropdown-divider"></div>

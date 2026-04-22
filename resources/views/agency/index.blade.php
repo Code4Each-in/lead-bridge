@@ -221,16 +221,19 @@ $(document).ready(function () {
                 data: 'id',
                 orderable: false,
                 searchable: false,
-                render: function(id){
-                    return `
-                        <button class="btn btn-sm btn-primary edit-agency-btn" data-id="${id}">
-                            <i class="mdi mdi-pencil-box"></i> Edit
-                        </button>
-                        <a href="{{ route('agencies.delete', $agency->id) }}" class="btn btn-sm btn-danger btn-delete">
-                            <i class="mdi mdi-delete"></i> Delete
-                        </a>
-                    `;
-                }
+                    render: function(id){
+                        let deleteUrl = "{{ route('agencies.delete', ':id') }}";
+                        deleteUrl = deleteUrl.replace(':id', id);
+
+                        return `
+                            <button class="btn btn-sm btn-primary edit-agency-btn" data-id="${id}">
+                                <i class="mdi mdi-pencil-box"></i> Edit
+                            </button>
+                            <a href="${deleteUrl}" class="btn btn-sm btn-danger btn-delete">
+                                <i class="mdi mdi-delete"></i> Delete
+                            </a>
+                        `;
+                    }
             }
         ]
     });

@@ -45,16 +45,25 @@ class LeadDocumentController extends Controller
         }
         $lead = Lead::find($request->lead_id);
 
-        $users = $lead->involvedUsers();
+            $hasNote  = !empty($request->content);
+            $hasFiles = $request->hasFile('files');
 
-        Notification::send(
-            $lead->involvedUsers(),
-            new LeadActivityNotification(
-                $lead,
-                'note_added',
-                'A new note has been added to the lead.'
-            )
-        );
+            if ($hasNote && $hasFiles) {
+                $type    = 'note_with_attachment';
+                $message = 'A new note with attachments has been added to the lead.';
+            } elseif ($hasNote) {
+                $type    = 'note_added';
+                $message = 'A new note has been added to the lead.';
+            } else {
+                $type    = 'document_added';
+                $message = 'A new document has been added to the lead.';
+            }
+
+            Notification::send(
+                $lead->involvedUsers(),
+                new LeadActivityNotification($lead, $type, $message)
+            );
+
         return back();
     }
 

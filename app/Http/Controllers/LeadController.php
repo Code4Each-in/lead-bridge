@@ -143,7 +143,7 @@ class LeadController extends Controller
         $totalLeads = $query->count();
 
         // Make sure $leads exists for Blade
-        $leads = $query->get(); // <--- Important: fetch all leads for pre-rendered modals
+        $leads = $query->get();
 
         return view('leads.index', compact('users', 'agencies', 'authUser', 'totalLeads','leads'));
     }
@@ -293,8 +293,8 @@ class LeadController extends Controller
         $filename = 'leads_template.xlsx';
 
         $data = [
-            ['name','phone','email','company','city','source','status','notes'],
-            ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Not Started','Test note']
+            ['name','phone','email','company','city','source','notes'],
+            ['John Doe','1234567890','john@example.com','Example Inc','New York','Referral','Test note']
         ];
 
         return Excel::download(new class($data) implements \Maatwebsite\Excel\Concerns\FromArray {

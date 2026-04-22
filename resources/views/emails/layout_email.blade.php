@@ -5,41 +5,39 @@
     <title>{{ $subject ?? config('app.name') }}</title>
 </head>
 
-<body style="margin:0; padding:0; background:#f6f8fb; font-family:Arial;">
+<body style="margin:0;padding:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0">
 <tr>
-<td align="center">
+<td align="center" style="padding:30px 16px;">
 
-<!-- CARD -->
-<table width="600" style="background:#ffffff; margin:20px auto; border-radius:12px; overflow:hidden;">
+    <!-- Outer card -->
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
 
-    <!-- HEADER -->
-    <tr>
-        <td style="background:#0d2c6c; padding:25px; text-align:center;">
-            <img src="{{ asset('images/leadbridge_logo.svg') }}" height="45">
-        </td>
-    </tr>
+        <!-- BODY CONTENT -->
+        <tr>
+            <td>
+                @yield('content')
+            </td>
+        </tr>
 
-    <!-- BODY -->
-    <tr>
-        <td style="padding:30px;">
-            @yield('content')
-        </td>
-    </tr>
+        <!-- FOOTER -->
+        <tr>
+            <td style="background:#fafafa;border-top:1px solid #f3f4f6;padding:16px 28px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="font-size:11px;color:#9ca3af;">{{ config('app.name') }} Team</td>
+                    <!-- <td align="right" style="font-size:11px;color:#d1d5db;">If you didn't expect this email, ignore it.</td> -->
+                </tr>
+                </table>
+            </td>
+        </tr>
 
-    <!-- FOOTER -->
-    <tr>
-        <td style="background:#f1f3f6; padding:15px; text-align:center; font-size:12px; color:#666;">
-            © {{ date('Y') }} {{ config('app.name') }} — All rights reserved.
-        </td>
-    </tr>
-
-</table>
+    </table>
 
 </td>
 </tr>
 </table>
 
 </body>
-</html>             
+</html>
