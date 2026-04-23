@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\LeadNote;
 use Illuminate\Http\Request;
 use App\Models\LeadDocument;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\LeadActivityNotification;
 use App\Models\Lead;
@@ -19,10 +18,21 @@ class LeadNoteController extends Controller
             'files.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120'
         ]);
 
+        $content = trim(strip_tags($request->content ?? ''));
+        $hasNote = $content !== '';
+        $hasFiles = $request->hasFile('files');
+
+        if (!$hasNote && !$hasFiles) {
+
+
+        return response()->json([
+            'error' => 'Please add a note or upload at least one file.'
+        ]);
+        }
         $note = null;
 
-        // Save note
-        if ($request->content) {
+        // Save note only if valid
+        if ($hasNote) {
             $note = LeadNote::create([
                 'lead_id' => $request->lead_id,
                 'user_id' => auth()->id(),
@@ -30,8 +40,8 @@ class LeadNoteController extends Controller
             ]);
         }
 
-        // Save multiple files
-        if ($request->hasFile('files')) {
+        // Save files
+        if ($hasFiles) {
             foreach ($request->file('files') as $file) {
 
                 $destinationPath = public_path('assets/lead_documents');
@@ -41,7 +51,6 @@ class LeadNoteController extends Controller
                 }
 
                 $fileName = time() . '_' . $file->getClientOriginalName();
-
                 $file->move($destinationPath, $fileName);
 
                 $filePath = 'assets/lead_documents/' . $fileName;
@@ -53,40 +62,34 @@ class LeadNoteController extends Controller
                     'file' => $filePath,
                     'file_name' => $file->getClientOriginalName(),
                     'file_type' => $file->getClientMimeType(),
-                    'file_size' => file_exists(public_path($filePath))
-                        ? filesize(public_path($filePath))
-                        : 0,
+                    'file_size' => filesize(public_path($filePath)) ?? 0,
                 ]);
             }
         }
+
         $lead = Lead::find($request->lead_id);
 
-        // Determine correct notification type
-        $hasNote    = !empty($request->content);
-        $hasFiles   = $request->hasFile('files');
-
         if ($hasNote && $hasFiles) {
-            // Both note and documents
-            $type    = 'note_with_attachment';
+            $type = 'note_with_attachment';
             $message = 'A new note with attachments has been added to the lead.';
-
         } elseif ($hasNote) {
-            // Only note
-            $type    = 'note_added';
+            $type = 'note_added';
             $message = 'A new note has been added to the lead.';
-
         } else {
-            // Only files, no note text
-            $type    = 'document_added';
+            $type = 'document_added';
             $message = 'A new document has been added to the lead.';
         }
 
-        Notification::send(
-            $lead->involvedUsers(),
-            new LeadActivityNotification($lead, $type, $message)
-        );
+        if ($lead && ($hasNote || $hasFiles)) {
+            Notification::send(
+                $lead->involvedUsers(),
+                new LeadActivityNotification($lead, $type, $message)
+            );
+        }
+
         return back();
     }
+
     public function update(Request $request, $id)
     {
         $note = LeadNote::findOrFail($id);

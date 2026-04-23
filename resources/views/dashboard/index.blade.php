@@ -205,18 +205,15 @@
 }
 </style>
 
-<div class="row">
-        <div class="col-md-12 grid-margin">
-            <div class="row">
-                <div class="col-12 col-xl-8 mb-4 mb-xl-0">
-                    <h3 class="font-weight-bold">{{ $agencyName }}</h3>
-
-                    <!-- <h6 class="font-weight-normal mb-0">All systems are running smoothly! You have <span class="text-primary">3 unread alerts!</span></h6> -->
-                </div>
-
-
-            </div>
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div style="padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
+            <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; display: block; margin-bottom: 4px;">Agency</span>
+            <h2 style=" margin: 0; color: #111827; font-size: 2.2rem;">
+                {{ $agencyName }}
+            </h2>
         </div>
+    </div>
 </div>
     @if($todayReminders->count())
     <div class="reminders-panel">
@@ -275,7 +272,7 @@
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1">Total Users</p>
+                            <p class="text-muted mb-1">Total Members</p>
                             <h3 class="mb-0 fw-bold">{{ number_format($totalAgencyUsers) }}</h3>
                         </div>
                         <div class="icon-circle bg-primary">
@@ -425,7 +422,7 @@
                                 <h3 class="fw-bold">{{ $totalUploaded }}</h3>
                             </div>
                             <div class="icon-circle bg-primary">
-                                <i class="mdi mdi-database-upload text-white"></i>
+                                <i class="mdi mdi-upload text-white"></i>
                             </div>
                         </div>
                     </div>
@@ -485,7 +482,7 @@
                     <h6 class="mb-3 fw-semibold">Recent Uploads</h6>
 
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table align-middle table-striped">
                             <thead class="table-light">
                                 <tr>
                                     <th>Name</th>
@@ -503,9 +500,9 @@
                                         <td>{{ $lead->company ?? '-' }}</td>
                                         <td>
                                             <span class="badge px-3 py-2
-                                                @if($lead->status == 'Complete') bg-success
-                                                @elseif($lead->status == 'In Progress') bg-primary
-                                                @elseif($lead->status == 'Hold') bg-warning text-dark
+                                                @if($lead->status == 'Complete') badge badge-success
+                                                @elseif($lead->status == 'In Progress') badge badge-warning
+                                                @elseif($lead->status == 'Hold') badge badge-danger text-dark
                                                 @else bg-secondary
                                                 @endif
                                             ">
@@ -765,28 +762,7 @@
 
 @section('js_scripts')
 <script>
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(success, error);
-}
 
-function success(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    fetch(`/dashboard/weather?lat=${lat}&lon=${lon}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('temp').innerText = data.temp ?? '--';
-            document.getElementById('city').innerText = data.city ?? '--';
-            document.getElementById('country').innerText = data.country ?? '--';
-        })
-        .catch(err => console.error('Weather API error:', err));
-}
-
-function error(err) {
-    console.warn(`Geolocation error (${err.code}): ${err.message}`);
-    // fallback: default weather already shown
-}
 function removeReminder(id) {
     const el = document.getElementById('reminder-' + id);
     if (!el) return;

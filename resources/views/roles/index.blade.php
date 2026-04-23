@@ -91,13 +91,11 @@
             font-size: 16px;
         }
     }
-    /* =========================
-    FORCE RESPONSIVE MODAL (WORKING 100%)
-    ========================= */
+
 
     /* Desktop default */
     .modal-dialog {
-        max-width: 600px !important;
+        max-width: 700px !important;
         margin: 1.75rem auto !important;
     }
 
@@ -107,9 +105,7 @@
         overflow-y: auto !important;
     }
 
-    /* =========================
-    MOBILE & SMALL TABLETS (≤700px)
-    ========================= */
+
     @media (max-width: 700px) {
 
         .modal {

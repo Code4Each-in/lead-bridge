@@ -8,6 +8,182 @@
     }
 
 </style>
+<style>
+    /* =========================
+    GLOBAL RESPONSIVE MODAL
+    ========================= */
+
+    /* Base modal width control */
+    .modal-dialog {
+        max-width: 700px;   /* good desktop default */
+        margin: 1.75rem auto;
+    }
+    .btn-delete{
+        height: 35px;
+        align-content: center;
+    }
+    .editBtn{
+        height: 35px;
+    }
+    /* Modal content scroll fix */
+    .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    /* =========================
+    TABLET (≤768px)
+    ========================= */
+    @media (max-width: 768px) {
+
+        .modal-dialog {
+            max-width: 92%;
+            margin: 1rem auto;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+        }
+
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 12px 14px;
+        }
+    }
+
+    /* =========================
+    MOBILE (≤576px)
+    ========================= */
+    @media (max-width: 576px) {
+
+        /* Full width feel */
+        .modal-dialog {
+            max-width: 100%;
+            margin: 0;
+            height: 100%;
+        }
+
+        .modal-content {
+            height: 100%;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body {
+            flex: 1;
+            max-height: none;
+            overflow-y: auto;
+        }
+
+        /* Better spacing */
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 12px;
+        }
+
+        /* Stack buttons */
+        .modal-footer {
+            flex-direction: column;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .modal-footer .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Title smaller */
+        .modal-title,
+        .modal-header h5 {
+            font-size: 16px;
+        }
+    }
+
+
+    /* Desktop default */
+    .modal-dialog {
+        max-width: 700px !important;
+        margin: 1.75rem auto !important;
+    }
+
+    /* Body scroll fix */
+    .modal-body {
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+    }
+
+
+    @media (max-width: 700px) {
+
+        .modal {
+            padding: 0 !important;
+        }
+
+        .modal-dialog {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            display: flex !important;
+            justify-content: center;
+            align-items: stretch !important;
+            margin: 10px !important;
+        }
+
+        .modal-content {
+            width: 100% !important;
+            height: 70% !important;
+            border-radius: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .modal-header {
+            flex-shrink: 0;
+        }
+
+        .modal-body {
+            flex: 1 !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+        }
+
+        .modal-footer {
+            flex-shrink: 0;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .modal-footer .btn {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+        }
+
+        .modal-footer .btn:last-child {
+            margin-bottom: 0 !important;
+        }
+    }
+    /* Prevent table overflow issues */
+    .dataTables_wrapper {
+        width: 100% !important;
+    }
+
+    /* Make action buttons wrap on mobile */
+    @media (max-width: 768px) {
+        table.dataTable td {
+            white-space: normal !important;
+        }
+
+        .btn {
+            margin-bottom: 5px;
+        }
+    }
+</style>
 <?php
     $authUser = Auth::user();
     $isSuperAdmin = strtolower($authUser->role->name) === 'super admin';
@@ -362,12 +538,12 @@ waitForJQuery(function () {
                         return `
                             <button class="btn btn-sm btn-primary editBtn"
                                 data-id="${id}">
-                                Edit
+                                <i class="mdi mdi-pencil-box"></i> Edit
                             </button>
 
                             <a href="/users/delete/${id}"
                                 class="btn btn-sm btn-danger btn-delete">
-                                Delete
+                                <i class="mdi mdi-delete"></i> Delete
                             </a>
                         `;
                     }
