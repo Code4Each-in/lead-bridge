@@ -210,7 +210,7 @@
     }
 }
 @media (max-width: 1024px){
-     .row > [class*="col-"] {
+    .row > [class*="col-"] {
         padding: 10px;
     }
     .status-card {
