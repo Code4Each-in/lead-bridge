@@ -1,104 +1,224 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <style>
-.navbar-menu-wrapper {
+/* ============================================================
+   LEAD BRIDGE NAVBAR — FULLY RESPONSIVE
+   ============================================================ */
+
+/* ---------- Reset / Base ---------- */
+* { box-sizing: border-box; }
+
+.navbar {
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    padding: 0;
     display: flex;
+    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    min-height: 64px;
+    flex-wrap: nowrap;
 }
 
+/* ============================================================
+   BRAND WRAPPER
+   ============================================================ */
+.navbar-brand-wrapper {
+    width: 220px;
+    min-width: 220px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 16px;
+    flex-shrink: 0;
+    border-right: 1px solid #f0f1f7;
+}
 
-.navbar-menu-wrapper  {
+.navbar-brand img { height: 36px; width: auto; }
+.navbar-brand-text { font-size: 18px; font-weight: 700; color: #3f3cbb; }
+.navbar-brand.brand-logo-mini { display: none; }
+
+/* ============================================================
+   MENU WRAPPER
+   ============================================================ */
+.navbar-menu-wrapper {
+    flex: 1;
+    height: 64px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 16px;
+    min-width: 0;
+    position: relative;
+}
+
+/* Sidebar mini toggle */
+.navbar-toggler.align-self-center {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    color: #666;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+.navbar-toggler:focus { outline: none; box-shadow: none; }
+
+/* ============================================================
+   CENTER: Agency select
+   ============================================================ */
+.navbar-nav.navbar-center-nav {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-}
-.navbar-nav.mr-lg-2 {
-    position: static !important;
-    transform: none !important;
-}
-#agency-select {
-    width: 100% !important;
-    max-width: 250px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
 }
 
-/* Keep profile on the right */
+#agency-select { width: 260px !important; }
+
+/* ============================================================
+   RIGHT: Bell + Profile
+   ============================================================ */
 .navbar-nav-right {
-    margin-left: auto !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    margin-left: auto;
+    padding: 0;
+    flex-shrink: 0;
 }
-/* Bell button */
+
+/* ---------- Bell ---------- */
 .count-indicator {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #f7f8fc;
+    border: 1px solid #e2e5f0;
+    border-radius: 10px;
+    color: #444;
+    transition: background 0.2s;
+    text-decoration: none;
 }
+.count-indicator:hover { background: #eef0fb; color: #3f3cbb; }
 
-/* Badge — key fix */
 .count-indicator .count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 18px;
-  text-align: center;
-  border: 2px solid #f0f2f5;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    background: #e53935;
+    color: #fff;
+    border: 2px solid #fff;
 }
 
-/* Dropdown panel */
+/* ---------- Notification dropdown ---------- */
 .navbar-dropdown.preview-list {
-  width: 320px;
-  border-radius: 14px;
-  border: 1px solid #e8e8e8;
-  padding: 0;
-  overflow: hidden;
+    width: 320px;
+    border-radius: 14px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+    padding: 0;
+    overflow: hidden;
 }
 
-/* Unread row highlight */
-.preview-item.unread {
-  background: #f0f7ff;
-  border-left: 3px solid #1976d2;
+.dropdown-header {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
 }
 
 .preview-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    text-decoration: none;
 }
-
+.preview-item.unread {
+    background: #f0f7ff;
+    border-left: 3px solid #1976d2;
+}
 .preview-item:hover { background: #fafafa; }
+.preview-subject { font-size: 13px; font-weight: 600; color: #1a1a1a; margin: 0; }
+.small-text { font-size: 12px; color: #777; line-height: 1.4; margin: 0; }
 
-/* Icon circle */
-.notif-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #e3f2fd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* ---------- Profile ---------- */
+.nav-profile .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.2s;
 }
+.nav-profile .nav-link:hover { background: rgba(0,0,0,0.05); }
 
-.preview-subject { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-.small-text      { font-size: 12px; color: #777; line-height: 1.4; }
+.nav-profile img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #e2e5f0;
+}
+.user-name { font-size: 14px; font-weight: 600; color: #1a1a1a; line-height: 1.2; white-space: nowrap; }
+.user-role { font-size: 11px; color: #888; white-space: nowrap; }
+
+/* ---------- Profile dropdown ---------- */
+.navbar-dropdown.shadow-sm {
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+    overflow: hidden;
+    min-width: 180px;
+}
+.navbar-dropdown .dropdown-item {
+    font-size: 13.5px;
+    padding: 10px 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    transition: background 0.15s;
+}
+.navbar-dropdown .dropdown-item:hover { background: #f5f5f5; }
+.navbar-dropdown .dropdown-item.text-danger { color: #e53935 !important; }
+
+/* ============================================================
+   SELECT2 OVERRIDES
+   ============================================================ */
 .select2-container--default .select2-selection--multiple {
-    height: 44px !important;
-    max-height: 44px !important;
+    height: 40px !important;
+    max-height: 40px !important;
     overflow: hidden !important;
     display: flex !important;
     align-items: center !important;
@@ -110,22 +230,13 @@
     background: #f7f8fc !important;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
-.select2-container--default .select2-selection--multiple {
-    height: 45px !important;
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
-/* Focus / open state */
 .select2-container--default.select2-container--focus .select2-selection--multiple,
 .select2-container--default.select2-container--open .select2-selection--multiple {
     border-color: #3f3cbb !important;
-    box-shadow: 0 0 0 3px rgba(63, 60, 187, 0.10) !important;
-    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(63,60,187,0.10) !important;
+    background: #fff !important;
     outline: none !important;
 }
-
-/* ── Selected chips ── */
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background: linear-gradient(135deg, #3f3cbb, #5553d4) !important;
     border: none !important;
@@ -138,257 +249,228 @@
     white-space: nowrap !important;
     flex-shrink: 0 !important;
 }
+.select2-container--default .select2-selection--multiple .select2-selection__choice__display { font-size: 12px !important; color: #fff !important; }
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color: rgba(255,255,255,0.7) !important; background: transparent !important; border: none !important; }
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover { color: #fff !important; }
+.select2-container--default .select2-selection--multiple .select2-selection__clear { margin-top: 0 !important; color: #b0b5c8 !important; font-size: 16px !important; position: absolute !important; right: 10px !important; top: 50% !important; transform: translateY(-50%) !important; }
+.select2-dropdown { border: 1.5px solid #e2e5f0 !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important; overflow: hidden !important; margin-top: 4px !important; }
+.select2-search--dropdown { padding: 8px !important; }
+.select2-search--dropdown .select2-search__field { border: 1.5px solid #e2e5f0 !important; border-radius: 8px !important; padding: 7px 12px !important; font-size: 13px !important; outline: none !important; }
+.select2-search--dropdown .select2-search__field:focus { border-color: #3f3cbb !important; box-shadow: 0 0 0 2px rgba(63,60,187,0.10) !important; }
+.select2-results__option { font-size: 13.5px !important; padding: 9px 12px !important; border-radius: 8px !important; color: #3a3d52 !important; transition: background 0.15s !important; }
+.select2-results__option--highlighted { background: #f0efff !important; color: #3f3cbb !important; }
+.select2-results__option[aria-selected="true"] { background: #ebe9ff !important; color: #3f3cbb !important; font-weight: 600 !important; }
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
-    font-size: 12px !important;
-    color: #ffffff !important;
-}
+/* ============================================================
+   TABLET LANDSCAPE  769px – 1023px
+   ============================================================ */
+@media (max-width: 1023px) and (min-width: 768px) {
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    color: rgba(255, 255, 255, 0.70) !important;
-    font-size: 13px !important;
-    padding: 0 4px !important;
-    background: transparent !important;
-    border: none !important;
-}
+    .select2-container{
+            display: none !important;
+        }
+    /* Shrink brand area */
+    .navbar-brand-wrapper {
+        width: 60px;
+        min-width: 60px;
+        padding: 0 12px;
+        justify-content: center;
+        border-right: 1px solid #f0f1f7;
+    }
+    .navbar-brand.brand-logo   { display: none; }
+    .navbar-brand.brand-logo-mini { display: flex; align-items: center; }
+    .navbar-brand.brand-logo-mini img { height: 30px; }
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-    color: #ffffff !important;
-    background: transparent !important;
-}
+    /* ── Hide agency select entirely below 1024px ── */
+    .navbar-nav.navbar-center-nav { display: none !important; }
 
-/* ── Clear all (×) button ── */
-.select2-container--default .select2-selection--multiple .select2-selection__clear {
-    margin-top: 0 !important;
-    color: #b0b5c8 !important;
-    font-size: 16px !important;
-    position: absolute !important;
-    right: 10px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-}
+    /* Hide name/role in profile */
+    .user-name, .user-role { display: none; }
 
-.select2-container--default .select2-selection--multiple .select2-selection__clear:hover {
-    color: #3f3cbb !important;
-}
+    /* Slightly smaller bell */
+    .count-indicator { width: 38px; height: 38px; }
 
-/* ── Inline search field (collapses when chips present) ── */
-.select2-container--default .select2-search--inline {
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
-}
+    /* Dropdown panel narrower */
+    .navbar-dropdown.preview-list { width: 290px; }
 
-.select2-container--default .select2-search--inline .select2-search__field {
-    font-size: 13.5px !important;
-    color: #6b7280 !important;
-    margin: 6px !important;
-    padding: 2px 0 !important;
-    min-width: 0 !important;
-    max-width: 120px !important;
 }
 
-/* ── Disabled state ── */
-.select2-container--default.select2-container--disabled .select2-selection--multiple {
-    background-color: #ffffff !important;
-    border: 1px solid #ced4da !important;
-    cursor: not-allowed !important;
-    box-shadow: none !important;
-}
-
-/* ── Dropdown panel ── */
-.select2-dropdown {
-    border: 1.5px solid #e2e5f0 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-    overflow: hidden !important;
-    margin-top: 4px !important;
-}
-
-/* Search inside dropdown */
-.select2-search--dropdown {
-    padding: 8px !important;
-}
-
-.select2-search--dropdown .select2-search__field {
-    border: 1.5px solid #e2e5f0 !important;
-    border-radius: 8px !important;
-    padding: 7px 12px !important;
-    font-size: 13px !important;
-    outline: none !important;
-}
-
-.select2-search--dropdown .select2-search__field:focus {
-    border-color: #3f3cbb !important;
-    box-shadow: 0 0 0 2px rgba(63, 60, 187, 0.10) !important;
-}
-
-/* Options list */
-.select2-results__options {
-    padding: 4px !important;
-}
-
-.select2-results__option {
-    font-size: 13.5px !important;
-    padding: 9px 12px !important;
-    border-radius: 8px !important;
-    color: #3a3d52 !important;
-    transition: background 0.15s !important;
-}
-
-.select2-results__option--highlighted {
-    background: #f0efff !important;
-    color: #3f3cbb !important;
-}
-
-.select2-results__option[aria-selected="true"] {
-    background: #ebe9ff !important;
-    color: #3f3cbb !important;
-    font-weight: 600 !important;
-}
-.nav-profile .nav-link:hover {
-    background: rgba(0,0,0,0.05);
-    border-radius: 8px;
-}
-@media (max-width: 576px) {
+/* ============================================================
+   TABLET PORTRAIT  481px – 768px
+   ============================================================ */
+@media (max-width: 768px) and (min-width: 481px) {
 
     .navbar {
         flex-wrap: wrap;
-        padding: 5px 10px;
+        min-height: auto;
     }
 
+    /* ── Row 1: brand + right icons ── */
     .navbar-brand-wrapper {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        min-width: unset;
+        height: 56px;
+        flex: 0 0 auto;
+        padding: 0 12px;
+        border-right: none;
+    }
+    .navbar-brand.brand-logo   { display: none; }
+    .navbar-brand.brand-logo-mini { display: flex; align-items: center; }
+    .navbar-brand.brand-logo-mini img { height: 28px; }
+
+    .navbar-menu-wrapper {
+        height: 56px;
+        padding: 0 12px 0 4px;
+        flex-wrap: nowrap;
     }
 
-    /* Stack search below */
-    .navbar-nav.mr-lg-2 {
-        width: 100%;
-        margin-top: 8px;
-    }
+    /* Hide sidebar mini-toggle (sidebar uses off-canvas on mobile) */
+    .navbar-toggler.align-self-center { display: none; }
 
-    #agency-select {
-        width: 100% !important;
-        max-width: 100%;
-    }
+    /* ── Hide agency select entirely below 1024px ── */
+    .navbar-nav.navbar-center-nav { display: none !important; }
 
-    /* Reduce icon size */
-    .count-indicator {
-        width: 36px;
-        height: 36px;
-    }
+    /* Right nav stays row 1 */
+    .navbar-nav-right { margin-left: auto; gap: 6px; }
 
-    /* Hide username text (keep avatar) */
-    .nav-profile .ml-2 {
-        display: none;
-    }
-
-    /* Dropdown width fix */
-    .navbar-dropdown.preview-list {
-        width: 100%;
-        right: 0;
-        left: 0;
-    }
-}
-
-/* ========== SMALL DEVICES (≤768px) ========== */
-@media (max-width: 768px) {
-
-    .navbar-nav.mr-lg-2 {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .navbar-nav-right {
-        margin-left: auto;
-    }
-
-    .navbar-dropdown.preview-list {
-        width: 280px;
-    }
-}
-
-/* ========== TABLETS (768px - 1024px) ========== */
-@media (min-width: 768px) and (max-width: 1024px) {
-
-    #agency-select {
-        max-width: 200px;
-    }
+    .user-name, .user-role { display: none; }
+    .count-indicator { width: 36px; height: 36px; }
 
     .navbar-dropdown.preview-list {
         width: 300px;
     }
+
+    /* Off-canvas toggler visible */
+    .navbar-toggler.navbar-toggler-right {
+        display: flex !important;
+        align-items: center;
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #555;
+        padding: 6px;
+        cursor: pointer;
+        margin-left: 4px;
+    }
+
 }
 
-/* ========== LARGE SCREENS (≥1024px) ========== */
-@media (min-width: 1024px) {
+/* ============================================================
+   MOBILE  ≤ 480px
+   ============================================================ */
+@media (max-width: 480px) {
+
+    .navbar {
+        flex-wrap: wrap;
+        min-height: auto;
+        padding: 0;
+    }
+
+    /* ── Row 1 ── */
+    .navbar-brand-wrapper {
+        height: 52px;
+        width: auto;
+        min-width: unset;
+        padding: 0 10px;
+        flex: 0 0 auto;
+        border-right: none;
+    }
+    .navbar-brand.brand-logo   { display: none; }
+    .navbar-brand.brand-logo-mini { display: flex; align-items: center; }
+    .navbar-brand.brand-logo-mini img { height: 26px; }
 
     .navbar-menu-wrapper {
-        justify-content: center;
+        height: 52px;
+        padding: 0 10px 0 4px;
     }
 
-    .navbar-nav.mr-lg-2 {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+    .navbar-toggler.align-self-center { display: none; }
+
+    /* ── Hide agency select entirely below 1024px ── */
+    .navbar-nav.navbar-center-nav { display: none !important; }
+
+    .navbar-nav-right { gap: 4px; }
+
+    /* Hide profile text */
+    .user-name, .user-role { display: none; }
+
+    /* Smaller avatar */
+    .nav-profile img { width: 32px; height: 32px; }
+
+    /* Smaller bell */
+    .count-indicator { width: 34px; height: 34px; }
+
+    /* Notification dropdown fills screen width */
+    .navbar-dropdown.preview-list {
+        width: calc(100vw - 20px);
+        right: -10px !important;
+        left: auto !important;
+        border-radius: 10px;
+    }
+
+    /* Off-canvas toggler */
+    .navbar-toggler.navbar-toggler-right {
+        display: flex !important;
+        align-items: center;
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #555;
+        padding: 6px 4px;
+        cursor: pointer;
+        margin-left: 2px;
+    }
+
+    .navbar-dropdown.shadow-sm {
+        min-width: 160px;
     }
 }
+
 </style>
+
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    
+    <div class="navbar-brand-wrapper d-flex align-items-center justify-content-center">
 
         
-        <a class="navbar-brand brand-logo mr-5" href="#">
-
+        <a class="navbar-brand brand-logo" href="#">
             <?php if(auth()->check() && auth()->user()->agency_id): ?>
-
-                <?php
-                    $agency = $currentAgency ?? null;
-                ?>
-
+                <?php $agency = $currentAgency ?? null; ?>
                 <?php if($agency && $agency->logo): ?>
-                    <img src="<?php echo e(asset($agency->logo)); ?>" class="mr-2" alt="logo"/>
+                    <img src="<?php echo e(asset($agency->logo)); ?>" alt="logo"/>
                 <?php else: ?>
-                    <span class="navbar-brand-text">
-                        <?php echo e($agency->agency_name ?? 'Agency'); ?>
-
-                    </span>
+                    <span class="navbar-brand-text"><?php echo e($agency->agency_name ?? 'Agency'); ?></span>
                 <?php endif; ?>
-
             <?php else: ?>
-                <img src="<?php echo e(asset('assets/images/leadbridge_logo.svg')); ?>" class="mr-2" alt="logo"/>
+                <img src="<?php echo e(asset('assets/images/leadbridge_logo.svg')); ?>" alt="logo"/>
             <?php endif; ?>
-
         </a>
 
         
         <a class="navbar-brand brand-logo-mini" href="#">
-
             <?php if(auth()->check() && auth()->user()->agency_id && $currentAgency && $currentAgency->logo): ?>
                 <img src="<?php echo e(asset($currentAgency->logo)); ?>" alt="logo"/>
             <?php else: ?>
                 <img src="<?php echo e(asset('assets/images/logo-mini.svg')); ?>" alt="logo"/>
             <?php endif; ?>
-
         </a>
 
     </div>
+
+    
     <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 
-    <!-- Navbar toggler -->
-    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-      <span class="icon-menu"></span>
-    </button>
+        
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="icon-menu"></span>
+        </button>
 
-    <!-- Search -->
-    <?php if(optional(auth()->user()->role)->name == 'Super Admin'): ?>
-    <ul class="navbar-nav mr-lg-2">
-      <li class="nav-item nav-search d-none d-lg-block">
-        <div class="input-group">
-
-                <div class="nav-item mr-3 d-flex align-items-center">
-                    <select id="agency-select" class="form-control select2" multiple style="width: 250px;">
+        
+        <?php if(optional(auth()->user()->role)->name == 'Super Admin'): ?>
+        <ul class="navbar-nav navbar-center-nav">
+            <li class="nav-item" style="width:100%">
+                <select id="agency-select" class="form-control select2" multiple>
                     <?php $__currentLoopData = $agencies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agency): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <option value="<?php echo e($agency->id); ?>"
                             <?php echo e(in_array($agency->id, session('agency_ids', [])) ? 'selected' : ''); ?>>
@@ -396,120 +478,83 @@
 
                         </option>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </select>
+                </select>
+            </li>
+        </ul>
+        <?php endif; ?>
+
+        
+        <ul class="navbar-nav navbar-nav-right">
+
+            
+            <li class="nav-item dropdown">
+                <a class="nav-link count-indicator dropdown-toggle"
+                   id="notificationDropdown"
+                   href="#"
+                   data-toggle="dropdown"
+                   aria-expanded="false">
+                    <i class="icon-bell mx-0"></i>
+                    <span class="count"><?php echo e($unreadCount ?? 0); ?></span>
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+                     aria-labelledby="notificationDropdown">
+                    <p class="mb-0 font-weight-bold dropdown-header">Notifications</p>
+
+                    <?php $__empty_1 = true; $__currentLoopData = $notifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $notification): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <a class="dropdown-item preview-item <?php echo e($notification->read_at ? '' : 'unread'); ?>" href="#">
+                            <div class="preview-item-content">
+                                <p class="preview-subject"><?php echo e($notification->data['title'] ?? ''); ?></p>
+                                <p class="small-text text-muted"><?php echo e($notification->data['message'] ?? ''); ?></p>
+                            </div>
+                        </a>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <a class="dropdown-item text-center text-muted" style="font-size:13px; padding:16px;">
+                            No notifications
+                        </a>
+                    <?php endif; ?>
                 </div>
+            </li>
 
-        </div>
-      </li>
-    </ul>
-    <?php endif; ?>
-
-    <!-- Profile -->
-    <ul class="navbar-nav navbar-nav-right">
-        <li class="nav-item dropdown">
-            <a class="nav-link count-indicator dropdown-toggle position-relative"
-            id="notificationDropdown"
-            href="#"
-            data-toggle="dropdown">
-
-                <i class="icon-bell mx-0"></i>
-
-                <span class="count badge badge-danger position-absolute">
-                    <?php echo e($unreadCount ?? 0); ?>
-
-                </span>
-            </a>
-
-            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
-                aria-labelledby="notificationDropdown">
-
-                <p class="mb-0 font-weight-normal float-left dropdown-header">
-                    Notifications
-                </p>
-
-                <?php $__empty_1 = true; $__currentLoopData = $notifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $notification): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-
-                    <a class="dropdown-item preview-item" href="#">
-
-                        <div class="preview-item-content">
-                            <h6 class="preview-subject font-weight-normal">
-                                <?php echo e($notification->data['title'] ?? ''); ?>
-
-                            </h6>
-
-                            <p class="font-weight-light small-text mb-0 text-muted">
-                                <?php echo e($notification->data['message'] ?? ''); ?>
-
-                            </p>
-                        </div>
-
-                    </a>
-
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <a class="dropdown-item text-center">
-                        No notifications
-                    </a>
-                <?php endif; ?>
-
-            </div>
-        </li>
-        <li class="nav-item nav-profile dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" id="profileDropdown">
-
-                <img src="<?php echo e(auth()->user()->profile
-                        ? asset(auth()->user()->profile)
-                        : asset('assets/images/default-profile.png')); ?>"
-                    alt="profile"
-                    class="rounded-circle"
-                    width="35"
-                    height="35">
-
-                <div class="ml-2 text-left">
-                    <div class="font-weight-bold text-dark" style="line-height: 1;">
-                        <?php echo e(auth()->user()->name); ?>
-
+            
+            <li class="nav-item nav-profile dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+                    <img src="<?php echo e(auth()->user()->profile
+                            ? asset(auth()->user()->profile)
+                            : asset('assets/images/default-profile.png')); ?>"
+                         alt="profile">
+                    <div class="text-left">
+                        <div class="user-name"><?php echo e(auth()->user()->name); ?></div>
+                        <div class="user-role"><?php echo e(auth()->user()->role->name); ?></div>
                     </div>
-                    <small class="text-muted">
-                        <?php echo e(auth()->user()->role->name); ?>
-
-                    </small>
-                </div>
-
-            </a>
-
-            <div class="dropdown-menu dropdown-menu-right navbar-dropdown shadow-sm"
-                aria-labelledby="profileDropdown">
-
-                <a class="dropdown-item" href="<?php echo e(route('profile.index')); ?>">
-                    <i class="ti-user text-primary mr-2"></i> Profile
                 </a>
-                <div class="dropdown-divider"></div>
-               <?php if( strtolower(auth()->user()->role->name) == 'admin'): ?>
 
-                    <a class="dropdown-item" href="<?php echo e(route('agency.show')); ?>">
-                        <i class="ti-briefcase text-primary mr-2"></i> Agency
+                <div class="dropdown-menu dropdown-menu-right navbar-dropdown shadow-sm"
+                     aria-labelledby="profileDropdown">
+                    <a class="dropdown-item" href="<?php echo e(route('profile.index')); ?>">
+                        <i class="ti-user text-primary mr-2"></i> Profile
                     </a>
-                <?php endif; ?>
-                <div class="dropdown-divider"></div>
+                    <div class="dropdown-divider"></div>
+                    <?php if(strtolower(auth()->user()->role->name) == 'admin'): ?>
+                        <a class="dropdown-item" href="<?php echo e(route('agency.show')); ?>">
+                            <i class="ti-briefcase text-primary mr-2"></i> Agency
+                        </a>
+                        <div class="dropdown-divider"></div>
+                    <?php endif; ?>
+                    <a class="dropdown-item text-danger" href="<?php echo e(route('logout')); ?>">
+                        <i class="ti-power-off mr-2"></i> Logout
+                    </a>
+                </div>
+            </li>
 
-                <a class="dropdown-item text-danger" href="<?php echo e(route('logout')); ?>">
-                    <i class="ti-power-off mr-2"></i> Logout
-                </a>
+        </ul>
 
+        
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+            <span class="icon-menu"></span>
+        </button>
 
-            </div>
-        </li>
-        <!-- <li class="nav-item nav-settings d-none d-lg-flex">
-            <a class="nav-link" href="#">
-              <i class="icon-ellipsis"></i>
-            </a>
-          </li> -->
-    </ul>
-
-    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-      <span class="icon-menu"></span>
-    </button>
-  </div>
+    </div>
 </nav>
 
 <!-- Scripts -->

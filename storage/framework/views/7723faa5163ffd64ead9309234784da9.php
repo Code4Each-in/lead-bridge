@@ -28,11 +28,17 @@
     }
 </style>
 <style>
-    /* =========================
-    GLOBAL RESPONSIVE MODAL
-    ========================= */
-
-    /* Base modal width control */
+    .btn-delete{
+        height: 35px;
+        align-content: center;
+    }
+    .edit-lead-btn{
+        height: 35px;
+    }
+    .view-btn{
+        height: 35px;
+        align-content: center;
+    }
     .modal-dialog {
         max-width: 600px;   /* good desktop default */
         margin: 1.75rem auto;
@@ -116,13 +122,11 @@
             font-size: 16px;
         }
     }
-    /* =========================
-    FORCE RESPONSIVE MODAL (WORKING 100%)
-    ========================= */
+
 
     /* Desktop default */
     .modal-dialog {
-        max-width: 600px !important;
+        max-width: 700px !important;
         margin: 1.75rem auto !important;
     }
 
@@ -132,9 +136,7 @@
         overflow-y: auto !important;
     }
 
-    /* =========================
-    MOBILE & SMALL TABLETS (≤700px)
-    ========================= */
+
     @media (max-width: 700px) {
 
         .modal {
@@ -666,7 +668,7 @@ $(document).ready(function () {
                 searchable: false,
                 render: function(id){
                     return `
-                        <a href="/leads/${id}" class="btn btn-sm btn-primary" target="_blank">
+                        <a href="/leads/${id}" class="btn btn-sm btn-primary view-btn" target="_blank">
                             <i class="mdi mdi-eye"></i> View
                         </a>
                         <button class="btn btn-sm btn-primary edit-lead-btn" data-id="${id}">

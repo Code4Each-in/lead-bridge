@@ -16,10 +16,16 @@
 
     /* Base modal width control */
     .modal-dialog {
-        max-width: 600px;   /* good desktop default */
+        max-width: 700px;   /* good desktop default */
         margin: 1.75rem auto;
     }
-
+    .btn-delete{
+        height: 35px;
+        align-content: center;
+    }
+    .editBtn{
+        height: 35px;
+    }
     /* Modal content scroll fix */
     .modal-body {
         max-height: 70vh;
@@ -98,13 +104,11 @@
             font-size: 16px;
         }
     }
-    /* =========================
-    FORCE RESPONSIVE MODAL (WORKING 100%)
-    ========================= */
+
 
     /* Desktop default */
     .modal-dialog {
-        max-width: 600px !important;
+        max-width: 700px !important;
         margin: 1.75rem auto !important;
     }
 
@@ -114,9 +118,7 @@
         overflow-y: auto !important;
     }
 
-    /* =========================
-    MOBILE & SMALL TABLETS (≤700px)
-    ========================= */
+
     @media (max-width: 700px) {
 
         .modal {
@@ -532,12 +534,12 @@ waitForJQuery(function () {
                         return `
                             <button class="btn btn-sm btn-primary editBtn"
                                 data-id="${id}">
-                                Edit
+                                <i class="mdi mdi-pencil-box"></i> Edit
                             </button>
 
                             <a href="/users/delete/${id}"
                                 class="btn btn-sm btn-danger btn-delete">
-                                Delete
+                                <i class="mdi mdi-delete"></i> Delete
                             </a>
                         `;
                     }
