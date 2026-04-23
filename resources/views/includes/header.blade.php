@@ -425,7 +425,23 @@
         min-width: 160px;
     }
 }
-
+@media (max-width: 1440px){
+    .select2-container {
+        width: 500px !important;
+        max-width: 100%;
+    }
+}
+@media (max-width: 1024px){
+    .select2-container {
+        width: 300px !important;
+        max-width: 100%;
+    }
+}
+@media (max-width: 425px) and (min-width: 375px){
+    .select2-container--default .select2-selection--multiple {
+        display: none !important;
+    }
+}
 </style>
 
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">

@@ -202,6 +202,20 @@
         overflow-x: auto;
     }
 }
+@media (max-width: 576px){
+    .row.custom-gap {
+        row-gap: 12px;
+        column-gap: 12px;
+    }
+}
+@media (max-width: 1024px){
+     .row > [class*="col-"] {
+        padding: 10px;
+    }
+    .status-card {
+        margin: 6px;
+    }
+}
 </style>
 
 <div class="row mb-3">
@@ -376,10 +390,10 @@
                     </h6>
                 </div>
 
-                <div class="row g-3">
+                <div class="row custom-gap g-3">
 
                     <?php $__currentLoopData = $leadsByStatus; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $status => $count): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="col-6 col-md-4 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-3">
 
                         <div class="status-card h-100">
 
