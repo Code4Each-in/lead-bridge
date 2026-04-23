@@ -12,7 +12,6 @@
     }
     .edit-agency-btn{
         height: 35px;
-        font-size: 20px;
     }
 </style>
 <style>
