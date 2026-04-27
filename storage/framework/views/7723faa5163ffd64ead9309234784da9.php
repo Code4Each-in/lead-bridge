@@ -227,7 +227,7 @@
                         <?php if(in_array($role, ['admin','mis user'])): ?>
                             <form id="uploadExcelForm" action="<?php echo e(route('import')); ?>" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                                 <?php echo csrf_field(); ?>
-                                <input type="file" name="file" accept=".xls,.xlsx" style="display: none;" id="excelFileInput">
+                                <input type="file" name="file" accept=".xls,.xlsx,.csv" style="display: none;" id="excelFileInput">
                                 <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
                             </form>
 
@@ -327,7 +327,7 @@
 
                     <div class="row">
                         <?php if($isSuperAdmin): ?>
-
+                            
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
@@ -342,7 +342,7 @@
                                 </div>
                             </div>
 
-
+                            
                             <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -366,10 +366,10 @@
                                 </div>
                             </div>
                         <?php else: ?>
+                            
+                            
 
-
-
-
+                            
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -498,7 +498,7 @@
                         </div>
 
                         <?php if($isSuperAdmin): ?>
-
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
@@ -518,7 +518,7 @@
                                 </div>
                             </div>
 
-
+                            
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
@@ -538,7 +538,7 @@
                                 </div>
                             </div>
                         <?php else: ?>
-
+                            
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
@@ -598,7 +598,31 @@
     </div>
 </div>
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+<?php if(session('failed_rows') && count(session('failed_rows')) > 0): ?>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    setTimeout(() => {
+
+        let failedRows = <?php echo json_encode(session('failed_rows'), 15, 512) ?>;
+        let message = '<b>Import Failed Details:</b><br><br>';
+
+        failedRows.forEach(row => {
+            message += `Row ${row.row_number}: ${row.reason}<br>`;
+        });
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Import Errors',
+            html: message,
+            width: 600
+        });
+
+    }, 500); // delay so it runs AFTER global swal
+
+});
+</script>
+<?php endif; ?>
 <script>
 
 const ALL_USERS = <?php echo json_encode($users->map(function($u) {

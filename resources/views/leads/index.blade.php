@@ -228,7 +228,7 @@
                         @if(in_array($role, ['admin','mis user']))
                             <form id="uploadExcelForm" action="{{ route('import') }}" method="POST" enctype="multipart/form-data" class="mb-0 mr-3">
                                 @csrf
-                                <input type="file" name="file" accept=".xls,.xlsx" style="display: none;" id="excelFileInput">
+                                <input type="file" name="file" accept=".xls,.xlsx,.csv" style="display: none;" id="excelFileInput">
                                 <button type="button" class="btn btn-secondary" id="selectExcelBtn">Upload Excel</button>
                             </form>
 
@@ -595,7 +595,31 @@
     </div>
 </div>
 @endforeach
+@if(session('failed_rows') && count(session('failed_rows')) > 0)
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    setTimeout(() => {
+
+        let failedRows = @json(session('failed_rows'));
+        let message = '<b>Import Failed Details:</b><br><br>';
+
+        failedRows.forEach(row => {
+            message += `Row ${row.row_number}: ${row.reason}<br>`;
+        });
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Import Errors',
+            html: message,
+            width: 600
+        });
+
+    }, 500); // delay so it runs AFTER global swal
+
+});
+</script>
+@endif
 <script>
 
 const ALL_USERS = {!! json_encode($users->map(function($u) {
