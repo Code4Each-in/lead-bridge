@@ -58,9 +58,7 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/leads/{leadId}', [LeadController::class, 'showLead'])->name('leads.show');
 
 });
-// Route::get('/upload', function () {
-//     return view('upload'); // your blade file with the form
-// })->name('upload.form');
+
 Route::post('/leads/{id}/status', [LeadController::class, 'updateStatus'])->name('leads.updateStatus');
 Route::post('/import', [LeadImportController::class, 'import'])->name('import');
 Route::post('/set-agency', [AgencyController::class, 'setAgency'])

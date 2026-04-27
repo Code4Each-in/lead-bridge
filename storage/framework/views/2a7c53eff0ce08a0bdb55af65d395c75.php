@@ -414,7 +414,7 @@
 
     /* Off-canvas toggler */
    .navbar-toggler.navbar-toggler-right {
-        display: block  !important;
+        display: block !important;
         position: relative;
         z-index: 1050;
         margin-left: 6px;

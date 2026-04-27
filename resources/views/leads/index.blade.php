@@ -50,9 +50,7 @@
         max-height: 70vh;
         overflow-y: auto;
     }
-    /* =========================
-    TABLET (≤768px)
-    ========================= */
+
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -71,9 +69,6 @@
         }
     }
 
-    /* =========================
-    MOBILE (≤576px)
-    ========================= */
     @media (max-width: 576px) {
 
         /* Full width feel */
@@ -223,7 +218,7 @@
                             Leads ({{ $totalLeads }})
                         </h4>
 
-                    <div class="d-flex">
+                    <div class="d-flex flex-column flex-sm-row gap-2">
 
                         @if(in_array($role, ['super admin','admin','mis user']))
                             <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
