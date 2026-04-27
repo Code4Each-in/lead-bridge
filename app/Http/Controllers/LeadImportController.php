@@ -14,7 +14,7 @@ class LeadImportController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required'
+            'file' => 'required|file|mimes:xls,xlsx,csv'
         ]);
 
         $authUser = Auth::user();
@@ -89,13 +89,13 @@ class LeadImportController extends Controller
 
             if ($index === 0) continue;
 
-            $name  = trim($row[0] ?? '');
-            $phone = trim($row[1] ?? '');
-            $email = trim($row[2] ?? '');
+            $name  = isset($row[0]) ? trim($row[0]) : '';
+            $phone = isset($row[1]) ? trim($row[1]) : '';
+            $email = isset($row[2]) ? trim($row[2]) : '';
             $reason = null;
 
             if (empty($name) || (empty($email) && empty($phone))) {
-                $reason = 'Missing mandatory fields.';
+                $reason = "Missing fields (name: $name, email: $email, phone: $phone)";
             }
 
             if (!$reason) {
@@ -139,7 +139,7 @@ class LeadImportController extends Controller
                     'agency_id'  => $authAgencyId,
                     'created_by' => $authUser->id,
                     'assigned_to'=> $assignedUser->id,
-                    'notes'      => $row[7] ?? null,
+                    'notes'      => $row[6] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -179,7 +179,7 @@ class LeadImportController extends Controller
         $failedFileName = null;
 
         if (!empty($failedRows)) {
-            $failedFileName = 'failed_' . \Str::random(6) . '_' . time() . '.csv';
+            $failedFileName = 'failed_' . Str::random(6) . '_' . time() . '.csv';
             $handle = fopen(storage_path('app/' . $failedFileName), 'w');
 
             $csvHeader = array_merge($rows[0], ['reason', 'row_number']);
@@ -206,7 +206,9 @@ class LeadImportController extends Controller
         ]);
 
         return back()->with([
-            'success' => "Upload completed. Inserted: $insertedCount, Failed: $failedCount"
+            'import_result' => true,
+            'success' => "Upload completed. Inserted: $insertedCount, Failed: $failedCount",
+            'failed_rows' => $failedRows
         ]);
     }
 }
