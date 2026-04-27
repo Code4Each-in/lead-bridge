@@ -247,11 +247,7 @@
     .rpb-purple::before { background: #6f42c1; }
 </style>
 <style>
-    /* =========================
-    GLOBAL RESPONSIVE MODAL
-    ========================= */
 
-    /* Base modal width control */
     .modal-dialog {
         max-width: 600px;   /* good desktop default */
         margin: 1.75rem auto;
@@ -262,9 +258,7 @@
         max-height: 70vh;
         overflow-y: auto;
     }
-    /* =========================
-    TABLET (≤768px)
-    ========================= */
+
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -283,9 +277,6 @@
         }
     }
 
-    /* =========================
-    MOBILE (≤576px)
-    ========================= */
     @media (max-width: 576px) {
 
         /* Full width feel */
@@ -434,20 +425,20 @@
                         <!-- LEFT: Role-based buttons -->
                         <div class="d-flex gap-2">
 
-                            
+
                             <?php if($role == 'account executive' && ($lead->stage == 'ae' || $lead->stage == 'returned')): ?>
                                 <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
                                     Move to QA
                                 </button>
                             <?php endif; ?>
 
-                            
+
                             <?php if($role == 'qa user' && $lead->stage == 'qa'): ?>
                                 <button class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#managerModal">
                                     Move to Manager
                                 </button>
 
-                                <form method="POST" action="<?php echo e(route('lead.return-ae', $lead->id)); ?>" class="d-inline">
+                                <form method="POST" action="<?php echo e(route('lead.return-ae', $lead->id)); ?>" class="d-inline return-ae-form">
                                     <?php echo csrf_field(); ?>
                                     <button class="btn btn-secondary btn-sm">
                                         Return to AE
@@ -455,7 +446,7 @@
                                 </form>
                             <?php endif; ?>
 
-                            
+
                             <?php if($role == 'account manager' && $lead->stage == 'manager'): ?>
                                 <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline" id="completeForm">
                                     <?php echo csrf_field(); ?>
@@ -783,7 +774,7 @@
                                         <!-- LEFT CONTENT -->
                                         <div>
 
-                                            
+
                                                 <?php if($activity['type'] === 'note'): ?>
 
                                                 <strong><?php echo e($activity['data']->user->name); ?></strong>
@@ -800,7 +791,7 @@
 
                                                 </p>
 
-                                                
+
                                                     <?php if($activity['data']->documents->count()): ?>
 
                                                         <div class="mt-2">
@@ -824,7 +815,7 @@
 
                                                 <?php endif; ?>
 
-                                            
+
                                             <?php if($activity['type'] === 'document'): ?>
 
                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
@@ -844,7 +835,7 @@
                                         <!-- ACTIONS -->
                                         <div>
 
-                                            
+
                                             <?php if($activity['type'] === 'note'): ?>
                                                 <?php if($activity['data']->user_id == auth()->id()): ?>
 
@@ -857,7 +848,7 @@
                                                 <?php endif; ?>
                                             <?php endif; ?>
 
-                                            
+
                                                 <?php if($activity['type'] === 'document'): ?>
                                                     <?php if(strtolower(auth()->user()->role->name) === 'super admin'): ?>
 
@@ -1313,6 +1304,42 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         Swal.fire('Error', 'Something went wrong', 'error');
                     }
+                }
+            });
+        });
+    });
+    $(document).on('submit', '.return-ae-form', function(e) {
+        e.preventDefault();
+
+        const $form = $(this);
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Return this lead to AE?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, return it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize(),
+
+                success: function(res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success || 'Lead returned successfully',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                },
+
+                error: function() {
+                    Swal.fire('Error', 'Something went wrong', 'error');
                 }
             });
         });

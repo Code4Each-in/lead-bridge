@@ -3,11 +3,7 @@
 @section('subtitle', 'Roles')
 @section('content')
 <style>
-    /* =========================
-    GLOBAL RESPONSIVE MODAL
-    ========================= */
 
-    /* Base modal width control */
     .modal-dialog {
         max-width: 600px;   /* good desktop default */
         margin: 1.75rem auto;
@@ -18,9 +14,7 @@
         max-height: 70vh;
         overflow-y: auto;
     }
-    /* =========================
-    TABLET (≤768px)
-    ========================= */
+
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -39,9 +33,6 @@
         }
     }
 
-    /* =========================
-    MOBILE (≤576px)
-    ========================= */
     @media (max-width: 576px) {
 
         /* Full width feel */

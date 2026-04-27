@@ -49,9 +49,7 @@
         max-height: 70vh;
         overflow-y: auto;
     }
-    /* =========================
-    TABLET (≤768px)
-    ========================= */
+
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -70,9 +68,6 @@
         }
     }
 
-    /* =========================
-    MOBILE (≤576px)
-    ========================= */
     @media (max-width: 576px) {
 
         /* Full width feel */
@@ -222,7 +217,7 @@
                             Leads (<?php echo e($totalLeads); ?>)
                         </h4>
 
-                    <div class="d-flex">
+                    <div class="d-flex flex-column flex-sm-row gap-2">
 
                         <?php if(in_array($role, ['super admin','admin','mis user'])): ?>
                             <button class="btn btn-primary mr-3" data-toggle="modal" data-target="#createModal">
@@ -332,7 +327,7 @@
 
                     <div class="row">
                         <?php if($isSuperAdmin): ?>
-                            
+
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
@@ -347,7 +342,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -371,10 +366,10 @@
                                 </div>
                             </div>
                         <?php else: ?>
-                            
-                            
 
-                            
+
+
+
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -503,7 +498,7 @@
                         </div>
 
                         <?php if($isSuperAdmin): ?>
-                            
+
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Agency</label>
@@ -523,7 +518,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>
@@ -543,7 +538,7 @@
                                 </div>
                             </div>
                         <?php else: ?>
-                            
+
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="required-label">Assign User</label>

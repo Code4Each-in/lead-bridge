@@ -248,24 +248,16 @@
     .rpb-purple::before { background: #6f42c1; }
 </style>
 <style>
-    /* =========================
-    GLOBAL RESPONSIVE MODAL
-    ========================= */
 
-    /* Base modal width control */
     .modal-dialog {
-        max-width: 600px;   /* good desktop default */
+        max-width: 600px;
         margin: 1.75rem auto;
     }
 
-    /* Modal content scroll fix */
     .modal-body {
         max-height: 70vh;
         overflow-y: auto;
     }
-    /* =========================
-    TABLET (≤768px)
-    ========================= */
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -284,9 +276,6 @@
         }
     }
 
-    /* =========================
-    MOBILE (≤576px)
-    ========================= */
     @media (max-width: 576px) {
 
         /* Full width feel */
@@ -448,7 +437,7 @@
                                     Move to Manager
                                 </button>
 
-                                <form method="POST" action="{{ route('lead.return-ae', $lead->id) }}" class="d-inline">
+                                <form method="POST" action="{{ route('lead.return-ae', $lead->id) }}" class="d-inline return-ae-form">
                                     @csrf
                                     <button class="btn btn-secondary btn-sm">
                                         Return to AE
@@ -1296,6 +1285,42 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     });
+    $(document).on('submit', '.return-ae-form', function(e) {
+        e.preventDefault();
+
+        const $form = $(this);
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Return this lead to AE?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, return it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize(),
+
+                success: function(res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.success || 'Lead returned successfully',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                },
+
+                error: function() {
+                    Swal.fire('Error', 'Something went wrong', 'error');
+                }
+            });
+        });
+    });
     $(document).on('submit', '#completeForm', function(e) {
         e.preventDefault();
 
@@ -1378,29 +1403,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    // document.getElementById('comment-form').addEventListener('submit', function(e) {
 
-    //     const editId = document.getElementById('edit-note-id').value;
-
-    //     document.getElementById('create-content').value =
-    //         editors['create'].root.innerHTML;
-
-    //     if (editId) {
-
-    //         this.action = `/notes/${editId}`;
-    //         this.method = 'POST';
-
-    //         // remove old _method if exists
-    //         let old = this.querySelector('input[name="_method"]');
-    //         if (old) old.remove();
-
-    //         let methodInput = document.createElement('input');
-    //         methodInput.type = 'hidden';
-    //         methodInput.name = '_method';
-    //         methodInput.value = 'PUT';
-    //         this.appendChild(methodInput);
-    //     }
-    // });
     document.getElementById('comment-form').addEventListener('submit', function (e) {
 
         const editId = document.getElementById('edit-note-id').value;
