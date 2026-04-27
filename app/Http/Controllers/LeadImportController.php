@@ -203,7 +203,6 @@ class LeadImportController extends Controller
             'failed_file'    => $failedFileName,
             'created_at'     => now(),
             'updated_at'     => now(),
-            
         ]);
 
         return back()->with([
