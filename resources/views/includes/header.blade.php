@@ -382,6 +382,7 @@
     .navbar-menu-wrapper {
         height: 52px;
         padding: 0 10px 0 4px;
+        flex-wrap: wrap;
     }
 
     .navbar-toggler.align-self-center { display: none; }
@@ -389,7 +390,10 @@
     /* ── Hide agency select entirely below 1024px ── */
     .navbar-nav.navbar-center-nav { display: none !important; }
 
-    .navbar-nav-right { gap: 4px; }
+       .navbar-nav-right {
+        gap: 2px;
+        flex-shrink: 1;
+    }
 
     /* Hide profile text */
     .user-name, .user-role { display: none; }
@@ -409,16 +413,11 @@
     }
 
     /* Off-canvas toggler */
-    .navbar-toggler.navbar-toggler-right {
-        display: flex !important;
-        align-items: center;
-        background: none;
-        border: none;
-        font-size: 18px;
-        color: #555;
-        padding: 6px 4px;
-        cursor: pointer;
-        margin-left: 2px;
+   .navbar-toggler.navbar-toggler-right {
+        display: block !important;
+        position: relative;
+        z-index: 1050;
+        margin-left: 6px;
     }
 
     .navbar-dropdown.shadow-sm {
@@ -437,7 +436,7 @@
         max-width: 100%;
     }
 }
-@media (max-width: 425px) and (min-width: 375px){
+@media (max-width: 425px) and (min-width: 320px){
     .select2-container--default .select2-selection--multiple {
         display: none !important;
     }
