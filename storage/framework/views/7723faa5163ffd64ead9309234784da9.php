@@ -210,6 +210,47 @@
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <div class="row g-2 align-items-center">
+
+                    <!-- Lead Name -->
+                    <div class="col-md-3">
+                        <select id="filter_name" class="form-control">
+                            <option value="">All Leads</option>
+                            <?php $__currentLoopData = $names; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($name); ?>"><?php echo e($name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+
+                    <!-- Company -->
+                    <div class="col-md-3">
+                        <select id="filter_company" class="form-control">
+                            <option value="">All Companies</option>
+                            <?php $__currentLoopData = $companies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $company): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($company); ?>"><?php echo e($company); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-3">
+                        <select id="filter_status" class="form-control">
+                            <option value="">All Status</option>
+                            <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $status): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($status); ?>"><?php echo e($status); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+
+                    <!-- Email / Phone -->
+                    <div class="col-md-3">
+                        <input type="text" id="filter_contact" class="form-control"
+                            placeholder="Email / Phone">
+                    </div>
+
+                </div>
+            </div>
             <div class="card-body">
 
                 <div class="d-flex justify-content-between mb-3 align-items-center">
@@ -343,17 +384,6 @@
                             </div>
 
                             
-                            <!-- <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Assign User</label>
-                                    <select name="assigned_user_id[]"
-                                            id="create_user_select"
-                                            class="form-control user-select"
-                                            multiple>
-                                        <option value="">-- Select Agency First --</option>
-                                    </select>
-                                </div>
-                            </div> -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -391,20 +421,6 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes"></textarea>
                     </div>
 
-                    <!-- <div class="form-group">
-                        <label>Document</label>
-                        <div class="input-group">
-                            <input type="file" id="documentInput_create" name="documents" style="display: none;">
-                            <input type="text" class="form-control file-upload-info" id="documentName_create"
-                                placeholder="Upload Document" readonly>
-                            <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-primary" type="button"
-                                    onclick="document.getElementById('documentInput_create').click();">
-                                    Upload
-                                </button>
-                            </span>
-                        </div>
-                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -564,29 +580,6 @@
                         <label class="required-label">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes"><?php echo e($lead->notes); ?></textarea>
                     </div>
-
-                    <!-- <div class="form-group">
-                        <label>Document</label>
-                        <?php if($lead->documents): ?>
-                            <div class="mb-1">
-                                <small class="text-muted">
-                                    Current: <a href="<?php echo e(asset('storage/' . $lead->documents)); ?>" target="_blank">View File</a>
-                                </small>
-                            </div>
-                        <?php endif; ?>
-                        <div class="input-group">
-                            <input type="file" id="documentInput_<?php echo e($lead->id); ?>" name="documents" style="display: none;">
-                            <input type="text" class="form-control file-upload-info"
-                                id="documentName_<?php echo e($lead->id); ?>"
-                                placeholder="Upload Document" readonly>
-                            <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-primary" type="button"
-                                    onclick="document.getElementById('documentInput_<?php echo e($lead->id); ?>').click();">
-                                    Upload
-                                </button>
-                            </span>
-                        </div>
-                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -618,7 +611,7 @@ document.addEventListener("DOMContentLoaded", function () {
             width: 600
         });
 
-    }, 500); // delay so it runs AFTER global swal
+    }, 500);
 
 });
 </script>
@@ -667,14 +660,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 });
+
 $(document).ready(function () {
-    $('#leadsTable').DataTable({
+
+    var table = $('#leadsTable').DataTable({
         processing: true,
         serverSide: true,
         pageLength: 10,
         ordering: true,
         responsive: true,
-        ajax: "<?php echo e(route('leads.index')); ?>",
+        ajax: {
+            url: "<?php echo e(route('leads.index')); ?>",
+            data: function (d) {
+                d.name = $('#filter_name').val();
+                d.company = $('#filter_company').val();
+                d.status = $('#filter_status').val();
+                d.contact = $('#filter_contact').val();
+            }
+        },
         columns: [
             { data: 'name' },
             { data: 'company' },
@@ -702,12 +705,31 @@ $(document).ready(function () {
         ]
     });
 
-    // Use delegated event for dynamically loaded buttons
+
+    $('#filter_name, #filter_company, #filter_status').on('change', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter_contact').on('keyup', function () {
+        table.ajax.reload();
+    });
+
+
+    $('#resetFilter').click(function () {
+        $('#filter_name').val('');
+        $('#filter_company').val('');
+        $('#filter_status').val('');
+        table.ajax.reload();
+    });
+
+
     $('#leadsTable').on('click', '.edit-lead-btn', function () {
         let id = $(this).data('id');
         $('#editModal' + id).modal('show');
     });
+
 });
+
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
@@ -871,17 +893,6 @@ $(document).ready(function () {
             });
         }
     });
-    // $(document).ready(function () {
-
-    //     $('.edit-lead-btn').click(function () {
-    //         let id = $(this).data('id');
-
-    //         // console.log('clicked direct', id);
-
-    //         $('#editModal' + id).modal('show');
-    //     });
-
-    // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');
@@ -943,7 +954,7 @@ $(document).ready(function () {
 
         const $form  = $(this);
         const url    = $form.data('url');
-         console.log('Submitting to:', url);
+        //  console.log('Submitting to:', url);
         const $btn   = $form.find('[type="submit"]');
         clearErrors($form);
 

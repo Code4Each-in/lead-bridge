@@ -211,6 +211,47 @@
 <div class="row">
     <div class="col-md-12 grid-margin">
         <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <div class="row g-2 align-items-center">
+
+                    <!-- Lead Name -->
+                    <div class="col-md-3">
+                        <select id="filter_name" class="form-control">
+                            <option value="">All Leads</option>
+                            @foreach($names as $name)
+                                <option value="{{ $name }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Company -->
+                    <div class="col-md-3">
+                        <select id="filter_company" class="form-control">
+                            <option value="">All Companies</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company }}">{{ $company }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-3">
+                        <select id="filter_status" class="form-control">
+                            <option value="">All Status</option>
+                            @foreach($statuses as $status)
+                                <option value="{{ $status }}">{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Email / Phone -->
+                    <div class="col-md-3">
+                        <input type="text" id="filter_contact" class="form-control"
+                            placeholder="Email / Phone">
+                    </div>
+
+                </div>
+            </div>
             <div class="card-body">
 
                 <div class="d-flex justify-content-between mb-3 align-items-center">
@@ -344,17 +385,6 @@
                             </div>
 
                             {{-- Assign User (populated by agency change) --}}
-                            <!-- <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Assign User</label>
-                                    <select name="assigned_user_id[]"
-                                            id="create_user_select"
-                                            class="form-control user-select"
-                                            multiple>
-                                        <option value="">-- Select Agency First --</option>
-                                    </select>
-                                </div>
-                            </div> -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Assign User</label>
@@ -392,20 +422,6 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes"></textarea>
                     </div>
 
-                    <!-- <div class="form-group">
-                        <label>Document</label>
-                        <div class="input-group">
-                            <input type="file" id="documentInput_create" name="documents" style="display: none;">
-                            <input type="text" class="form-control file-upload-info" id="documentName_create"
-                                placeholder="Upload Document" readonly>
-                            <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-primary" type="button"
-                                    onclick="document.getElementById('documentInput_create').click();">
-                                    Upload
-                                </button>
-                            </span>
-                        </div>
-                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -561,29 +577,6 @@
                         <label class="required-label">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Notes">{{ $lead->notes }}</textarea>
                     </div>
-
-                    <!-- <div class="form-group">
-                        <label>Document</label>
-                        @if($lead->documents)
-                            <div class="mb-1">
-                                <small class="text-muted">
-                                    Current: <a href="{{ asset('storage/' . $lead->documents) }}" target="_blank">View File</a>
-                                </small>
-                            </div>
-                        @endif
-                        <div class="input-group">
-                            <input type="file" id="documentInput_{{ $lead->id }}" name="documents" style="display: none;">
-                            <input type="text" class="form-control file-upload-info"
-                                id="documentName_{{ $lead->id }}"
-                                placeholder="Upload Document" readonly>
-                            <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-primary" type="button"
-                                    onclick="document.getElementById('documentInput_{{ $lead->id }}').click();">
-                                    Upload
-                                </button>
-                            </span>
-                        </div>
-                    </div> -->
                 </div>
 
                 <div class="modal-footer">
@@ -615,7 +608,7 @@ document.addEventListener("DOMContentLoaded", function () {
             width: 600
         });
 
-    }, 500); // delay so it runs AFTER global swal
+    }, 500);
 
 });
 </script>
@@ -664,14 +657,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 });
+
 $(document).ready(function () {
-    $('#leadsTable').DataTable({
+
+    var table = $('#leadsTable').DataTable({
         processing: true,
         serverSide: true,
         pageLength: 10,
         ordering: true,
         responsive: true,
-        ajax: "{{ route('leads.index') }}",
+        ajax: {
+            url: "{{ route('leads.index') }}",
+            data: function (d) {
+                d.name = $('#filter_name').val();
+                d.company = $('#filter_company').val();
+                d.status = $('#filter_status').val();
+                d.contact = $('#filter_contact').val();
+            }
+        },
         columns: [
             { data: 'name' },
             { data: 'company' },
@@ -699,12 +702,31 @@ $(document).ready(function () {
         ]
     });
 
-    // Use delegated event for dynamically loaded buttons
+
+    $('#filter_name, #filter_company, #filter_status').on('change', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter_contact').on('keyup', function () {
+        table.ajax.reload();
+    });
+
+
+    $('#resetFilter').click(function () {
+        $('#filter_name').val('');
+        $('#filter_company').val('');
+        $('#filter_status').val('');
+        table.ajax.reload();
+    });
+
+
     $('#leadsTable').on('click', '.edit-lead-btn', function () {
         let id = $(this).data('id');
         $('#editModal' + id).modal('show');
     });
+
 });
+
 (function waitForJQ() {
     if (typeof $ === 'undefined') { setTimeout(waitForJQ, 50); return; }
 
@@ -868,17 +890,6 @@ $(document).ready(function () {
             });
         }
     });
-    // $(document).ready(function () {
-
-    //     $('.edit-lead-btn').click(function () {
-    //         let id = $(this).data('id');
-
-    //         // console.log('clicked direct', id);
-
-    //         $('#editModal' + id).modal('show');
-    //     });
-
-    // });
 
     function clearErrors($form) {
         $form.find('.is-invalid').removeClass('is-invalid');
@@ -940,7 +951,7 @@ $(document).ready(function () {
 
         const $form  = $(this);
         const url    = $form.data('url');
-         console.log('Submitting to:', url);
+        //  console.log('Submitting to:', url);
         const $btn   = $form.find('[type="submit"]');
         clearErrors($form);
 

@@ -29,8 +29,8 @@ class LeadController extends Controller
 
         $query = Lead::with(['assignedUser', 'agency'])->latest();
 
-        // Role-based filtering
-        if ($roleName === 'admin') {
+        // Role-based access
+        if ($roleName === 'admin' || $roleName === 'mis user') {
             $query->where('agency_id', $authUser->agency_id);
         } elseif ($roleName === 'account executive') {
             $query->where('assigned_to', $authUser->id);
@@ -38,18 +38,16 @@ class LeadController extends Controller
             $query->where('assigned_qa_id', $authUser->id);
         } elseif ($roleName === 'account manager') {
             $query->where('assigned_manager_id', $authUser->id);
-        } elseif ($roleName === 'mis user') {
-            $query->where('agency_id', $authUser->agency_id);
         }
 
-        // Handle AJAX request from DataTables
         if ($request->ajax()) {
 
-            $baseQuery = clone $query; // total count
+            $baseQuery = clone $query;
 
-            // Search filter
+            // Global search
             if (!empty($request->search['value'])) {
                 $search = $request->search['value'];
+
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                     ->orWhere('company', 'like', "%{$search}%")
@@ -58,10 +56,27 @@ class LeadController extends Controller
                 });
             }
 
-            // Total count
-            $total = $baseQuery->count();
+            // Filters
+            if ($request->filled('name')) {
+                $query->where('name', $request->name);
+            }
 
-            // Filtered count
+            if ($request->filled('company')) {
+                $query->where('company', $request->company);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+            if (!empty($request->contact)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('email', 'like', '%' . $request->contact . '%')
+                    ->orWhere('phone', 'like', '%' . $request->contact . '%');
+                });
+            }
+
+            // Counts
+            $total = $baseQuery->count();
             $filtered = $query->count();
 
             // Pagination
@@ -69,15 +84,15 @@ class LeadController extends Controller
                         ->take($request->length)
                         ->get();
 
-            // Transform data for DataTables
-            $data = $leads->map(function($lead){
+            // Response format
+            $data = $leads->map(function ($lead) {
                 return [
                     'name' => $lead->name,
                     'company' => $lead->company,
-                    'assigned_user' => $lead->assignedUser ? $lead->assignedUser->name : 'N/A',
+                    'assigned_user' => $lead->assignedUser->name ?? 'N/A',
                     'status' => $lead->status,
                     'source' => $lead->source,
-                    'id' => $lead->id, // for actions column
+                    'id' => $lead->id,
                 ];
             });
 
@@ -89,15 +104,53 @@ class LeadController extends Controller
             ]);
         }
 
-        // Regular page load (non-AJAX)
+        $filterQuery = Lead::query();
+
+        if ($roleName === 'admin' || $roleName === 'mis user') {
+            $filterQuery->where('agency_id', $authUser->agency_id);
+        } elseif ($roleName === 'account executive') {
+            $filterQuery->where('assigned_to', $authUser->id);
+        } elseif ($roleName === 'qa user') {
+            $filterQuery->where('assigned_qa_id', $authUser->id);
+        } elseif ($roleName === 'account manager') {
+            $filterQuery->where('assigned_manager_id', $authUser->id);
+        }
+
+        $names = (clone $filterQuery)
+            ->select('name')
+            ->distinct()
+            ->orderBy('name')
+            ->pluck('name');
+
+        $companies = (clone $filterQuery)
+            ->select('company')
+            ->distinct()
+            ->orderBy('company')
+            ->pluck('company');
+
+        $statuses = [
+            'Not Started',
+            'In Progress',
+            'Hold',
+            'Lost',
+            'Complete'
+        ];
+
         $agencies = Agency::all();
         $users = User::all();
         $totalLeads = $query->count();
-
-        // Make sure $leads exists for Blade
         $leads = $query->get();
 
-        return view('leads.index', compact('users', 'agencies', 'authUser', 'totalLeads','leads'));
+        return view('leads.index', compact(
+            'users',
+            'agencies',
+            'authUser',
+            'totalLeads',
+            'leads',
+            'names',
+            'companies',
+            'statuses'
+        ));
     }
     public function store(Request $request)
     {
@@ -292,7 +345,10 @@ class LeadController extends Controller
     {
         $lead = Lead::with([
             'agency',
-            'users',
+            'assignedUser.role',
+            'creator.role',
+            'qaUser.role',
+            'manager.role',
             'leadNotes.user',
             'leadNotes.documents',
             'leadDocuments'

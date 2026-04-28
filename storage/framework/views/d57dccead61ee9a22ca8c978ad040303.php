@@ -249,16 +249,14 @@
 <style>
 
     .modal-dialog {
-        max-width: 600px;   /* good desktop default */
+        max-width: 600px;
         margin: 1.75rem auto;
     }
 
-    /* Modal content scroll fix */
     .modal-body {
         max-height: 70vh;
         overflow-y: auto;
     }
-
     @media (max-width: 768px) {
 
         .modal-dialog {
@@ -425,14 +423,14 @@
                         <!-- LEFT: Role-based buttons -->
                         <div class="d-flex gap-2">
 
-
+                            
                             <?php if($role == 'account executive' && ($lead->stage == 'ae' || $lead->stage == 'returned')): ?>
                                 <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#qaModal">
                                     Move to QA
                                 </button>
                             <?php endif; ?>
 
-
+                            
                             <?php if($role == 'qa user' && $lead->stage == 'qa'): ?>
                                 <button class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#managerModal">
                                     Move to Manager
@@ -446,7 +444,7 @@
                                 </form>
                             <?php endif; ?>
 
-
+                            
                             <?php if($role == 'account manager' && $lead->stage == 'manager'): ?>
                                 <form method="POST" action="<?php echo e(route('lead.complete', $lead->id)); ?>" class="d-inline" id="completeForm">
                                     <?php echo csrf_field(); ?>
@@ -654,35 +652,34 @@
 
 
                                 <!-- acc ex user -->
-                                <?php if($lead->users->count()): ?>
+                                <?php if($lead->assignedUser): ?>
                                     <div class="rp-section">Account Executive</div>
 
-                                    <?php $__currentLoopData = $lead->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <?php
-                                            $words = explode(' ', trim($user->name));
-                                            $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                        ?>
+                                    <?php
+                                        $user = $lead->assignedUser;
+                                        $words = explode(' ', trim($user->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    ?>
 
-                                        <div class="user-row">
-                                            <div class="rp-avatar av-green">
-                                                <?php echo e($initials); ?>
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-green">
+                                            <?php echo e($initials); ?>
 
 
-                                                <?php if($user->profile): ?>
-                                                    <img src="<?php echo e(asset($user->profile)); ?>" alt="<?php echo e($user->name); ?>">
-                                                <?php endif; ?>
-                                            </div>
-
-                                            <div class="rp-info">
-                                                <span class="rp-name">
-                                                    <?php echo e($user->name); ?>
-
-                                                    <small>(<?php echo e($user->role->name); ?>)</small>
-                                                </span>
-                                                <span class="rp-badge rpb-green">AE Assigned</span>
-                                            </div>
+                                            <?php if($user->profile): ?>
+                                                <img src="<?php echo e(asset($user->profile)); ?>" alt="<?php echo e($user->name); ?>">
+                                            <?php endif; ?>
                                         </div>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                <?php echo e($user->name); ?>
+
+                                                <small>(<?php echo e($user->role->name); ?>)</small>
+                                            </span>
+                                            <span class="rp-badge rpb-green">AE Assigned</span>
+                                        </div>
+                                    </div>
                                 <?php endif; ?>
 
 
@@ -774,7 +771,7 @@
                                         <!-- LEFT CONTENT -->
                                         <div>
 
-
+                                            
                                                 <?php if($activity['type'] === 'note'): ?>
 
                                                 <strong><?php echo e($activity['data']->user->name); ?></strong>
@@ -791,7 +788,7 @@
 
                                                 </p>
 
-
+                                                
                                                     <?php if($activity['data']->documents->count()): ?>
 
                                                         <div class="mt-2">
@@ -815,7 +812,7 @@
 
                                                 <?php endif; ?>
 
-
+                                            
                                             <?php if($activity['type'] === 'document'): ?>
 
                                                 <i class="mdi mdi-file-document me-1 text-primary"></i>
@@ -835,7 +832,7 @@
                                         <!-- ACTIONS -->
                                         <div>
 
-
+                                            
                                             <?php if($activity['type'] === 'note'): ?>
                                                 <?php if($activity['data']->user_id == auth()->id()): ?>
 
@@ -848,7 +845,7 @@
                                                 <?php endif; ?>
                                             <?php endif; ?>
 
-
+                                            
                                                 <?php if($activity['type'] === 'document'): ?>
                                                     <?php if(strtolower(auth()->user()->role->name) === 'super admin'): ?>
 
@@ -1426,29 +1423,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    // document.getElementById('comment-form').addEventListener('submit', function(e) {
 
-    //     const editId = document.getElementById('edit-note-id').value;
-
-    //     document.getElementById('create-content').value =
-    //         editors['create'].root.innerHTML;
-
-    //     if (editId) {
-
-    //         this.action = `/notes/${editId}`;
-    //         this.method = 'POST';
-
-    //         // remove old _method if exists
-    //         let old = this.querySelector('input[name="_method"]');
-    //         if (old) old.remove();
-
-    //         let methodInput = document.createElement('input');
-    //         methodInput.type = 'hidden';
-    //         methodInput.name = '_method';
-    //         methodInput.value = 'PUT';
-    //         this.appendChild(methodInput);
-    //     }
-    // });
     document.getElementById('comment-form').addEventListener('submit', function (e) {
 
         const editId = document.getElementById('edit-note-id').value;

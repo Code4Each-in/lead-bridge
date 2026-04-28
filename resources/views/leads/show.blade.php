@@ -648,33 +648,32 @@
 
 
                                 <!-- acc ex user -->
-                                @if($lead->users->count())
+                                @if($lead->assignedUser)
                                     <div class="rp-section">Account Executive</div>
 
-                                    @foreach($lead->users as $user)
-                                        @php
-                                            $words = explode(' ', trim($user->name));
-                                            $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                        @endphp
+                                    @php
+                                        $user = $lead->assignedUser;
+                                        $words = explode(' ', trim($user->name));
+                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                    @endphp
 
-                                        <div class="user-row">
-                                            <div class="rp-avatar av-green">
-                                                {{ $initials }}
+                                    <div class="user-row">
+                                        <div class="rp-avatar av-green">
+                                            {{ $initials }}
 
-                                                @if($user->profile)
-                                                    <img src="{{ asset($user->profile) }}" alt="{{ $user->name }}">
-                                                @endif
-                                            </div>
-
-                                            <div class="rp-info">
-                                                <span class="rp-name">
-                                                    {{ $user->name }}
-                                                    <small>({{ $user->role->name }})</small>
-                                                </span>
-                                                <span class="rp-badge rpb-green">AE Assigned</span>
-                                            </div>
+                                            @if($user->profile)
+                                                <img src="{{ asset($user->profile) }}" alt="{{ $user->name }}">
+                                            @endif
                                         </div>
-                                    @endforeach
+
+                                        <div class="rp-info">
+                                            <span class="rp-name">
+                                                {{ $user->name }}
+                                                <small>({{ $user->role->name }})</small>
+                                            </span>
+                                            <span class="rp-badge rpb-green">AE Assigned</span>
+                                        </div>
+                                    </div>
                                 @endif
 
 
