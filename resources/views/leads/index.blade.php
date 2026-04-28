@@ -702,7 +702,6 @@ $(document).ready(function () {
         ]
     });
 
-
     $('#filter_name, #filter_company, #filter_status').on('change', function () {
         table.ajax.reload();
     });
@@ -710,7 +709,6 @@ $(document).ready(function () {
     $('#filter_contact').on('keyup', function () {
         table.ajax.reload();
     });
-
 
     $('#resetFilter').click(function () {
         $('#filter_name').val('');
